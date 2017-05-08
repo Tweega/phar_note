@@ -1,0 +1,37 @@
+yxargs -p -L 1 mix ecto.gen.migration < priv/repo/migrations/table_defs
+
+add_users_table
+add_roles_table
+add_user_roles_table
+add_equipment_table
+add_equipment_classes_table
+add_equipment_roles_table
+add_equipment_role_instances_table
+add_locations_table
+add_campaigns_table
+add_campaign_equipment_roles_table
+add_products_table
+add_processes_table
+add_process_steps_table
+add_campaign_table
+add_schedule_table
+add_schedule_execution_table
+add_user_status_table
+add_user_login_table
+add_signature_table
+add_signature_group_table
+add_service_requests_table
+
+add_service_policy_table
+add_service_policy_roles_table
+
+add_equipment_class_processes_table
+add_equipment_states_table
+add_equipment_process_states_table
+
+each edge has a policy determining signatures required to
+approve traversal - approve application for visa
+initiate traversal - fill in visa form
+check initiation -check visa form
+the service policy table will have service id,
+the policy roles table will have policy id, indicator of whether this is approval, initiation, or check field, plus a link to a signature group.
