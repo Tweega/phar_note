@@ -19,8 +19,12 @@ defmodule PharNote.Router do
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", PharNote do
-  #   pipe_through :api
-  # end
+  scope "/api", PharNote do
+    pipe_through :api
+
+    get "/users", UserController, :index
+
+    #resources "/users", UserController, only: [:index]
+
+  end
 end
