@@ -1,10 +1,18 @@
---- web/elm/Main.elm
-
 module Main exposing (..)
 
-import Html exposing (Html, text)
+import Html exposing (..)
+import Model exposing (..)
+import UserHttp
+import Update
+import Subscriptions
+import View
 
 
-main : Html a
+main : Program Never Model Msg
 main =
-    text "Hello, World! one two three four"
+    Html.program
+        { init = Model.init ! [ UserHttp.get ]
+        , view = View.view
+        , update = Update.update
+        , subscriptions = Subscriptions.subscriptions
+        }

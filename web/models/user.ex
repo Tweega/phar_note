@@ -23,9 +23,14 @@ defmodule PharNote.User do
   @doc """
   Builds a changeset based on the `struct` and `params`.
   """
-  def changeset(struct, params \\ %{}) do
-    struct
-    |> cast(params, [:first_name, :last_name, :gender, :birth_date, :location, :phone_number, :email, :headline, :picture])
-    |> validate_required([:first_name, :last_name, :gender, :birth_date, :location, :phone_number, :email, :headline, :picture])
+  def changeset(model, params \\ :empty) do
+    model
+      |> cast(params, [:first_name, :last_name, :email, :photo_url])
+      |> unique_constraint(:email)
+  end
+
+  def sorted(query) do
+    from u in query,
+    order_by: [desc: u.last_name]
   end
 end
