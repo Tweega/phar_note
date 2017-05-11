@@ -6,6 +6,8 @@ import Html.Events exposing (..)
 import Model exposing (..)
 import User exposing (..)
 import HttpUtils
+import Material.Table as Table
+import Material.Options as Options exposing (when, nop)
 
 
 view : Model -> Html Msg
@@ -15,7 +17,7 @@ view model =
             [ button [ onClick NewUser, class "button btn-primary" ] [ text "New User" ]
             ]
         , div [ class "row" ]
-            [ userTable model.users
+            [ userTable model.users model.order
             , formColumn model
             ]
         ]
@@ -123,26 +125,47 @@ userForm model =
             ]
 
 
-userTable : List User -> Html Msg
-userTable users =
-    div [ class "col-md-9" ]
-        [ table
-            [ class "table table-striped" ]
-            [ userTableHeader
-            , tbody [] (userRows users)
+userTable : List User -> Maybe Table.Order -> Html Msg
+userTable users order =
+    let
+        sort =
+            case order of
+                Just Table.Ascending ->
+                    List.sortBy sort_by_last_first
+
+                Just Table.Descending ->
+                    List.sortWith (\x y -> reverse (sort_by_last_first x) (sort_by_last_first y))
+
+                Nothing ->
+                    identity
+
+        sortedUsers =
+            sort users
+    in
+        div [ class "col-md-9" ]
+            [ Table.table []
+                [ userTableHeader order
+                , tbody [] (userRows sortedUsers)
+                ]
             ]
-        ]
 
 
-userTableHeader : Html Msg
-userTableHeader =
-    thead []
-        [ tr []
-            [ th [ colspan 2 ] []
-            , th [] [ text "First Name" ]
-            , th [] [ text "Last Name" ]
-            , th [] [ text "Email" ]
-            , th [] [ text "Photo Url" ]
+userTableHeader : Maybe Table.Order -> Html Msg
+userTableHeader order =
+    Table.thead []
+        [ Table.tr []
+            [ Table.th [] []
+            , Table.th [] []
+            , Table.th
+                [ order
+                    |> Maybe.map Table.sorted
+                    |> Maybe.withDefault nop
+                , Options.onClick Reorder
+                ]
+                [ text "First Name" ]
+            , Table.th [] [ text "last Name" ]
+            , Table.th [] [ text "Email" ]
+            , Table.th [] [ text "Photo url" ]
             ]
         ]
 
@@ -155,11 +178,29 @@ userRows users =
 
 userRow : User -> Html Msg
 userRow user =
-    tr []
-        [ td [] [ button [ onClick (EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
-        , td [] [ button [ onClick (DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
-        , td [] [ text user.first_name ]
-        , td [] [ text user.last_name ]
-        , td [] [ text user.email ]
-        , td [] [ text user.photo_url ]
+    Table.tr []
+        [ Table.td [] [ button [ onClick (EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
+        , Table.td [] [ button [ onClick (DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
+        , Table.td [] [ text user.first_name ]
+        , Table.td [] [ text user.last_name ]
+        , Table.td [] [ text user.email ]
+        , Table.td [] [ text user.photo_url ]
         ]
+
+
+reverse : comparable -> comparable -> Order
+reverse x y =
+    case compare x y of
+        LT ->
+            GT
+
+        GT ->
+            LT
+
+        EQ ->
+            EQ
+
+
+sort_by_last_first : User -> String
+sort_by_last_first u =
+    u.last_name ++ u.first_name

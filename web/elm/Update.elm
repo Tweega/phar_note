@@ -3,6 +3,7 @@ module Update exposing (..)
 import Model exposing (..)
 import UserHttp
 import View
+import Material.Table as Table
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -10,6 +11,9 @@ update msg model =
     case msg of
         NoOp ->
             model ! []
+
+        Reorder ->
+            { model | order = rotate model.order } ! []
 
         EditUser id ->
             let
@@ -115,3 +119,21 @@ update msg model =
 
         UserPut model ->
             model ! [ UserHttp.put model ]
+
+
+
+{- Rotate table ordering : Ascending -> Descending -> No sorting -> ... -}
+--this should be a utility function
+
+
+rotate : Maybe Table.Order -> Maybe Table.Order
+rotate order =
+    case order of
+        Just Table.Ascending ->
+            Just Table.Descending
+
+        Just Table.Descending ->
+            Nothing
+
+        Nothing ->
+            Just Table.Ascending
