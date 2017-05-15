@@ -1,4 +1,4 @@
-module User exposing (..)
+module PharNoteApp.User.Model exposing (..)
 
 
 type alias User =

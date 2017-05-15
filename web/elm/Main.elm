@@ -1,18 +1,16 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Model exposing (..)
-import UserHttp
-import Update
-import Subscriptions
-import View
+import PharNoteApp.Model exposing (Model, init)
+import PharNoteApp.View exposing (view)
+import PharNoteApp.Update exposing (update)
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = Model.init ! [ UserHttp.get ]
-        , view = View.view
-        , update = Update.update
-        , subscriptions = Subscriptions.subscriptions
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
         }

@@ -8,13 +8,14 @@ import User exposing (..)
 import HttpUtils
 import Material.Table as Table
 import Material.Options as Options exposing (when, nop)
+import PharNoteApp.User.Model as User
 
 
-view : Model -> Html Msg
+view : User.Model -> Html Msg
 view model =
     div [ class "container" ]
         [ div [ class "row" ]
-            [ button [ onClick NewUser, class "button btn-primary" ] [ text "New User" ]
+            [ button [ onClick MsgForUser NewUser, class "button btn-primary" ] [ text "New User" ]
             ]
         , div [ class "row" ]
             [ userTable model.users model.order
@@ -23,7 +24,7 @@ view model =
         ]
 
 
-formColumn : Model -> Html Msg
+formColumn : User.Model -> Html Msg
 formColumn model =
     let
         innerForm =
@@ -69,7 +70,7 @@ fieldIntValue user formAction extractor =
             ""
 
 
-userForm : Model -> Html Msg
+userForm : User.Model -> Html Msg
 userForm model =
     let
         user =
@@ -93,33 +94,33 @@ userForm model =
             fieldStringValue user model.formAction .photo_url
 
         buttonText =
-            if model.formAction == Edit then
+            if model.formAction == MsgForUser Edit then
                 "Update"
             else
                 "Create"
 
         buttonAction =
-            if model.formAction == Edit then
-                UserPut model
+            if model.formAction == MsgForUser Edit then
+                MsgForUser UserPut model
             else
-                UserPost model
+                MsgForUser UserPost model
     in
         Html.form []
             [ div [ class "form-group" ]
                 [ label [] [ text "First Name" ]
-                , input [ onInput SetFirstNameInput, value model.firstNameInput, class "form-control" ] []
+                , input [ onInput MsgForUser SetFirstNameInput, value model.firstNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Last Name" ]
-                , input [ onInput SetLastNameInput, value model.lastNameInput, class "form-control" ] []
+                , input [ onInput MsgForUser SetLastNameInput, value model.lastNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Email" ]
-                , input [ onInput SetEmailInput, value model.emailInput, class "form-control" ] []
+                , input [ onInput MsgForUser SetEmailInput, value model.emailInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Photo URL" ]
-                , input [ onInput SetPhotoUrlInput, value model.photoUrlInput, class "form-control" ] []
+                , input [ onInput MsgForUser SetPhotoUrlInput, value model.photoUrlInput, class "form-control" ] []
                 ]
             , button [ HttpUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
             ]
@@ -160,7 +161,7 @@ userTableHeader order =
                 [ order
                     |> Maybe.map Table.sorted
                     |> Maybe.withDefault nop
-                , Options.onClick Reorder
+                , Options.onClick MsgForUser Reorder
                 ]
                 [ text "First Name" ]
             , Table.th [] [ text "last Name" ]
@@ -179,8 +180,8 @@ userRows users =
 userRow : User -> Html Msg
 userRow user =
     Table.tr []
-        [ Table.td [] [ button [ onClick (EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
-        , Table.td [] [ button [ onClick (DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
+        [ Table.td [] [ button [ onClick (MsgForUser EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
+        , Table.td [] [ button [ onClick (MsgForUser DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
         , Table.td [] [ text user.first_name ]
         , Table.td [] [ text user.last_name ]
         , Table.td [] [ text user.email ]
