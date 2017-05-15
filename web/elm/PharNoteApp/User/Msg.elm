@@ -1,5 +1,8 @@
 module PharNoteApp.User.Msg exposing (..)
 
+import PharNoteApp.User.Model exposing (..)
+import Http exposing (..)
+
 
 type Msg
     = NoOp

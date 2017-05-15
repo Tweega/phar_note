@@ -1,19 +1,18 @@
-module Update exposing (..)
+module PharNoteApp.User.Update exposing (..)
 
-import Model exposing (..)
-import UserHttp
-import View
+import PharNoteApp.User.Msg exposing (..)
+import PharNoteApp.User.Model exposing (..)
 import Material.Table as Table
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         NoOp ->
-            model ! []
+            model
 
         Reorder ->
-            { model | order = rotate model.order } ! []
+            { model | order = rotate model.order }
 
         EditUser id ->
             let
@@ -60,7 +59,6 @@ update msg model =
                     , formAction = Edit
                     , selectedUser = Just id
                 }
-                    ! []
 
         DeleteUser id ->
             { model
@@ -78,20 +76,17 @@ update msg model =
                 , photoUrlInput = ""
                 , selectedUser = Nothing
             }
-                ! []
 
         ProcessUserGet (Ok users) ->
             { model
                 | users = users
                 , errors = Nothing
             }
-                ! []
 
         ProcessUserGet (Err error) ->
             { model
                 | errors = Just error
             }
-                ! []
 
         ProcessUserPost (Ok user) ->
             { model | formAction = None } ! [ UserHttp.get ]
@@ -100,19 +95,18 @@ update msg model =
             { model
                 | errors = Just error
             }
-                ! []
 
         SetFirstNameInput value ->
-            { model | firstNameInput = value } ! []
+            { model | firstNameInput = value }
 
         SetLastNameInput value ->
-            { model | lastNameInput = value } ! []
+            { model | lastNameInput = value }
 
         SetEmailInput value ->
-            { model | emailInput = value } ! []
+            { model | emailInput = value }
 
         SetPhotoUrlInput value ->
-            { model | photoUrlInput = value } ! []
+            { model | photoUrlInput = value }
 
         UserPost model ->
             model ! [ UserHttp.post model ]
@@ -123,7 +117,7 @@ update msg model =
 
 
 {- Rotate table ordering : Ascending -> Descending -> No sorting -> ... -}
---this should be a utility function
+--this should be a utility function.  Should we have to have a reference to a rendering module to determine sort order?
 
 
 rotate : Maybe Table.Order -> Maybe Table.Order

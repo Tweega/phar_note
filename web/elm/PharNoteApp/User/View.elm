@@ -1,21 +1,20 @@
-module View exposing (view, findUser)
+module PharNoteApp.User.View exposing (view, findUser)
 
+import PharNoteApp.User.Model as User
+import PharNoteApp.User.Msg exposing (..)
+import PharNoteApp.Msg as AppMsg
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Model exposing (..)
-import User exposing (..)
-import HttpUtils
 import Material.Table as Table
 import Material.Options as Options exposing (when, nop)
-import PharNoteApp.User.Model as User
 
 
 view : User.Model -> Html Msg
 view model =
     div [ class "container" ]
         [ div [ class "row" ]
-            [ button [ onClick MsgForUser NewUser, class "button btn-primary" ] [ text "New User" ]
+            [ button [ onClick AppMsg.MsgForUser NewUser, class "button btn-primary" ] [ text "New User" ]
             ]
         , div [ class "row" ]
             [ userTable model.users model.order
@@ -37,14 +36,14 @@ formColumn model =
             [ innerForm ]
 
 
-findUser : Int -> List User -> Maybe User
+findUser : Int -> List User.User -> Maybe User.User
 findUser id users =
     users
         |> List.filter (\user -> user.id == id)
         |> List.head
 
 
-fieldStringValue : Maybe User -> FormAction -> (User -> String) -> String
+fieldStringValue : Maybe User.User -> FormAction -> (User.User -> String) -> String
 fieldStringValue user formAction extractor =
     case user of
         Just user ->
@@ -57,7 +56,7 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe User -> FormAction -> (User -> Int) -> String
+fieldIntValue : Maybe User.User -> FormAction -> (User.User -> Int) -> String
 fieldIntValue user formAction extractor =
     case user of
         Just user ->
@@ -94,39 +93,39 @@ userForm model =
             fieldStringValue user model.formAction .photo_url
 
         buttonText =
-            if model.formAction == MsgForUser Edit then
+            if model.formAction == AppMsg.MsgForUser Edit then
                 "Update"
             else
                 "Create"
 
         buttonAction =
-            if model.formAction == MsgForUser Edit then
-                MsgForUser UserPut model
+            if model.formAction == AppMsg.MsgForUser Edit then
+                AppMsg.MsgForUser UserPut model
             else
-                MsgForUser UserPost model
+                AppMsg.MsgForUser UserPost model
     in
         Html.form []
             [ div [ class "form-group" ]
                 [ label [] [ text "First Name" ]
-                , input [ onInput MsgForUser SetFirstNameInput, value model.firstNameInput, class "form-control" ] []
+                , input [ onInput AppMsg.MsgForUser SetFirstNameInput, value model.firstNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Last Name" ]
-                , input [ onInput MsgForUser SetLastNameInput, value model.lastNameInput, class "form-control" ] []
+                , input [ onInput AppMsg.MsgForUser SetLastNameInput, value model.lastNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Email" ]
-                , input [ onInput MsgForUser SetEmailInput, value model.emailInput, class "form-control" ] []
+                , input [ onInput AppMsg.MsgForUser SetEmailInput, value model.emailInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Photo URL" ]
-                , input [ onInput MsgForUser SetPhotoUrlInput, value model.photoUrlInput, class "form-control" ] []
+                , input [ onInput AppMsg.MsgForUser SetPhotoUrlInput, value model.photoUrlInput, class "form-control" ] []
                 ]
             , button [ HttpUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
             ]
 
 
-userTable : List User -> Maybe Table.Order -> Html Msg
+userTable : List User.User -> Maybe Table.Order -> Html Msg
 userTable users order =
     let
         sort =
@@ -161,7 +160,7 @@ userTableHeader order =
                 [ order
                     |> Maybe.map Table.sorted
                     |> Maybe.withDefault nop
-                , Options.onClick MsgForUser Reorder
+                , Options.onClick AppMsg.MsgForUser Reorder
                 ]
                 [ text "First Name" ]
             , Table.th [] [ text "last Name" ]
@@ -171,17 +170,17 @@ userTableHeader order =
         ]
 
 
-userRows : List User -> List (Html Msg)
+userRows : List User.User -> List (Html Msg)
 userRows users =
     users
         |> List.map userRow
 
 
-userRow : User -> Html Msg
+userRow : User.User -> Html Msg
 userRow user =
     Table.tr []
-        [ Table.td [] [ button [ onClick (MsgForUser EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
-        , Table.td [] [ button [ onClick (MsgForUser DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
+        [ Table.td [] [ button [ onClick (AppMsg.MsgForUser EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
+        , Table.td [] [ button [ onClick (AppMsg.MsgForUser DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
         , Table.td [] [ text user.first_name ]
         , Table.td [] [ text user.last_name ]
         , Table.td [] [ text user.email ]
@@ -202,6 +201,6 @@ reverse x y =
             EQ
 
 
-sort_by_last_first : User -> String
+sort_by_last_first : User.User -> String
 sort_by_last_first u =
     u.last_name ++ u.first_name

@@ -1,11 +1,12 @@
-module UserHttp exposing (..)
+module PharNoteApp.User.Rest exposing (..)
 
+import PharNoteApp.Msg as AppMsg
+import PharNoteApp.User.Msg exposing (..)
+import PharNoteApp.User.Model exposing (..)
 import Http
 import Json.Decode
 import Json.Encode
 import Json.Decode.Pipeline
-import Model exposing (..)
-import User exposing (..)
 
 
 listDecoder : Json.Decode.Decoder (List User)
@@ -28,9 +29,9 @@ url =
     "http://localhost:4000/api/users"
 
 
-get : Cmd Msg
+get : Cmd AppMsg.Msg
 get =
-    Http.send ProcessUserGet (Http.get url listDecoder)
+    Http.send AppMsg.MsgForUser ProcessUserGet (Http.get url listDecoder)
 
 
 payload : Model -> Json.Encode.Value
@@ -43,17 +44,17 @@ payload model =
         ]
 
 
-post : Model -> Cmd Msg
+post : Model -> Cmd AppMsg.Msg
 post model =
     let
         body =
             Http.stringBody "application/json"
                 (Json.Encode.encode 0 (payload model))
     in
-        Http.send ProcessUserPost (Http.post url body decoder)
+        Http.send (AppMsg.MsgForUser ProcessUserPost) (Http.post url body decoder)
 
 
-put : Model -> Cmd Msg
+put : Model -> Cmd AppMsg.Msg
 put model =
     let
         putUrl =
@@ -79,10 +80,10 @@ put model =
                 , withCredentials = False
                 }
     in
-        Http.send ProcessUserPost putRequest
+        Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
 
 
-delete : Model -> Cmd Msg
+delete : Model -> Cmd AppMsg.Msg
 delete model =
     let
         putUrl =
@@ -108,4 +109,4 @@ delete model =
                 , withCredentials = False
                 }
     in
-        Http.send ProcessUserPost putRequest
+        Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
