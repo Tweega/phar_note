@@ -1,6 +1,7 @@
-module Subscriptions exposing (subscriptions)
+module PharNoteApp.Subscriptions exposing (subscriptions)
 
-import Model exposing (..)
+import PharNoteApp.Model exposing (Model)
+import PharNoteApp.Msg exposing (Msg)
 
 
 subscriptions : Model -> Sub Msg

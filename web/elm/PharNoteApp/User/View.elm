@@ -1,8 +1,11 @@
 module PharNoteApp.User.View exposing (view, findUser)
 
+import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
+import PharNoteApp.User.Model exposing (FormAction(..))
 import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
+import PharNoteApp.HtmlUtils as HtmlUtils
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -10,11 +13,11 @@ import Material.Table as Table
 import Material.Options as Options exposing (when, nop)
 
 
-view : User.Model -> Html Msg
+view : User.Model -> Html AppMsg.Msg
 view model =
     div [ class "container" ]
         [ div [ class "row" ]
-            [ button [ onClick AppMsg.MsgForUser NewUser, class "button btn-primary" ] [ text "New User" ]
+            [ button [ onClick (AppMsg.MsgForUser NewUser), class "button btn-primary" ] [ text "New User" ]
             ]
         , div [ class "row" ]
             [ userTable model.users model.order
@@ -23,7 +26,7 @@ view model =
         ]
 
 
-formColumn : User.Model -> Html Msg
+formColumn : User.Model -> Html AppMsg.Msg
 formColumn model =
     let
         innerForm =
@@ -43,7 +46,7 @@ findUser id users =
         |> List.head
 
 
-fieldStringValue : Maybe User.User -> FormAction -> (User.User -> String) -> String
+fieldStringValue : Maybe User.User -> User.FormAction -> (User.User -> String) -> String
 fieldStringValue user formAction extractor =
     case user of
         Just user ->
@@ -56,7 +59,7 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe User.User -> FormAction -> (User.User -> Int) -> String
+fieldIntValue : Maybe User.User -> User.FormAction -> (User.User -> Int) -> String
 fieldIntValue user formAction extractor =
     case user of
         Just user ->
@@ -69,7 +72,7 @@ fieldIntValue user formAction extractor =
             ""
 
 
-userForm : User.Model -> Html Msg
+userForm : User.Model -> Html AppMsg.Msg
 userForm model =
     let
         user =
@@ -93,39 +96,39 @@ userForm model =
             fieldStringValue user model.formAction .photo_url
 
         buttonText =
-            if model.formAction == AppMsg.MsgForUser Edit then
+            if model.formAction == Edit then
                 "Update"
             else
                 "Create"
 
         buttonAction =
-            if model.formAction == AppMsg.MsgForUser Edit then
-                AppMsg.MsgForUser UserPut model
+            if model.formAction == Edit then
+                AppMsg.MsgForUser (UserPut model)
             else
-                AppMsg.MsgForUser UserPost model
+                AppMsg.MsgForUser (UserPost model)
     in
         Html.form []
             [ div [ class "form-group" ]
                 [ label [] [ text "First Name" ]
-                , input [ onInput AppMsg.MsgForUser SetFirstNameInput, value model.firstNameInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (SetFirstNameInput s)), value model.firstNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Last Name" ]
-                , input [ onInput AppMsg.MsgForUser SetLastNameInput, value model.lastNameInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (SetLastNameInput s)), value model.lastNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Email" ]
-                , input [ onInput AppMsg.MsgForUser SetEmailInput, value model.emailInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (SetEmailInput s)), value model.emailInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Photo URL" ]
-                , input [ onInput AppMsg.MsgForUser SetPhotoUrlInput, value model.photoUrlInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (SetPhotoUrlInput s)), value model.photoUrlInput, class "form-control" ] []
                 ]
-            , button [ HttpUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
+            , button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
             ]
 
 
-userTable : List User.User -> Maybe Table.Order -> Html Msg
+userTable : List User.User -> Maybe Table.Order -> Html AppMsg.Msg
 userTable users order =
     let
         sort =
@@ -150,7 +153,7 @@ userTable users order =
             ]
 
 
-userTableHeader : Maybe Table.Order -> Html Msg
+userTableHeader : Maybe Table.Order -> Html AppMsg.Msg
 userTableHeader order =
     Table.thead []
         [ Table.tr []
@@ -160,7 +163,7 @@ userTableHeader order =
                 [ order
                     |> Maybe.map Table.sorted
                     |> Maybe.withDefault nop
-                , Options.onClick AppMsg.MsgForUser Reorder
+                , Options.onClick (AppMsg.MsgForUser Reorder)
                 ]
                 [ text "First Name" ]
             , Table.th [] [ text "last Name" ]
@@ -170,17 +173,17 @@ userTableHeader order =
         ]
 
 
-userRows : List User.User -> List (Html Msg)
+userRows : List User.User -> List (Html AppMsg.Msg)
 userRows users =
     users
         |> List.map userRow
 
 
-userRow : User.User -> Html Msg
+userRow : User.User -> Html AppMsg.Msg
 userRow user =
     Table.tr []
-        [ Table.td [] [ button [ onClick (AppMsg.MsgForUser EditUser user.id), class "button btn-primary" ] [ text "Edit" ] ]
-        , Table.td [] [ button [ onClick (AppMsg.MsgForUser DeleteUser user.id), class "button btn-primary" ] [ text "Delete" ] ]
+        [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
+        , Table.td [] [ button [ onClick (AppMsg.MsgForUser (DeleteUser user.id)), class "button btn-primary" ] [ text "Delete" ] ]
         , Table.td [] [ text user.first_name ]
         , Table.td [] [ text user.last_name ]
         , Table.td [] [ text user.email ]

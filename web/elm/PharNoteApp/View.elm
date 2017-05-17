@@ -21,6 +21,6 @@ view model =
             []
             [ section
                 [ id "PharNoteApp" ]
-                [ User.taskEntry userData
+                [ UserView.view userData
                 ]
             ]

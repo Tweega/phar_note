@@ -1,14 +1,2 @@
 var _user$project$Main$main = _elm_lang$html$Html$program(
-	{
-		init: A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			_user$project$Model$init,
-			{
-				ctor: '::',
-				_0: _user$project$UserHttp$get,
-				_1: {ctor: '[]'}
-			}),
-		view: _user$project$View$view,
-		update: _user$project$Update$update,
-		subscriptions: _user$project$Subscriptions$subscriptions
-	})();
+	{init: _user$project$PharNoteApp_Init$init, view: _user$project$PharNoteApp_View$view, update: _user$project$PharNoteApp_Update$update, subscriptions: _user$project$PharNoteApp_Subscriptions$subscriptions})();

@@ -4,6 +4,7 @@ import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.User.Model exposing (..)
 import Http
+import Http exposing (..)
 import Json.Decode
 import Json.Encode
 import Json.Decode.Pipeline
@@ -31,7 +32,8 @@ url =
 
 get : Cmd AppMsg.Msg
 get =
-    Http.send AppMsg.MsgForUser ProcessUserGet (Http.get url listDecoder)
+    --Http.send AppMsg.MsgForUser ProcessUserGet (Http.get url listDecoder)
+    Http.send (\result -> AppMsg.MsgForUser (ProcessUserGet result)) (Http.get url listDecoder)
 
 
 payload : Model -> Json.Encode.Value
@@ -51,7 +53,10 @@ post model =
             Http.stringBody "application/json"
                 (Json.Encode.encode 0 (payload model))
     in
-        Http.send (AppMsg.MsgForUser ProcessUserPost) (Http.post url body decoder)
+        --ProcessUserPost (Result Http.Error User)
+        --Http.send ProcessUserPost (Http.post url body decoder)
+        --send first arg is a function that can translate a result into a message
+        Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) (Http.post url body decoder)
 
 
 put : Model -> Cmd AppMsg.Msg
@@ -80,7 +85,11 @@ put model =
                 , withCredentials = False
                 }
     in
-        Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
+        Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) putRequest
+
+
+
+--Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
 
 
 delete : Model -> Cmd AppMsg.Msg
@@ -109,4 +118,5 @@ delete model =
                 , withCredentials = False
                 }
     in
-        Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
+        --Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
+        Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) putRequest

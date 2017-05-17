@@ -26,20 +26,6 @@ type alias Model =
     }
 
 
-init : Model
-init =
-    { users = []
-    , formAction = None
-    , selectedUser = Nothing
-    , order = Just Table.Ascending
-    , errors = Nothing
-    , firstNameInput = ""
-    , lastNameInput = ""
-    , emailInput = ""
-    , photoUrlInput = ""
-    }
-
-
 type FormAction
     = Create
     | Edit

@@ -1,18 +1,21 @@
 module PharNoteApp.User.Update exposing (..)
 
 import PharNoteApp.User.Msg exposing (..)
+import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Model exposing (..)
+import PharNoteApp.User.Rest as Rest
+import PharNoteApp.User.View as View
 import Material.Table as Table
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd AppMsg.Msg )
 update msg model =
     case msg of
         NoOp ->
-            model
+            model ! []
 
         Reorder ->
-            { model | order = rotate model.order }
+            { model | order = rotate model.order } ! []
 
         EditUser id ->
             let
@@ -59,13 +62,14 @@ update msg model =
                     , formAction = Edit
                     , selectedUser = Just id
                 }
+                    ! []
 
         DeleteUser id ->
             { model
                 | formAction = Delete
                 , selectedUser = Just id
             }
-                ! [ UserHttp.delete { model | selectedUser = Just id } ]
+                ! [ Rest.delete { model | selectedUser = Just id } ]
 
         NewUser ->
             { model
@@ -76,43 +80,47 @@ update msg model =
                 , photoUrlInput = ""
                 , selectedUser = Nothing
             }
+                ! []
 
         ProcessUserGet (Ok users) ->
             { model
                 | users = users
                 , errors = Nothing
             }
+                ! []
 
         ProcessUserGet (Err error) ->
             { model
                 | errors = Just error
             }
+                ! []
 
         ProcessUserPost (Ok user) ->
-            { model | formAction = None } ! [ UserHttp.get ]
+            { model | formAction = None } ! [ Rest.get ]
 
         ProcessUserPost (Err error) ->
             { model
                 | errors = Just error
             }
+                ! []
 
         SetFirstNameInput value ->
-            { model | firstNameInput = value }
+            { model | firstNameInput = value } ! []
 
         SetLastNameInput value ->
-            { model | lastNameInput = value }
+            { model | lastNameInput = value } ! []
 
         SetEmailInput value ->
-            { model | emailInput = value }
+            { model | emailInput = value } ! []
 
         SetPhotoUrlInput value ->
-            { model | photoUrlInput = value }
+            { model | photoUrlInput = value } ! []
 
         UserPost model ->
-            model ! [ UserHttp.post model ]
+            model ! [ Rest.post model ]
 
         UserPut model ->
-            model ! [ UserHttp.put model ]
+            model ! [ Rest.put model ]
 
 
 
