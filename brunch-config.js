@@ -56,8 +56,7 @@ exports.config = {
       // Do not use ES6 compiler in vendor code
       ignore: [/web\/static\/vendor/]
     },
-    copycat: {
-      "fonts": ["node_modules/font-awesome/fonts/fontawesome-webfont.woff"],
+    copycat: {      
       "js": ["node_modules/dialog-polyfill/dialog-polyfill.js"],
       "css": ["node_modules/dialog-polyfill/dialog-polyfill.css"]
     },
