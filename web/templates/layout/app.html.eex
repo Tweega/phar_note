@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
 
     <title>Hello PharNote!</title>
 
     <!-- MDL
-     The library relies on Google's Material Design fonts, icons, and the CSS
-     of Google's Material Design Lite implementation. Load these as follows.
-   -->
-   <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-   <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.teal-red.min.css" />
-
+      The library relies on Google's Material Design fonts, icons, and the CSS
+      of Google's Material Design Lite implementation. Load these as follows.
+    -->
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.teal-red.min.css" />
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <!-- Dialogs
+
+      The Dialog component requires a polyfill on most browsers. If your app
+      uses Dialogs and is expected to work outside Google Chrome, get the
+      polyfill at the URL below and load as follows.
+      https://github.com/GoogleChrome/dialog-polyfill
+
+    These will be included in app.js by virtue of being placed in static/vendor directory
+
+    <script src="<%= static_path(@conn, "/js/dialog-polyfill.js") %>"></script>
+    <link rel="stylesheet" href="<%= static_path(@conn, "/css/dialog-polyfill.css") %>">
+    -->
+    <script src="<%= static_path(@conn, "/js/dialog-polyfill.js") %>"></script>
+    <link rel="stylesheet" href="<%= static_path(@conn, "/css/dialog-polyfill.css") %>">
+
+    <!-- Event.focusin
+         Polyfill required for Firefox to support focusin and focusout events
+    -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.js?features=Event.focusin"></script>
+
   </head>
 
   <body>
-    <div class="container">
-      <header class="header">
-        <nav role="navigation">
-          <ul class="nav nav-pills pull-right">
-            <li><a href="http://www.phoenixframework.org/docs">Get Started</a></li>
-          </ul>
-        </nav>
-        <span class="logo"></span>
-      </header>
-
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
-
-      <main role="main">
-        <%= render @view_module, @view_template, assigns %>
-      </main>
-
-    </div> <!-- /container -->
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
   </body>
 </html>
