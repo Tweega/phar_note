@@ -26,3 +26,4 @@ erl_crash.dump
 /config/prod.secret.exs
 
 *.txt
+web/elm/index.html

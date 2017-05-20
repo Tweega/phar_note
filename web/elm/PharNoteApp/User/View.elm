@@ -3,7 +3,7 @@ module PharNoteApp.User.View exposing (view, findUser)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.Model exposing (FormAction(..))
-import PharNoteApp.User.Msg exposing (..)
+import PharNoteApp.User.Msg as UserMsg
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.HtmlUtils as HtmlUtils
 import Html exposing (..)
@@ -17,7 +17,7 @@ view : User.Model -> Html AppMsg.Msg
 view model =
     div [ class "container" ]
         [ div [ class "row" ]
-            [ button [ onClick (AppMsg.MsgForUser NewUser), class "button btn-primary" ] [ text "New User" ]
+            [ button [ onClick (AppMsg.MsgForUser UserMsg.NewUser), class "button btn-primary" ] [ text "New User" ]
             ]
         , div [ class "row" ]
             [ userTable model.users model.order
@@ -103,26 +103,26 @@ userForm model =
 
         buttonAction =
             if model.formAction == Edit then
-                AppMsg.MsgForUser (UserPut model)
+                AppMsg.MsgForUser (UserMsg.UserPut model)
             else
-                AppMsg.MsgForUser (UserPost model)
+                AppMsg.MsgForUser (UserMsg.UserPost model)
     in
         Html.form []
             [ div [ class "form-group" ]
                 [ label [] [ text "First Name" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (SetFirstNameInput s)), value model.firstNameInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetFirstNameInput s)), value model.firstNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Last Name" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (SetLastNameInput s)), value model.lastNameInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetLastNameInput s)), value model.lastNameInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Email" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (SetEmailInput s)), value model.emailInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetEmailInput s)), value model.emailInput, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Photo URL" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (SetPhotoUrlInput s)), value model.photoUrlInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetPhotoUrlInput s)), value model.photoUrlInput, class "form-control" ] []
                 ]
             , button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
             ]
@@ -163,7 +163,7 @@ userTableHeader order =
                 [ order
                     |> Maybe.map Table.sorted
                     |> Maybe.withDefault nop
-                , Options.onClick (AppMsg.MsgForUser Reorder)
+                , Options.onClick (AppMsg.MsgForUser UserMsg.Reorder)
                 ]
                 [ text "First Name" ]
             , Table.th [] [ text "last Name" ]
@@ -182,8 +182,8 @@ userRows users =
 userRow : User.User -> Html AppMsg.Msg
 userRow user =
     Table.tr []
-        [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
-        , Table.td [] [ button [ onClick (AppMsg.MsgForUser (DeleteUser user.id)), class "button btn-primary" ] [ text "Delete" ] ]
+        [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
+        , Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.DeleteUser user.id)), class "button btn-primary" ] [ text "Delete" ] ]
         , Table.td [] [ text user.first_name ]
         , Table.td [] [ text user.last_name ]
         , Table.td [] [ text user.email ]
