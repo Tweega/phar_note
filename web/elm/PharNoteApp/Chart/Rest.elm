@@ -1,8 +1,6 @@
 module PharNoteApp.Chart.Rest exposing (..)
 
---placeholder
 
-
-x : Integer
-x =
-    1
+get : Cmd AppMsg.Msg
+get =
+    Cmd.None

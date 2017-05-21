@@ -8,15 +8,27 @@ import Material.Table as Table
 
 init : ( Model, Cmd AppMsg.Msg )
 init =
-    ( { users = []
-      , formAction = None
-      , selectedUser = Nothing
-      , order = Just Table.Ascending
-      , errors = Nothing
-      , firstNameInput = ""
-      , lastNameInput = ""
-      , emailInput = ""
-      , photoUrlInput = ""
-      }
-    , get
-    )
+    initialModel
+        ! []
+
+
+
+--use init if fetching some intial data at load time.
+
+
+initialModel : Model
+initialModel =
+    { users = []
+    , formAction = None
+    , selectedUser = Nothing
+    , order = Just Table.Ascending
+    , errors = Nothing
+    , firstNameInput = ""
+    , lastNameInput = ""
+    , emailInput = ""
+    , photoUrlInput = ""
+    }
+
+
+
+--this might be a place to fetch reference or other one-off data (get)

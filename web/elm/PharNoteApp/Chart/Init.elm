@@ -8,10 +8,19 @@ import Material
 
 init : ( Model, Cmd AppMsg.Msg )
 init =
+    initialModel
+        ! []
+
+
+
+--use init if fetching some intial data at load time.
+
+
+initialModel : Model
+initialModel =
     { mdl = Material.model
     , toggles = Dict.empty
     }
-        ! []
 
 
 

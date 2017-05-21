@@ -1,9 +1,15 @@
 module PharNoteApp.View exposing (view)
 
 import PharNoteApp.Msg as AppMsg
+import PharNoteApp.Chart.Charts as Charts
+
+
+--import PharNoteApp.Msg exposing (Msg(..))
+
 import PharNoteApp.Model exposing (Model)
 import PharNoteApp.User.View as UserView
 import PharNoteApp.Chart.View as ChartView
+import PharNoteApp.Route exposing (..)
 import Html exposing (Html, text, div, span, form)
 import Html.Attributes exposing (href, src)
 import Material.Layout as Layout
@@ -14,10 +20,6 @@ import Material.Menu as Menu
 import Material.Dialog as Dialog
 import Material.Button as Button
 import Material.Options as Options exposing (css, cs, when)
-
-
---import Route exposing (Route(..))
-
 import Material.Scheme
 
 
@@ -55,9 +57,9 @@ view model =
             , tabs = ( [], [] )
             , main =
                 [ viewBody model
+                , helpDialog model
                 ]
-
-            --  ++ Charts.createDefinitions
+                    ++ Charts.createDefinitions
             }
 
 
@@ -77,19 +79,18 @@ viewHeader model =
 type alias MenuItem =
     { text : String
     , iconName : String
-
-    --, route : Maybe Route
+    , route : Maybe Route
     }
 
 
 menuItems : List MenuItem
 menuItems =
-    [ { text = "Dashboard", iconName = "dashboard" }
-    , { text = "Users", iconName = "group" }
-    , { text = "Last Activity", iconName = "alarm" }
-    , { text = "Reports", iconName = "list" }
-    , { text = "Organizations", iconName = "store" }
-    , { text = "Project", iconName = "view_list" }
+    [ { text = "Dashboard", iconName = "dashboard", route = Just Home }
+    , { text = "Users", iconName = "group", route = Just Users }
+    , { text = "Last Activity", iconName = "alarm", route = Nothing }
+    , { text = "Reports", iconName = "list", route = Nothing }
+    , { text = "Organizations", iconName = "store", route = Nothing }
+    , { text = "Project", iconName = "view_list", route = Nothing }
     ]
 
 
@@ -97,12 +98,24 @@ viewDrawerMenuItem : Model -> MenuItem -> Html AppMsg.Msg
 viewDrawerMenuItem model menuItem =
     let
         isCurrentLocation =
-            False
+            case model.history of
+                currentLocation :: _ ->
+                    currentLocation == menuItem.route
 
-        --some location code removed from above for the time being
+                _ ->
+                    False
+
+        onClickCmd =
+            case ( isCurrentLocation, menuItem.route ) of
+                ( False, Just route ) ->
+                    route |> urlFor |> AppMsg.NewUrl |> Options.onClick
+
+                _ ->
+                    Options.nop
     in
         Layout.link
-            [ when isCurrentLocation (Color.background <| Color.color Color.BlueGrey Color.S600)
+            [ onClickCmd
+            , when isCurrentLocation (Color.background <| Color.color Color.BlueGrey Color.S600)
             , Options.css "color" "rgba(255, 255, 255, 0.56)"
             , Options.css "font-weight" "500"
             ]
@@ -189,4 +202,37 @@ drawerHeader model =
 
 viewBody : Model -> Html AppMsg.Msg
 viewBody model =
-    ChartView.view model.chartData
+    case model.history |> List.head |> Maybe.withDefault Nothing of
+        Just Home ->
+            ChartView.view model.chartData
+
+        Just Users ->
+            UserView.view model.userData
+
+        Nothing ->
+            text "404"
+
+
+helpDialog : Model -> Html AppMsg.Msg
+helpDialog model =
+    Dialog.view
+        []
+        [ Dialog.title [] [ text "About" ]
+        , Dialog.content []
+            [ Html.p []
+                [ text "elm-mdl is awesome." ]
+            , Html.p []
+                [ text "it really is." ]
+            ]
+        , Dialog.actions []
+            [ Options.styled Html.span
+                [ Dialog.closeOn "click" ]
+                [ Button.render AppMsg.Mdl
+                    [ 5, 1, 6 ]
+                    model.mdl
+                    [ Button.ripple
+                    ]
+                    [ text "Close" ]
+                ]
+            ]
+        ]
