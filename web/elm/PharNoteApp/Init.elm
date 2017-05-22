@@ -4,6 +4,7 @@ import PharNoteApp.Model as AppModel
 import PharNoteApp.User.Model as UserModel
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Init as UserInit
+import PharNoteApp.Role.Init as RoleInit
 import PharNoteApp.Chart.Init as ChartInit
 import PharNoteApp.Route as Route
 import Material
@@ -21,6 +22,7 @@ init location =
     ( { mdl = Material.model
       , history = Route.init (Route.locFor location)
       , userData = UserInit.initialModel
+      , roleData = RoleInit.initialModel
       , chartData = ChartInit.initialModel
       , activeUser = ""
       }

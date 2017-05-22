@@ -4,6 +4,8 @@ import PharNoteApp.Msg exposing (..)
 import PharNoteApp.Model exposing (Model)
 import PharNoteApp.User.Update as User
 import PharNoteApp.User.Rest as UserData
+import PharNoteApp.Role.Update as Role
+import PharNoteApp.Role.Rest as RoleData
 import PharNoteApp.Chart.Update as Chart
 import PharNoteApp.Route as Route
 import Material
@@ -44,6 +46,17 @@ update msg model =
                 , cmd
                 )
 
+        MsgForRole roleMsg ->
+            let
+                ( role_data, cmd ) =
+                    Role.update roleMsg model.roleData
+            in
+                ( { model
+                    | roleData = role_data
+                  }
+                , cmd
+                )
+
         MsgForChart chartMsg ->
             let
                 ( chart_data, cmd ) =
@@ -65,6 +78,9 @@ urlUpdate model route =
         case route of
             Just Route.Users ->
                 newModel ! [ UserData.get ]
+
+            Just Route.Roles ->
+                newModel ! [ RoleData.get ]
 
             _ ->
                 newModel ! []

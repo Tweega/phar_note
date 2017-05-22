@@ -22,11 +22,19 @@ defmodule PharNote.Router do
   scope "/api", PharNote do
     pipe_through :api
 
+    #Users
     get "/users", UserController, :index
     get "/users/:id", UserController, :show
     post "/users", UserController, :create
     put "/users/:id", UserController, :update
     delete "/users/:id", UserController, :delete
+
+    #user roles
+    get "/roles", RoleController, :index
+    get "/roles/:id", RoleController, :show
+    post "/roles", RoleController, :create
+    put "/roles/:id", RoleController, :update
+    delete "/roles/:id", RoleController, :delete
 
     #resources "/users", UserController, only: [:index]
 
