@@ -12,6 +12,8 @@ defmodule PharNote.User do
     field :email,         :string
     field :photo_url,     :string
 
+    many_to_many :user_roles, PharNote.Role, join_through: "user_roles_user"  #if we want timestamps on user_role_user then we need a model for UserRole
+
     #field :gender, :integer
     #field :birth_date, Ecto.Date
     #field :location, :string
@@ -25,12 +27,17 @@ defmodule PharNote.User do
   """
   def changeset(model, params \\ :empty) do
     model
-      |> cast(params, [:first_name, :last_name, :email, :photo_url])
+      |> cast(params, [:first_name, :last_name, :email, :photo_url, :user_roles])
       |> unique_constraint(:email)
   end
 
   def sorted(query) do
     from u in query,
     order_by: [desc: u.last_name]
+  end
+
+  def with_roles(query) do
+    from u in query,
+    preload: [:user_roles]
   end
 end

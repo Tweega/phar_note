@@ -3,6 +3,7 @@ defmodule PharNote.UserController do
 
   def index(conn, _params) do
     users = PharNote.User
+    |> PharNote.User.with_roles
     |> PharNote.User.sorted
     |> Repo.all
             #  |> Enum.map(fn(user) -> cleanup(user) end)

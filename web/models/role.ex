@@ -4,11 +4,13 @@
 defmodule PharNote.Role do
   use PharNote.Web, :model
 
-  @derive {Poison.Encoder, except: [:__meta__, :inserted_at, :updated_at]} # when encoding json do not include these fields
+  @derive {Poison.Encoder, except: [:__meta__, :users, :inserted_at, :updated_at]} # when encoding json do not include these fields
 
   schema "user_roles" do
     field :role_name,    :string
     field :role_desc,    :string
+
+    many_to_many :users, PharNote.User, join_through: "user_roles_user"
 
     timestamps()
   end
