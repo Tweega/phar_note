@@ -40,4 +40,15 @@ defmodule PharNote.User do
     from u in query,
     preload: [:user_roles]
   end
+
+  def with_roles_flat(query) do
+#    [{"Percy", "Spell Learner"}, {"George", "Spell Learner"},
+#     {"Ginnie", "Spell Learner"}, {"Fred", "Spell Learner"},
+#     {"Ron", "Spell Learner"},
+#     {"Hermione", "Spell Learner"}, {"Hermione", "Prefect"}]
+
+    from u in query,
+      inner_join: r in assoc(u, :user_roles),
+      select: {u.first_name, u.last_name, r.role_name}
+  end
 end

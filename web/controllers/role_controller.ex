@@ -2,11 +2,25 @@ defmodule PharNote.RoleController do
   use PharNote.Web, :controller
 
   def index(conn, _params) do
-    roles = PharNote.Role
-    |> PharNote.Role.sorted
-    |> Repo.all
+    roles = index_data()
             #  |> Enum.map(fn(role) -> cleanup(role) end)
     json conn, roles
+  end
+
+  def index_data() do
+    roles = PharNote.Role
+    |> PharNote.Role.with_users
+    |> PharNote.Role.sorted
+    |> Repo.all
+
+    new_roles = Enum.map(roles, fn r ->
+      #what I want back is a new list of users
+      new_users = Enum.map(r.users, fn u ->
+        %PharNote.User{ u | user_roles: nil}
+      end)
+      %PharNote.Role{r | users: new_users}
+    end)
+   new_roles
   end
 
 
