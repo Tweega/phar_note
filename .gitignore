@@ -26,4 +26,5 @@ erl_crash.dump
 /config/prod.secret.exs
 
 *.txt
+!ToDo.txt
 web/elm/index.html

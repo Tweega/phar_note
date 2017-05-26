@@ -20,7 +20,7 @@ view model =
             [ button [ onClick (AppMsg.MsgForUser UserMsg.NewUser), class "button btn-primary" ] [ text "New User" ]
             ]
         , div [ class "row" ]
-            [ userTable model.users model.order
+            [ userTable model.users model.selectedUser model.order
             , formColumn model
             ]
         ]
@@ -128,8 +128,8 @@ userForm model =
             ]
 
 
-userTable : List User.User -> Maybe Table.Order -> Html AppMsg.Msg
-userTable users order =
+userTable : List User.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
+userTable users selectedUser order =
     let
         sort =
             case order of
@@ -148,7 +148,7 @@ userTable users order =
         div [ class "col-md-9" ]
             [ Table.table []
                 [ userTableHeader order
-                , tbody [] (userRows sortedUsers)
+                , tbody [] (userRows sortedUsers selectedUser)
                 ]
             ]
 
@@ -173,22 +173,41 @@ userTableHeader order =
         ]
 
 
-userRows : List User.User -> List (Html AppMsg.Msg)
-userRows users =
+userRows : List User.User -> Maybe Int -> List (Html AppMsg.Msg)
+userRows users selectedUser =
     users
-        |> List.map userRow
+        |> List.map (userRow selectedUser)
 
 
-userRow : User.User -> Html AppMsg.Msg
-userRow user =
-    Table.tr []
-        [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
-        , Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.DeleteUser user.id)), class "button btn-primary" ] [ text "Delete" ] ]
-        , Table.td [] [ text user.first_name ]
-        , Table.td [] [ text user.last_name ]
-        , Table.td [] [ text user.email ]
-        , Table.td [] [ text user.photo_url ]
-        ]
+userRow : Maybe Int -> User.User -> Html AppMsg.Msg
+userRow selectedUser user =
+    let
+        row_style =
+            case selectedUser of
+                Just userID ->
+                    if userID == user.id then
+                        (Options.css "background-color" "green"
+                            :: Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                            :: []
+                        )
+                    else
+                        (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                            :: []
+                        )
+
+                Nothing ->
+                    (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                        :: []
+                    )
+    in
+        Table.tr row_style
+            [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
+            , Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.DeleteUser user.id)), class "button btn-primary" ] [ text "Delete" ] ]
+            , Table.td [] [ text user.first_name ]
+            , Table.td [] [ text user.last_name ]
+            , Table.td [] [ text user.email ]
+            , Table.td [] [ text user.photo_url ]
+            ]
 
 
 reverse : comparable -> comparable -> Order

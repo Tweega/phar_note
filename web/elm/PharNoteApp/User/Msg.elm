@@ -7,6 +7,7 @@ import Http exposing (..)
 type Msg
     = NoOp
     | EditUser Int
+    | SelectUser Int
     | DeleteUser Int
     | NewUser
     | ProcessUserGet (Result Http.Error (List User))
