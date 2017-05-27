@@ -6,6 +6,9 @@ defmodule PharNote.Role do
 
   @derive {Poison.Encoder, except: [:__meta__, :inserted_at, :updated_at]} # when encoding json do not include these fields
 
+  alias PharNote.Repo #this is essentially an indirect load of Ecto.Repo
+
+
   schema "user_roles" do
     field :role_name,    :string
     field :role_desc,    :string
@@ -27,6 +30,21 @@ defmodule PharNote.Role do
       |> cast(params, [:role_name, :role_desc])
       |> unique_constraint(:role_name)
   end
+
+  def changeset_update( role, params \\ :empty) do
+       role
+        |> Repo.preload(:users)
+        |> cast(params, [:role_name, :role_desc])
+        |> cast_assoc(:users)
+  end
+
+  def changeset_new( role, params \\ :empty) do
+    #assuming here that new  role will not have any roles, which is probably not going to be the case
+     role
+        |> cast(params, [:role_name, :role_desc])
+        |> unique_constraint(:role_name)
+  end
+
 
   def sorted(query) do
     from u in query,
