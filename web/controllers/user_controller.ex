@@ -9,18 +9,22 @@ defmodule PharNote.UserController do
 
   def index_data() do
     data = PharNote.User
-   |> PharNote.User.with_roles
-   |> PharNote.User.sorted
-   |> Repo.all
+     |> PharNote.User.with_roles
+     |> PharNote.User.sorted
+     |> Repo.all
 
-    new_users = Enum.map(data, fn u ->
+    strip_role_users(data)
+
+  end
+
+  def strip_role_users(users) do
+    Enum.map(users, fn u ->
       #what I want back is a new list of roles
       new_roles = Enum.map(u.user_roles, fn r ->
-        %PharNote.Role{ r | users: nil}
+        %PharNote.Role{ r | users: []}
       end)
       %PharNote.User{u | user_roles: new_roles}
     end)
-   new_users
   end
 
   def show(conn, %{"id" => id}) do
@@ -30,10 +34,12 @@ defmodule PharNote.UserController do
   end
 
   def create(conn, params) do
-    changeset = PharNote.User.changeset(%PharNote.User{}, params)
+    changeset = PharNote.User.changeset_new(%PharNote.User{}, params)
     case Repo.insert(changeset) do
       {:ok, user} ->
-        json conn |> put_status(:created), user
+        #strip out the user_roles field - either that or do a cast_assoc on it
+        u2 = %PharNote.User{ user | user_roles: []}  #or nil
+        json conn |> put_status(:created), u2
       {:error, _changeset} ->
         json conn |> put_status(:bad_request), %{errors: ["unable to create user"]}
     end
@@ -44,7 +50,18 @@ defmodule PharNote.UserController do
     if user do
       perform_update(conn, user, params)
     else
-      json conn |> put_status(:not_found), %{errors: ["invalid user"]}
+      json conn |> put_status(:not_found), %{errors:   ["invalid user"]}
+    end
+  end
+
+  defp perform_update(conn, user, params) do
+    changeset = PharNote.User.changeset_update(user, params)
+    case Repo.update(changeset) do
+      {:ok, user} ->
+        u2 = hd(strip_role_users([user]))
+        json conn |> put_status(:ok), u2
+      {:error, _result} ->
+        json conn |> put_status(:bad_request), %{errors: ["unable to update user"]}
     end
   end
 
@@ -52,19 +69,10 @@ defmodule PharNote.UserController do
     user = Repo.get(PharNote.User, id)
     if user do
       Repo.delete(user)
-      json conn |> put_status(:accepted), user
+      u2 = %PharNote.User{ user | user_roles: []}  #or nil
+      json conn |> put_status(:accepted), u2
     else
       json conn |> put_status(:not_found), %{errors: ["invalid user"]}
-    end
-  end
-
-  defp perform_update(conn, user, params) do
-    changeset = PharNote.User.changeset(user, params)
-    case Repo.update(changeset) do
-      {:ok, user} ->
-        json conn |> put_status(:ok), user
-      {:error, _result} ->
-        json conn |> put_status(:bad_request), %{errors: ["unable to update user"]}
     end
   end
 

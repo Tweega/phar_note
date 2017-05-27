@@ -10,7 +10,11 @@ defmodule PharNote.Role do
     field :role_name,    :string
     field :role_desc,    :string
 
-    many_to_many :users, PharNote.User, [join_through: "user_roles_user", on_replace: :delete]
+    many_to_many :users, PharNote.User,
+      [ join_through: "user_roles_user",
+        on_replace: :delete,
+        on_delete: :delete_all
+      ]
 
     timestamps()
   end

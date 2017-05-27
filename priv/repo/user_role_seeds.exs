@@ -41,6 +41,7 @@ end
 
 filter2 = User
    |> where([u], u.last_name == "Granger")
+   |> or_where([u], u.last_name == "patel")
 
 
 for u2 <- Repo.all(filter2) do
@@ -50,7 +51,7 @@ for u2 <- Repo.all(filter2) do
   roles = [r2 | u3.user_roles]
 
   u3
-    |> Changeset.change    
+    |> Changeset.change
     |> Changeset.put_assoc(:user_roles, Enum.map(roles, &Changeset.change/1))
     |> Repo.update!
 end
