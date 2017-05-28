@@ -1,23 +1,37 @@
 [x]  Look at design materials (lite) -> elm-mdl
 [x]  Use Elm-mdl sortable tables
+[x] include mdl demo into app
+[x] move HtmlUtils to elm root.
 [x] refactor for single page app
+[x] refactor for Navigation?
 [x] get rid of standard template stuff from home page
-[] use static html file as container for s.p.a
 [x] Use elm-mdl to add menu options for user and roles - this may require adding Navigation
 [x] page for roles
-
 [] have selectable table and show roles.
+  [x] for users
+  [x] for roles
+[] different colour for selected row
+
+
+
+[] abstract selecting rows into reusable function?
+
+[] add roles onto user page
+  [x] update query to include join from user to roles.
+  [x] update query to include join from user to roles - first pass.
+
+[] remove edit and delete buttons and replace with a single control
+
+
 [] should users and roles just be on one page? or leave them as inverses of each other?
 [] add authentication
 [] add authorisation to adding user - system owner or delegate
 [] workflow for signatures?
-[x] refactor for Navigation?
-[] explore removing elm app from brunch scope - also from phoenix?.
-[] Use a separate directory for views?
-[] move HtmlUtils to root.
-[x] include mdl demo into app
 
 
-[] add roles onto user page
-  [] update query to include join from user to roles.
-  [x] update query to include join from user to roles - first pass.
+
+
+
+  [] Use a separate directory for views?
+  [] use static html file as container for s.p.a
+  [] explore removing elm app from brunch scope - also from phoenix?.

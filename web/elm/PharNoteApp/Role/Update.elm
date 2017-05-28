@@ -14,6 +14,12 @@ update msg model =
         NoOp ->
             model ! []
 
+        SelectRole id ->
+            { model
+                | selectedRole = Just id
+            }
+                ! []
+
         Reorder ->
             { model | order = rotate model.order } ! []
 

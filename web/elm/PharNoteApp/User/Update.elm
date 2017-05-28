@@ -15,14 +15,10 @@ update msg model =
             model ! []
 
         SelectUser id ->
-            let
-                _ =
-                    Debug.log "selected user" id
-            in
-                { model
-                    | selectedUser = Just id
-                }
-                    ! []
+            { model
+                | selectedUser = Just id
+            }
+                ! []
 
         Reorder ->
             { model | order = rotate model.order } ! []

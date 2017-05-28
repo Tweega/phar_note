@@ -20,7 +20,7 @@ view model =
             [ button [ onClick (AppMsg.MsgForRole RoleMsg.NewRole), class "button btn-primary" ] [ text "New Role" ]
             ]
         , div [ class "row" ]
-            [ roleTable model.roles model.order
+            [ roleTable model.roles model.selectedRole model.order
             , formColumn model
             ]
         ]
@@ -114,8 +114,8 @@ roleForm model =
             ]
 
 
-roleTable : List Role.Role -> Maybe Table.Order -> Html AppMsg.Msg
-roleTable roles order =
+roleTable : List Role.Role -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
+roleTable roles selectedRole order =
     let
         sort =
             case order of
@@ -134,7 +134,7 @@ roleTable roles order =
         div [ class "col-md-9" ]
             [ Table.table []
                 [ roleTableHeader order
-                , tbody [] (roleRows sortedRoles)
+                , tbody [] (roleRows sortedRoles selectedRole)
                 ]
             ]
 
@@ -157,20 +157,39 @@ roleTableHeader order =
         ]
 
 
-roleRows : List Role.Role -> List (Html AppMsg.Msg)
-roleRows roles =
+roleRows : List Role.Role -> Maybe Int -> List (Html AppMsg.Msg)
+roleRows roles selectedRole =
     roles
-        |> List.map roleRow
+        |> List.map (roleRow selectedRole)
 
 
-roleRow : Role.Role -> Html AppMsg.Msg
-roleRow role =
-    Table.tr []
-        [ Table.td [] [ button [ onClick (AppMsg.MsgForRole (RoleMsg.EditRole role.id)), class "button btn-primary" ] [ text "Edit" ] ]
-        , Table.td [] [ button [ onClick (AppMsg.MsgForRole (RoleMsg.DeleteRole role.id)), class "button btn-primary" ] [ text "Delete" ] ]
-        , Table.td [] [ text role.role_name ]
-        , Table.td [] [ text role.role_desc ]
-        ]
+roleRow : Maybe Int -> Role.Role -> Html AppMsg.Msg
+roleRow selectedRole role =
+    let
+        row_style =
+            case selectedRole of
+                Just roleID ->
+                    if roleID == role.id then
+                        (Options.css "background-color" "green"
+                            :: Options.onClick (AppMsg.MsgForRole (RoleMsg.SelectRole role.id))
+                            :: []
+                        )
+                    else
+                        (Options.onClick (AppMsg.MsgForRole (RoleMsg.SelectRole role.id))
+                            :: []
+                        )
+
+                Nothing ->
+                    (Options.onClick (AppMsg.MsgForRole (RoleMsg.SelectRole role.id))
+                        :: []
+                    )
+    in
+        Table.tr row_style
+            [ Table.td [] [ button [ onClick (AppMsg.MsgForRole (RoleMsg.EditRole role.id)), class "button btn-primary" ] [ text "Edit" ] ]
+            , Table.td [] [ button [ onClick (AppMsg.MsgForRole (RoleMsg.DeleteRole role.id)), class "button btn-primary" ] [ text "Delete" ] ]
+            , Table.td [] [ text role.role_name ]
+            , Table.td [] [ text role.role_desc ]
+            ]
 
 
 reverse : comparable -> comparable -> Order

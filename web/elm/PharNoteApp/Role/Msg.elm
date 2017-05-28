@@ -7,6 +7,7 @@ import Http exposing (..)
 type Msg
     = NoOp
     | EditRole Int
+    | SelectRole Int
     | DeleteRole Int
     | NewRole
     | ProcessRoleGet (Result Http.Error (List Role))
