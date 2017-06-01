@@ -5,6 +5,7 @@ import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Model exposing (..)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
+import PharNoteApp.Utils as Utils
 import Material.Table as Table
 
 
@@ -89,11 +90,29 @@ update msg model =
                 ! []
 
         ProcessUserGet (Ok users) ->
-            { model
-                | users = users
-                , errors = Nothing
-            }
-                ! []
+            let
+                first_user =
+                    Utils.first users
+
+                new_model =
+                    case first_user of
+                        Nothing ->
+                            model
+
+                        Just user ->
+                            { model
+                                | firstNameInput = user.first_name
+                                , lastNameInput = user.last_name
+                                , emailInput = user.email
+                                , photoUrlInput = user.photo_url
+                                , selectedUser = Just user.id
+                            }
+            in
+                { new_model
+                    | users = users
+                    , errors = Nothing
+                }
+                    ! []
 
         ProcessUserGet (Err error) ->
             { model

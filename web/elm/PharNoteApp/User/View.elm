@@ -10,33 +10,36 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Material.Table as Table
-import Material.Options as Options exposing (when, nop)
+import Material.Options as Options exposing (when, nop, css)
+import Material.Grid as Grid exposing (..)
+import Material.Color as Color
 
 
 view : User.Model -> Html AppMsg.Msg
 view model =
-    div [ class "container" ]
-        [ div [ class "row" ]
-            [ button [ onClick (AppMsg.MsgForUser UserMsg.NewUser), class "button btn-primary" ] [ text "New User" ]
+    let
+        contents =
+            userTable model.users model.selectedUser model.order
+    in
+        grid [ noSpacing ]
+            [ cell [ Grid.size All 6, Grid.offset Desktop 1 ] [ contents ]
+            , cell
+                [ Grid.size All 4
+                , Grid.offset Desktop 1
+                , Grid.align Top
+                , css "position" "relative"
+                , Color.background <| Color.color Color.Yellow Color.S50
+                ]
+                [ text "bonjour tout le monde"
+                , formColumn model
+                ]
             ]
-        , div [ class "row" ]
-            [ userTable model.users model.selectedUser model.order
-            , formColumn model
-            ]
-        ]
 
 
 formColumn : User.Model -> Html AppMsg.Msg
 formColumn model =
-    let
-        innerForm =
-            if model.formAction == Create || model.formAction == Edit then
-                userForm model
-            else
-                div [] []
-    in
-        div [ class "col-md-3" ]
-            [ innerForm ]
+    div [ class "col-md-3" ]
+        [ userForm model ]
 
 
 findUser : Int -> List User.User -> Maybe User.User
