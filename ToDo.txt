@@ -12,12 +12,15 @@
   [x] for roles
 
 
+[] update user details on row select
+[] Allow use of keyboard up and  down arrows in table
 
+[] quicker way to find users.  Perhaps use map. red black tree?
 
 [] add roles onto user page
   [x] update query to include join from user to roles.
   [x] update query to include join from user to roles - first pass.
-  [] use grid to place two blocks side by side  mdl grid or flexbox?
+  [] use grid to place two blocks side by side  mdl grid or flexbox
 
 [] remove edit and delete buttons and replace with a single control
 
@@ -36,3 +39,18 @@
   [] Use a separate directory for views?
   [] use static html file as container for s.p.a
   [] explore removing elm app from brunch scope - also from phoenix?.
+
+
+
+
+  formColumn : User.Model -> Html AppMsg.Msg
+  formColumn model =
+      let
+          innerForm =
+              if model.formAction == Create || model.formAction == Edit then
+                  userForm model
+              else
+                  div [] []
+      in
+          div [ class "col-md-3" ]
+              [ innerForm ]

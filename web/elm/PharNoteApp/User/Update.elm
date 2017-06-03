@@ -16,10 +16,16 @@ update msg model =
             model ! []
 
         SelectUser id ->
-            { model
-                | selectedUser = Just id
-            }
-                ! []
+            let
+                user =
+                    View.findUser id model.users
+
+                --this will be slow for large data sets
+                newModel =
+                    populateUserData user model model.formAction
+            in
+                newModel
+                    ! []
 
         Reorder ->
             { model | order = rotate model.order } ! []
@@ -29,46 +35,10 @@ update msg model =
                 user =
                     View.findUser id model.users
 
-                firstName =
-                    case user of
-                        Nothing ->
-                            "huh?"
-
-                        Just u ->
-                            u.first_name
-
-                lastName =
-                    case user of
-                        Nothing ->
-                            "huh?"
-
-                        Just u ->
-                            u.last_name
-
-                email =
-                    case user of
-                        Nothing ->
-                            "huh?"
-
-                        Just u ->
-                            u.email
-
-                photoUrl =
-                    case user of
-                        Nothing ->
-                            "huh?"
-
-                        Just u ->
-                            u.photo_url
+                newModel =
+                    populateUserData user model Edit
             in
-                { model
-                    | firstNameInput = firstName
-                    , lastNameInput = lastName
-                    , emailInput = email
-                    , photoUrlInput = photoUrl
-                    , formAction = Edit
-                    , selectedUser = Just id
-                }
+                model
                     ! []
 
         DeleteUser id ->
@@ -164,3 +134,27 @@ rotate order =
 
         Nothing ->
             Just Table.Ascending
+
+
+populateUserData : Maybe User -> Model -> FormAction -> Model
+populateUserData user model action =
+    case user of
+        Nothing ->
+            { model
+                | firstNameInput = ""
+                , lastNameInput = ""
+                , emailInput = ""
+                , photoUrlInput = ""
+                , formAction = action
+                , selectedUser = Nothing
+            }
+
+        Just u ->
+            { model
+                | firstNameInput = u.first_name
+                , lastNameInput = u.last_name
+                , emailInput = u.email
+                , photoUrlInput = u.photo_url
+                , formAction = action
+                , selectedUser = Just u.id
+            }

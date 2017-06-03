@@ -178,30 +178,38 @@ userTableHeader order =
 
 userRows : List User.User -> Maybe Int -> List (Html AppMsg.Msg)
 userRows users selectedUser =
-    users
-        |> List.map (userRow selectedUser)
-
-
-userRow : Maybe Int -> User.User -> Html AppMsg.Msg
-userRow selectedUser user =
     let
-        row_style =
+        userID =
             case selectedUser of
-                Just userID ->
-                    if userID == user.id then
-                        (Options.css "background-color" "green"
-                            :: Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
-                            :: []
-                        )
-                    else
-                        (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
-                            :: []
-                        )
+                Just id ->
+                    id
 
                 Nothing ->
-                    (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
-                        :: []
-                    )
+                    -1
+    in
+        users
+            |> List.map (userRow userID)
+
+
+userRow : Int -> User.User -> Html AppMsg.Msg
+userRow userID user =
+    let
+        x =
+            Debug.log "userID" userID
+
+        y =
+            Debug.log "user.id" user.id
+
+        row_style =
+            if userID == user.id then
+                (Options.css "background-color" "green"
+                    :: Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                    :: []
+                )
+            else
+                (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                    :: []
+                )
     in
         Table.tr row_style
             [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
