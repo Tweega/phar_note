@@ -13,6 +13,7 @@ import Material.Table as Table
 import Material.Options as Options exposing (when, nop, css)
 import Material.Grid as Grid exposing (..)
 import Material.Color as Color
+import Json.Decode as Json
 
 
 view : User.Model -> Html AppMsg.Msg
@@ -21,17 +22,19 @@ view model =
         contents =
             userTable model.users model.selectedUser model.order
     in
-        grid [ noSpacing ]
-            [ cell [ Grid.size All 6, Grid.offset Desktop 1 ] [ contents ]
-            , cell
-                [ Grid.size All 4
-                , Grid.offset Desktop 1
-                , Grid.align Top
-                , css "position" "relative"
-                , Color.background <| Color.color Color.Yellow Color.S50
-                ]
-                [ text "bonjour tout le monde"
-                , formColumn model
+        div []
+            [ grid [ noSpacing ]
+                [ cell [ Grid.size All 6, Grid.offset Desktop 1 ] [ contents ]
+                , cell
+                    [ Grid.size All 4
+                    , Grid.offset Desktop 1
+                    , Grid.align Top
+                    , css "position" "relative"
+                    , Color.background <| Color.color Color.Yellow Color.S50
+                    ]
+                    [ text "guten morgen"
+                    , formColumn model
+                    ]
                 ]
             ]
 
@@ -148,7 +151,11 @@ userTable users selectedUser order =
         sortedUsers =
             sort users
     in
-        div [ class "col-md-9" ]
+        div
+            [ class "col-md-9"
+            , on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
+            , tabindex 0
+            ]
             [ Table.table []
                 [ userTableHeader order
                 , tbody [] (userRows sortedUsers selectedUser)
@@ -194,12 +201,6 @@ userRows users selectedUser =
 userRow : Int -> User.User -> Html AppMsg.Msg
 userRow userID user =
     let
-        x =
-            Debug.log "userID" userID
-
-        y =
-            Debug.log "user.id" user.id
-
         row_style =
             if userID == user.id then
                 (Options.css "background-color" "green"

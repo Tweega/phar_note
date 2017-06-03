@@ -15,6 +15,13 @@ update msg model =
         NoOp ->
             model ! []
 
+        KeyX key ->
+            let
+                x =
+                    Debug.log "keyCode" key
+            in
+                model ! []
+
         SelectUser id ->
             let
                 user =

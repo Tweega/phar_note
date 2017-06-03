@@ -19,3 +19,4 @@ type Msg
     | UserPost Model
     | UserPut Model
     | Reorder
+    | KeyX Int
