@@ -7,6 +7,7 @@ import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
 import Material.Table as Table
+import Array exposing (fromList)
 
 
 update : Msg -> Model -> ( Model, Cmd AppMsg.Msg )
@@ -17,17 +18,41 @@ update msg model =
 
         KeyX key ->
             let
-                x =
-                    Debug.log "keyCode" key
-            in
-                model ! []
+                userCount =
+                    Array.length (model.users)
 
-        SelectUser id ->
+                currentIdx =
+                    case model.selectedUser of
+                        Nothing ->
+                            -1
+
+                        Just ndx ->
+                            ndx
+
+                idx =
+                    if key == 38 && currentIdx > 0 then
+                        currentIdx - 1
+                    else if key == 40 && currentIdx < userCount - 1 then
+                        currentIdx + 1
+                    else
+                        currentIdx
+
+                x =
+                    Debug.log "index" idx
+
+                user =
+                    View.findUser idx model.users
+
+                newModel =
+                    populateUserData user model model.formAction
+            in
+                newModel ! []
+
+        SelectUser idx ->
             let
                 user =
-                    View.findUser id model.users
+                    View.findUser idx model.users
 
-                --this will be slow for large data sets
                 newModel =
                     populateUserData user model model.formAction
             in
@@ -35,12 +60,30 @@ update msg model =
                     ! []
 
         Reorder ->
-            { model | order = rotate model.order } ! []
+            let
+                sortOrder =
+                    toggleSort model.order
 
-        EditUser id ->
+                sort =
+                    case sortOrder of
+                        Just Table.Ascending ->
+                            List.sortBy sort_by_last_first
+
+                        Just Table.Descending ->
+                            List.sortWith (\x y -> reverse (sort_by_last_first x) (sort_by_last_first y))
+
+                        Nothing ->
+                            identity
+
+                sortedUsers =
+                    sort (Array.toList model.users) |> Array.fromList
+            in
+                { model | order = sortOrder, users = sortedUsers } ! []
+
+        EditUser idx ->
             let
                 user =
-                    View.findUser id model.users
+                    View.findUser idx model.users
 
                 newModel =
                     populateUserData user model Edit
@@ -48,12 +91,24 @@ update msg model =
                 model
                     ! []
 
-        DeleteUser id ->
-            { model
-                | formAction = Delete
-                , selectedUser = Just id
-            }
-                ! [ Rest.delete { model | selectedUser = Just id } ]
+        DeleteUser idx ->
+            let
+                usr =
+                    View.findUser idx model.users
+
+                r =
+                    case usr of
+                        Nothing ->
+                            model ! []
+
+                        Just user ->
+                            { model
+                                | formAction = Delete
+                                , selectedUser = Just user.id
+                            }
+                                ! [ Rest.delete { model | selectedUser = Just user.id } ]
+            in
+                r
 
         NewUser ->
             { model
@@ -68,6 +123,9 @@ update msg model =
 
         ProcessUserGet (Ok users) ->
             let
+                x =
+                    Debug.log "Getting" "users"
+
                 first_user =
                     Utils.first users
 
@@ -86,7 +144,7 @@ update msg model =
                             }
             in
                 { new_model
-                    | users = users
+                    | users = Array.fromList (users)
                     , errors = Nothing
                 }
                     ! []
@@ -130,14 +188,14 @@ update msg model =
 --this should be a utility function.  Should we have to have a reference to a rendering module to determine sort order?
 
 
-rotate : Maybe Table.Order -> Maybe Table.Order
-rotate order =
+toggleSort : Maybe Table.Order -> Maybe Table.Order
+toggleSort order =
     case order of
         Just Table.Ascending ->
             Just Table.Descending
 
         Just Table.Descending ->
-            Nothing
+            Just Table.Ascending
 
         Nothing ->
             Just Table.Ascending
@@ -165,3 +223,21 @@ populateUserData user model action =
                 , formAction = action
                 , selectedUser = Just u.id
             }
+
+
+sort_by_last_first : User -> String
+sort_by_last_first u =
+    u.last_name ++ u.first_name
+
+
+reverse : comparable -> comparable -> Order
+reverse x y =
+    case compare x y of
+        LT ->
+            GT
+
+        GT ->
+            LT
+
+        EQ ->
+            EQ

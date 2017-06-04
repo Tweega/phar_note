@@ -116,6 +116,7 @@ roleForm model =
 
 roleTable : List Role.Role -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
 roleTable roles selectedRole order =
+    --this needs to be done in update, otherwise index out of phase with selected item
     let
         sort =
             case order of

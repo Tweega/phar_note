@@ -14,6 +14,7 @@ import Material.Options as Options exposing (when, nop, css)
 import Material.Grid as Grid exposing (..)
 import Material.Color as Color
 import Json.Decode as Json
+import Array exposing (..)
 
 
 view : User.Model -> Html AppMsg.Msg
@@ -32,7 +33,7 @@ view model =
                     , css "position" "relative"
                     , Color.background <| Color.color Color.Yellow Color.S50
                     ]
-                    [ text "guten morgen"
+                    [ text "hello"
                     , formColumn model
                     ]
                 ]
@@ -41,15 +42,13 @@ view model =
 
 formColumn : User.Model -> Html AppMsg.Msg
 formColumn model =
-    div [ class "col-md-3" ]
+    div []
         [ userForm model ]
 
 
-findUser : Int -> List User.User -> Maybe User.User
-findUser id users =
-    users
-        |> List.filter (\user -> user.id == id)
-        |> List.head
+findUser : Int -> Array User.User -> Maybe User.User
+findUser idx users =
+    Array.get idx users
 
 
 fieldStringValue : Maybe User.User -> User.FormAction -> (User.User -> String) -> String
@@ -134,33 +133,17 @@ userForm model =
             ]
 
 
-userTable : List User.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
+userTable : Array User.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
 userTable users selectedUser order =
-    let
-        sort =
-            case order of
-                Just Table.Ascending ->
-                    List.sortBy sort_by_last_first
-
-                Just Table.Descending ->
-                    List.sortWith (\x y -> reverse (sort_by_last_first x) (sort_by_last_first y))
-
-                Nothing ->
-                    identity
-
-        sortedUsers =
-            sort users
-    in
-        div
-            [ class "col-md-9"
-            , on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
-            , tabindex 0
+    div
+        [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
+        , tabindex 0
+        ]
+        [ Table.table []
+            [ userTableHeader order
+            , tbody [] (userRows users selectedUser)
             ]
-            [ Table.table []
-                [ userTableHeader order
-                , tbody [] (userRows sortedUsers selectedUser)
-                ]
-            ]
+        ]
 
 
 userTableHeader : Maybe Table.Order -> Html AppMsg.Msg
@@ -183,10 +166,10 @@ userTableHeader order =
         ]
 
 
-userRows : List User.User -> Maybe Int -> List (Html AppMsg.Msg)
+userRows : Array User.User -> Maybe Int -> List (Html AppMsg.Msg)
 userRows users selectedUser =
     let
-        userID =
+        userId =
             case selectedUser of
                 Just id ->
                     id
@@ -195,46 +178,34 @@ userRows users selectedUser =
                     -1
     in
         users
-            |> List.map (userRow userID)
+            |> Array.toIndexedList
+            |> List.map (userRow userId)
 
 
-userRow : Int -> User.User -> Html AppMsg.Msg
-userRow userID user =
+
+--bit of a pain to have to switch in and out of arrays.  May want to rethink this.  Possibly keep lists and just have an array containing ids backed by a map?
+--look at using array.fold(l/r)
+
+
+userRow : Int -> ( Int, User.User ) -> Html AppMsg.Msg
+userRow userId ( idx, user ) =
     let
         row_style =
-            if userID == user.id then
+            if userId == user.id then
                 (Options.css "background-color" "green"
-                    :: Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                    :: Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser idx))
                     :: []
                 )
             else
-                (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser user.id))
+                (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser idx))
                     :: []
                 )
     in
         Table.tr row_style
-            [ Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.EditUser user.id)), class "button btn-primary" ] [ text "Edit" ] ]
-            , Table.td [] [ button [ onClick (AppMsg.MsgForUser (UserMsg.DeleteUser user.id)), class "button btn-primary" ] [ text "Delete" ] ]
+            [ Table.td [] [ button [ class "button btn-primary" ] [ text "Edit" ] ]
+            , Table.td [] [ button [ class "button btn-primary" ] [ text "Delete" ] ]
             , Table.td [] [ text user.first_name ]
             , Table.td [] [ text user.last_name ]
             , Table.td [] [ text user.email ]
             , Table.td [] [ text user.photo_url ]
             ]
-
-
-reverse : comparable -> comparable -> Order
-reverse x y =
-    case compare x y of
-        LT ->
-            GT
-
-        GT ->
-            LT
-
-        EQ ->
-            EQ
-
-
-sort_by_last_first : User.User -> String
-sort_by_last_first u =
-    u.last_name ++ u.first_name

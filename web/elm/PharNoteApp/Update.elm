@@ -74,13 +74,21 @@ urlUpdate model route =
     let
         newModel =
             { model | history = route :: model.history }
+
+        cmd =
+            case route of
+                Just Route.Users ->
+                    case model.userData.selectedUser of
+                        Nothing ->
+                            [ UserData.get ]
+
+                        Just something ->
+                            []
+
+                Just Route.Roles ->
+                    [ RoleData.get ]
+
+                _ ->
+                    []
     in
-        case route of
-            Just Route.Users ->
-                newModel ! [ UserData.get ]
-
-            Just Route.Roles ->
-                newModel ! [ RoleData.get ]
-
-            _ ->
-                newModel ! []
+        newModel ! cmd

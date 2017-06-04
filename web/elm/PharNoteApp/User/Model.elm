@@ -2,6 +2,7 @@ module PharNoteApp.User.Model exposing (..)
 
 import Material.Table as Table
 import Http exposing (..)
+import Array exposing (..)
 
 
 type alias User =
@@ -14,7 +15,7 @@ type alias User =
 
 
 type alias Model =
-    { users : List User
+    { users : Array User
     , formAction : FormAction
     , selectedUser : Maybe Int
     , order : Maybe Table.Order
