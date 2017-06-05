@@ -35,6 +35,13 @@
 [] abstract selecting rows into reusable function?
 
 
+[] when editing a record make sure that the correct record stays highlighted.
+  [] consider whether we actually have to do a complete data fetch after an edit.
+      ideally we just want confirmation that the update succeeded.
+[] alias selectedUser as two integer representing index and id?
+      it won't ever be the case that one integer is nothing and the other is not.
+
+[] look at use of maybes and see if withDefault might help
 
   [] Use a separate directory for views?
   [] use static html file as container for s.p.a

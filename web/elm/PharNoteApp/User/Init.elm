@@ -21,7 +21,8 @@ initialModel : Model
 initialModel =
     { users = Array.empty
     , formAction = None
-    , selectedUser = Nothing
+    , selectedUserId = Nothing
+    , selectedUserIndex = Nothing
     , order = Just Table.Ascending
     , errors = Nothing
     , firstNameInput = ""

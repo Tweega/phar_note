@@ -21,7 +21,7 @@ view : User.Model -> Html AppMsg.Msg
 view model =
     let
         contents =
-            userTable model.users model.selectedUser model.order
+            userTable model.users model.selectedUserId model.order
     in
         div []
             [ grid [ noSpacing ]
@@ -33,7 +33,7 @@ view model =
                     , css "position" "relative"
                     , Color.background <| Color.color Color.Yellow Color.S50
                     ]
-                    [ text "hello"
+                    [ text "hello bonjour comment allez vous?"
                     , formColumn model
                     ]
                 ]
@@ -81,9 +81,9 @@ userForm : User.Model -> Html AppMsg.Msg
 userForm model =
     let
         user =
-            case model.selectedUser of
-                Just id ->
-                    findUser id model.users
+            case model.selectedUserIndex of
+                Just idx ->
+                    findUser idx model.users
 
                 Nothing ->
                     Nothing
@@ -134,14 +134,14 @@ userForm model =
 
 
 userTable : Array User.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
-userTable users selectedUser order =
+userTable users selectedUserId order =
     div
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
         , tabindex 0
         ]
         [ Table.table []
             [ userTableHeader order
-            , tbody [] (userRows users selectedUser)
+            , tbody [] (userRows users selectedUserId)
             ]
         ]
 
@@ -167,10 +167,10 @@ userTableHeader order =
 
 
 userRows : Array User.User -> Maybe Int -> List (Html AppMsg.Msg)
-userRows users selectedUser =
+userRows users selectedUserId =
     let
         userId =
-            case selectedUser of
+            case selectedUserId of
                 Just id ->
                     id
 

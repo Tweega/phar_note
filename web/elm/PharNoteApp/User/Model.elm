@@ -17,7 +17,8 @@ type alias User =
 type alias Model =
     { users : Array User
     , formAction : FormAction
-    , selectedUser : Maybe Int
+    , selectedUserId : Maybe Int
+    , selectedUserIndex : Maybe Int
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
     , firstNameInput : String

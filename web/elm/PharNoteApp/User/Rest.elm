@@ -63,7 +63,7 @@ put : Model -> Cmd AppMsg.Msg
 put model =
     let
         putUrl =
-            case model.selectedUser of
+            case model.selectedUserId of
                 Nothing ->
                     url ++ "/bad"
 
@@ -96,7 +96,7 @@ delete : Model -> Cmd AppMsg.Msg
 delete model =
     let
         putUrl =
-            case model.selectedUser of
+            case model.selectedUserId of
                 Nothing ->
                     url ++ "/bad"
 

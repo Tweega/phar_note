@@ -22,7 +22,7 @@ update msg model =
                     Array.length (model.users)
 
                 currentIdx =
-                    case model.selectedUser of
+                    case model.selectedUserIndex of
                         Nothing ->
                             -1
 
@@ -37,14 +37,11 @@ update msg model =
                     else
                         currentIdx
 
-                x =
-                    Debug.log "index" idx
-
                 user =
                     View.findUser idx model.users
 
                 newModel =
-                    populateUserData user model model.formAction
+                    populateUserData user idx model model.formAction
             in
                 newModel ! []
 
@@ -54,7 +51,7 @@ update msg model =
                     View.findUser idx model.users
 
                 newModel =
-                    populateUserData user model model.formAction
+                    populateUserData user idx model model.formAction
             in
                 newModel
                     ! []
@@ -86,7 +83,7 @@ update msg model =
                     View.findUser idx model.users
 
                 newModel =
-                    populateUserData user model Edit
+                    populateUserData user idx model Edit
             in
                 model
                     ! []
@@ -104,9 +101,9 @@ update msg model =
                         Just user ->
                             { model
                                 | formAction = Delete
-                                , selectedUser = Just user.id
+                                , selectedUserId = Just user.id
                             }
-                                ! [ Rest.delete { model | selectedUser = Just user.id } ]
+                                ! [ Rest.delete { model | selectedUserId = Just user.id } ]
             in
                 r
 
@@ -117,7 +114,8 @@ update msg model =
                 , lastNameInput = ""
                 , emailInput = ""
                 , photoUrlInput = ""
-                , selectedUser = Nothing
+                , selectedUserId = Nothing
+                , selectedUserIndex = Nothing
             }
                 ! []
 
@@ -130,17 +128,20 @@ update msg model =
                     Utils.first users
 
                 new_model =
+                    --if we have done an edit then the selected user and index will stay the same
                     case first_user of
                         Nothing ->
                             model
 
                         Just user ->
+                            --only fill in user details if we don't have any
                             { model
                                 | firstNameInput = user.first_name
                                 , lastNameInput = user.last_name
                                 , emailInput = user.email
                                 , photoUrlInput = user.photo_url
-                                , selectedUser = Just user.id
+                                , selectedUserId = Just user.id
+                                , selectedUserIndex = Just 0
                             }
             in
                 { new_model
@@ -201,8 +202,8 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateUserData : Maybe User -> Model -> FormAction -> Model
-populateUserData user model action =
+populateUserData : Maybe User -> Int -> Model -> FormAction -> Model
+populateUserData user idx model action =
     case user of
         Nothing ->
             { model
@@ -211,7 +212,8 @@ populateUserData user model action =
                 , emailInput = ""
                 , photoUrlInput = ""
                 , formAction = action
-                , selectedUser = Nothing
+                , selectedUserId = Nothing
+                , selectedUserIndex = Nothing
             }
 
         Just u ->
@@ -221,7 +223,8 @@ populateUserData user model action =
                 , emailInput = u.email
                 , photoUrlInput = u.photo_url
                 , formAction = action
-                , selectedUser = Just u.id
+                , selectedUserId = Just u.id
+                , selectedUserIndex = Just idx
             }
 
 
