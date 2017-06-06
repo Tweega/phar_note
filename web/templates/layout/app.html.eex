@@ -44,13 +44,13 @@
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
     <script>
       var elmDiv = document.querySelector('#elm_target');
-      var e = window["Elm"];
+      var elm = window["Elm"];
 
       if (elmDiv) {
-        e.Main.embed(elmDiv);
+        elm.Main.embed(elmDiv);
       }
       else {
-        e.Main.fullscreen();
+        elm.Main.fullscreen();
       }
     </script>
   </body>

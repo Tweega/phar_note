@@ -24,13 +24,22 @@ view model =
             userTable model.users model.selectedUserId model.order
     in
         div []
-            [ grid [ noSpacing ]
-                [ cell [ Grid.size All 5 ] [ contents ]
+            [ grid
+                [ Options.many
+                    [ css "display" "flex"
+                    , css "align-items" "flex-start"
+                    , css "justify-content" "space-around"
+                    ]
+                ]
+                [ cell [ Grid.size All 5 ]
+                    [ Options.div [ css "width" "100%" ] [ text "buttons here" ]
+                    , contents
+                    ]
                 , cell
                     [ Grid.size All 4
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    [ text "hello there how are you?"
+                    [ text "ca va bien?"
                     , formColumn model
                     ]
                 ]
@@ -136,7 +145,10 @@ userTable users selectedUserId order =
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
         , tabindex 0
         ]
-        [ Table.table []
+        [ Table.table
+            [ Options.css "margin" "0px"
+            , Options.css "padding" "0px"
+            ]
             [ userTableHeader order
             , tbody [] (userRows users selectedUserId)
             ]
