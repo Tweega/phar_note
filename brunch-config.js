@@ -54,16 +54,21 @@ exports.config = {
   plugins: {
     babel: {
       // Do not use ES6 compiler in vendor code
-      ignore: [/web\/static\/vendor/]
+      ignore: [
+       /^node_modules/,
+       /web\/elm/,
+       /web\/static\/vendor/
+      ]
+      //ignore: [/(web\/static\/vendor)|node_modules/]
     },
-    copycat: {      
-      "js": ["node_modules/dialog-polyfill/dialog-polyfill.js"],
-      "css": ["node_modules/dialog-polyfill/dialog-polyfill.css"]
-    },
+    //copycat: {
+    //  "js": ["node_modules/dialog-polyfill/dialog-polyfill.js"],
+    //  "css": ["node_modules/dialog-polyfill/dialog-polyfill.css"]
+    //},
     elmBrunch: {
       elmFolder: "web/elm",
       mainModules: ["Main.elm"],
-      outputFolder: "../static/js",
+      outputFolder: "../../priv/static/js",
       makeParameters: ['--debug']
     }
   },

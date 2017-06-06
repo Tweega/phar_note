@@ -6,8 +6,6 @@
     "watch": "brunch watch --stdin"
   },
   "dependencies": {
-    "copycat-brunch": "^1.1.0",
-    "dialog-polyfill": "^0.4.7",
     "elm": "^0.18.0",
     "elm-brunch": "^0.8.0",
     "phoenix": "file:deps/phoenix",
@@ -16,9 +14,6 @@
   "devDependencies": {
     "babel-brunch": "~6.0.0",
     "brunch": "2.7.4",
-    "clean-css-brunch": "~2.0.0",
-    "css-brunch": "~2.0.0",
-    "javascript-brunch": "~2.0.0",
-    "uglify-js-brunch": "~2.0.1"
+    "css-brunch": "~2.0.0"
   }
 }

@@ -1,6 +1,6 @@
 // web/static/js/app.js
 
-import Elm from './main';
+/*import Elm from './main';
 
 const elmDiv = document.querySelector('#elm_target');
 
@@ -10,3 +10,5 @@ if (elmDiv) {
 else {
   Elm.Main.fullscreen();
 }
+*/
+const az = 1;

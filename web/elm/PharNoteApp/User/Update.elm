@@ -122,7 +122,7 @@ update msg model =
         ProcessUserGet (Ok users) ->
             let
                 x =
-                    Debug.log "Getting" "users"
+                    Debug.log "Fetching" "users"
 
                 first_user =
                     Utils.first users

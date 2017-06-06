@@ -25,15 +25,12 @@ view model =
     in
         div []
             [ grid [ noSpacing ]
-                [ cell [ Grid.size All 6, Grid.offset Desktop 1 ] [ contents ]
+                [ cell [ Grid.size All 5 ] [ contents ]
                 , cell
                     [ Grid.size All 4
-                    , Grid.offset Desktop 1
-                    , Grid.align Top
-                    , css "position" "relative"
-                    , Color.background <| Color.color Color.Yellow Color.S50
+                    , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    [ text "hello bonjour comment allez vous?"
+                    [ text "hello there how are you?"
                     , formColumn model
                     ]
                 ]
