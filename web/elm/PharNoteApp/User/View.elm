@@ -56,6 +56,12 @@ view model mdlStore =
                         [ Tabs.ripple
                         , Tabs.onSelectTab (\t -> AppMsg.MsgForUser (SelectTab t))
                         , Tabs.activeTab model.selectedTab
+                        , Options.many
+                            [ css "display" "flex"
+                            , css "flex-direction" "column"
+                            , css "align-items" "flex-start"
+                            , css "justify-content" "flex-start"
+                            ]
                         ]
                         [ Tabs.label
                             [ Options.center ]
@@ -71,11 +77,9 @@ view model mdlStore =
                             ]
                         ]
                         [ Options.div
-                            [ css "margin" "24px auto"
-                            , css "align-items" "flex-start"
-                            , Options.center
+                            [ css "margin" "24px"
                             , css "overflow-y" "auto"
-                            , css "height" "512px"
+                            , css "height" "612px"
                             ]
                             tabContents
                         ]
@@ -86,7 +90,7 @@ view model mdlStore =
 
 sampleTab1 : User.Model -> List (Html AppMsg.Msg)
 sampleTab1 model =
-    [ text "ca va bien?"
+    [ text "alright??"
     , formColumn model
     ]
 
