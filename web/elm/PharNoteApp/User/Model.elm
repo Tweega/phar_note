@@ -19,6 +19,7 @@ type alias Model =
     , formAction : FormAction
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
+    , selectedTab : Int
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
     , firstNameInput : String

@@ -20,3 +20,4 @@ type Msg
     | UserPut Model
     | Reorder
     | KeyX Int
+    | SelectTab Int

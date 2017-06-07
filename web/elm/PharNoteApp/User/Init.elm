@@ -23,6 +23,7 @@ initialModel =
     , formAction = None
     , selectedUserId = Nothing
     , selectedUserIndex = Nothing
+    , selectedTab = 0
     , order = Just Table.Ascending
     , errors = Nothing
     , firstNameInput = ""

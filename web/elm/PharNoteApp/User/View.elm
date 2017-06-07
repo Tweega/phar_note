@@ -3,7 +3,7 @@ module PharNoteApp.User.View exposing (view, findUser)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.Model exposing (FormAction(..))
-import PharNoteApp.User.Msg as UserMsg
+import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.HtmlUtils as HtmlUtils
 import Html exposing (..)
@@ -13,15 +13,26 @@ import Material.Table as Table
 import Material.Options as Options exposing (when, nop, css)
 import Material.Grid as Grid exposing (..)
 import Material.Color as Color
+import Material.Tabs as Tabs
 import Json.Decode as Json
 import Array exposing (..)
+import Material
+import Material.Icon as Icon
 
 
-view : User.Model -> Html AppMsg.Msg
-view model =
+view : User.Model -> Material.Model -> Html AppMsg.Msg
+view model mdlStore =
     let
         contents =
             userTable model.users model.selectedUserId model.order
+
+        tabContents =
+            case model.selectedTab of
+                0 ->
+                    sampleTab1 model
+
+                _ ->
+                    sampleTab2 model
     in
         div []
             [ grid
@@ -39,11 +50,50 @@ view model =
                     [ Grid.size All 4
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    [ text "ca va bien?"
-                    , formColumn model
+                    [ Tabs.render AppMsg.Mdl
+                        [ 0 ]
+                        mdlStore
+                        [ Tabs.ripple
+                        , Tabs.onSelectTab (\t -> AppMsg.MsgForUser (SelectTab t))
+                        , Tabs.activeTab model.selectedTab
+                        ]
+                        [ Tabs.label
+                            [ Options.center ]
+                            [ Icon.i "info_outline"
+                            , Options.span [ css "width" "4px" ] []
+                            , text "About tabs"
+                            ]
+                        , Tabs.label
+                            [ Options.center ]
+                            [ Icon.i "code"
+                            , Options.span [ css "width" "4px" ] []
+                            , text "Example"
+                            ]
+                        ]
+                        [ Options.div
+                            [ css "margin" "24px auto"
+                            , css "align-items" "flex-start"
+                            , Options.center
+                            , css "overflow-y" "auto"
+                            , css "height" "512px"
+                            ]
+                            tabContents
+                        ]
                     ]
                 ]
             ]
+
+
+sampleTab1 : User.Model -> List (Html AppMsg.Msg)
+sampleTab1 model =
+    [ text "ca va bien?"
+    , formColumn model
+    ]
+
+
+sampleTab2 : User.Model -> List (Html AppMsg.Msg)
+sampleTab2 model =
+    [ div [] [ text "hello there" ] ]
 
 
 formColumn : User.Model -> Html AppMsg.Msg

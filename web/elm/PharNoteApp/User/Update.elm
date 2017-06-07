@@ -16,6 +16,9 @@ update msg model =
         NoOp ->
             model ! []
 
+        SelectTab idx ->
+            { model | selectedTab = idx } ! []
+
         KeyX key ->
             let
                 userCount =

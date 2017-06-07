@@ -73,7 +73,7 @@ viewHeader model =
         [ Layout.title [] [ text "elm-mdl Dashboard Example" ]
         , Layout.spacer
         , Layout.navigation []
-            []
+            [ text "something else goes here" ]
         ]
 
 
@@ -208,7 +208,7 @@ viewBody model =
             ChartView.view model.chartData
 
         Just Users ->
-            UserView.view model.userData
+            UserView.view model.userData model.mdl
 
         Just Roles ->
             RoleView.view model.roleData
