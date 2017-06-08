@@ -18,6 +18,10 @@ import Json.Decode as Json
 import Array exposing (..)
 import Material
 import Material.Icon as Icon
+import Material.Card as Card
+import Material.Button as Button
+import Material.Toggles as Toggles
+import Material.Elevation as Elevation
 
 
 view : User.Model -> Material.Model -> Html AppMsg.Msg
@@ -50,39 +54,13 @@ view model mdlStore =
                     [ Grid.size All 4
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    [ Tabs.render AppMsg.Mdl
-                        [ 0 ]
-                        mdlStore
-                        [ Tabs.ripple
-                        , Tabs.onSelectTab (\t -> AppMsg.MsgForUser (SelectTab t))
-                        , Tabs.activeTab model.selectedTab
-                        , Options.many
-                            [ css "display" "flex"
-                            , css "flex-direction" "column"
-                            , css "align-items" "flex-start"
-                            , css "justify-content" "flex-start"
-                            ]
+                    [ userCard model mdlStore
+                    , Options.div
+                        [ Grid.size All 1
+                        , css "height" "32px"
                         ]
-                        [ Tabs.label
-                            [ Options.center ]
-                            [ Icon.i "info_outline"
-                            , Options.span [ css "width" "4px" ] []
-                            , text "About tabs"
-                            ]
-                        , Tabs.label
-                            [ Options.center ]
-                            [ Icon.i "code"
-                            , Options.span [ css "width" "4px" ] []
-                            , text "Example"
-                            ]
-                        ]
-                        [ Options.div
-                            [ css "margin" "24px"
-                            , css "overflow-y" "auto"
-                            , css "height" "612px"
-                            ]
-                            tabContents
-                        ]
+                        []
+                    , optionsCard model mdlStore
                     ]
                 ]
             ]
@@ -271,4 +249,157 @@ userRow userId ( idx, user ) =
             , Table.td [] [ text user.last_name ]
             , Table.td [] [ text user.email ]
             , Table.td [] [ text user.photo_url ]
+            ]
+
+
+white : Options.Property a b
+white =
+    Color.text Color.white
+
+
+updatesCard : User.Model -> Material.Model -> Html AppMsg.Msg
+updatesCard model mdlStore =
+    Card.view
+        [ Elevation.e2
+        , css "width" "100%"
+        ]
+        [ Card.title
+            [ css "background" "url('images/pomegranate.jpg') center / cover"
+            , css "min-height" "200px"
+            , css "padding" "0"
+
+            -- Clear default padding to encompass scrim
+            , Color.background <| Color.color Color.Teal Color.S300
+            ]
+            [ Card.head
+                [ white
+                , Options.scrim 0.75
+                , css "padding" "16px"
+
+                -- Restore default padding inside scrim
+                , css "width" "100%"
+                ]
+                [ text "Grenadine" ]
+            ]
+        , Card.text []
+            [ text "Non-alcoholic syrup used for both its tart and sweet flavour as well as its deep red color." ]
+        , Card.actions
+            [ Card.border ]
+            [ Button.render AppMsg.Mdl
+                [ 1, 0 ]
+                mdlStore
+                [ Button.ripple, Button.accent ]
+                [ text "Ingredients" ]
+            ]
+        ]
+
+
+optionsCard : User.Model -> Material.Model -> Html AppMsg.Msg
+optionsCard model mdlStore =
+    let
+        option title index =
+            Options.styled Html.li
+                [ css "margin" "4px 0" ]
+                [ Toggles.checkbox AppMsg.Mdl
+                    index
+                    mdlStore
+                    [ Toggles.ripple
+                    , Toggles.value (Maybe.withDefault False Nothing)
+
+                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+                    -- to be List (Material.Toggles.Property Msg)
+                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
+                    --, Options.onToggle (Toggle index)
+                    ]
+                    [ text title ]
+                ]
+    in
+        Card.view
+            [ css "width" "100%"
+            , Color.background (Color.color Color.Pink Color.S500)
+            , Options.cs "demo-options"
+            ]
+            [ Card.text [ white ]
+                [ Options.styled Html.h3
+                    [ css "font-size" "1em"
+                    , css "margin" "0"
+                    ]
+                    [ text "Options"
+                    ]
+                , Options.styled Html.ul
+                    [ css "list-style-type" "none"
+                    , css "margin" "0"
+                    , css "padding" "0"
+                    ]
+                    [ option "Clicks per object" [ 0 ]
+                    , option "Views per object" [ 1 ]
+                    , option "Objects selected" [ 2 ]
+                    , option "Objects viewed" [ 3 ]
+                    ]
+                ]
+            , Card.actions
+                [ Card.border ]
+                [ Button.render AppMsg.Mdl
+                    [ 1, 1 ]
+                    mdlStore
+                    [ Button.ripple, white ]
+                    [ text "Awesome" ]
+                ]
+            ]
+
+
+userCard : User.Model -> Material.Model -> Html AppMsg.Msg
+userCard model mdlStore =
+    let
+        option title index =
+            Options.styled Html.li
+                [ css "margin" "4px 0" ]
+                [ Toggles.checkbox AppMsg.Mdl
+                    index
+                    mdlStore
+                    [ Toggles.ripple
+                    , Toggles.value (Maybe.withDefault False Nothing)
+
+                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+                    -- to be List (Material.Toggles.Property Msg)
+                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
+                    --, Options.onToggle (Toggle index)
+                    ]
+                    [ text title ]
+                ]
+    in
+        Card.view
+            [ css "width" "100%"
+            , Color.background (Color.color Color.Pink Color.S500)
+
+            --, Options.cs "demo-options"
+            ]
+            [ Card.title
+                [ Color.background (Color.color Color.Blue Color.S500)
+                , css "padding" "0"
+
+                -- Clear default padding to encompass scrim
+                , Color.background <| Color.color Color.Teal Color.S300
+                ]
+                [ Card.head
+                    [ white
+
+                    --, Options.scrim 0.75
+                    --, css "padding" "16px"
+                    -- Restore default padding inside scrim
+                    --, css "width" "100%"
+                    ]
+                    [ text "Details" ]
+                ]
+            , Card.text [ white ]
+                [ formColumn model
+                ]
+            , Card.actions
+                [ Card.border ]
+                [ Button.render AppMsg.Mdl
+                    [ 1, 1 ]
+                    mdlStore
+                    [ Button.ripple, white ]
+                    [ text "Awesome" ]
+                ]
             ]
