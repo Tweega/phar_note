@@ -2,7 +2,8 @@ module PharNoteApp.Role.Rest exposing (..)
 
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.Role.Msg exposing (..)
-import PharNoteApp.Role.Model exposing (..)
+import PharNoteApp.Role.Model as Model
+import PharNoteApp.Role.BaseModel as BaseModel
 import Http
 import Http exposing (..)
 import Json.Decode
@@ -10,14 +11,14 @@ import Json.Encode
 import Json.Decode.Pipeline
 
 
-listDecoder : Json.Decode.Decoder (List Role)
+listDecoder : Json.Decode.Decoder (List BaseModel.Role)
 listDecoder =
     Json.Decode.list decoder
 
 
-decoder : Json.Decode.Decoder Role
+decoder : Json.Decode.Decoder BaseModel.Role
 decoder =
-    Json.Decode.Pipeline.decode Role
+    Json.Decode.Pipeline.decode BaseModel.Role
         |> Json.Decode.Pipeline.required "id" Json.Decode.int
         |> Json.Decode.Pipeline.required "role_name" Json.Decode.string
         |> Json.Decode.Pipeline.required "role_desc" Json.Decode.string
@@ -34,7 +35,7 @@ get =
     Http.send (\result -> AppMsg.MsgForRole (ProcessRoleGet result)) (Http.get url listDecoder)
 
 
-payload : Model -> Json.Encode.Value
+payload : Model.Model -> Json.Encode.Value
 payload model =
     Json.Encode.object
         [ ( "role_name", Json.Encode.string model.roleNameInput )
@@ -42,7 +43,7 @@ payload model =
         ]
 
 
-post : Model -> Cmd AppMsg.Msg
+post : Model.Model -> Cmd AppMsg.Msg
 post model =
     let
         body =
@@ -55,7 +56,7 @@ post model =
         Http.send (\result -> AppMsg.MsgForRole (ProcessRolePost result)) (Http.post url body decoder)
 
 
-put : Model -> Cmd AppMsg.Msg
+put : Model.Model -> Cmd AppMsg.Msg
 put model =
     let
         putUrl =
@@ -88,7 +89,7 @@ put model =
 --Http.send (AppMsg.MsgForRole ProcessRolePost) putRequest
 
 
-delete : Model -> Cmd AppMsg.Msg
+delete : Model.Model -> Cmd AppMsg.Msg
 delete model =
     let
         putUrl =

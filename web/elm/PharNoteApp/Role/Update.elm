@@ -2,13 +2,14 @@ module PharNoteApp.Role.Update exposing (..)
 
 import PharNoteApp.Role.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
-import PharNoteApp.Role.Model exposing (..)
+import PharNoteApp.Role.BaseModel as BaseModel
+import PharNoteApp.Role.Model as Role
 import PharNoteApp.Role.Rest as Rest
 import PharNoteApp.Role.View as View
 import Material.Table as Table
 
 
-update : Msg -> Model -> ( Model, Cmd AppMsg.Msg )
+update : Msg -> Role.Model -> ( Role.Model, Cmd AppMsg.Msg )
 update msg model =
     case msg of
         NoOp ->
@@ -47,21 +48,21 @@ update msg model =
                 { model
                     | roleNameInput = roleName
                     , roleDescInput = roleDesc
-                    , formAction = Edit
+                    , formAction = Role.Edit
                     , selectedRole = Just id
                 }
                     ! []
 
         DeleteRole id ->
             { model
-                | formAction = Delete
+                | formAction = Role.Delete
                 , selectedRole = Just id
             }
                 ! [ Rest.delete { model | selectedRole = Just id } ]
 
         NewRole ->
             { model
-                | formAction = Create
+                | formAction = Role.Create
                 , roleNameInput = ""
                 , roleDescInput = ""
                 , selectedRole = Nothing
@@ -82,7 +83,7 @@ update msg model =
                 ! []
 
         ProcessRolePost (Ok role) ->
-            { model | formAction = None } ! [ Rest.get ]
+            { model | formAction = Role.None } ! [ Rest.get ]
 
         ProcessRolePost (Err error) ->
             { model

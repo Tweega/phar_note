@@ -2,7 +2,8 @@ module PharNoteApp.User.Update exposing (..)
 
 import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
-import PharNoteApp.User.Model exposing (..)
+import PharNoteApp.User.BaseModel as BaseModel
+import PharNoteApp.User.Model as User
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
@@ -10,7 +11,7 @@ import Material.Table as Table
 import Array exposing (fromList)
 
 
-update : Msg -> Model -> ( Model, Cmd AppMsg.Msg )
+update : Msg -> User.Model -> ( User.Model, Cmd AppMsg.Msg )
 update msg model =
     case msg of
         NoOp ->
@@ -86,7 +87,7 @@ update msg model =
                     View.findUser idx model.users
 
                 newModel =
-                    populateUserData user idx model Edit
+                    populateUserData user idx model User.Edit
             in
                 model
                     ! []
@@ -103,7 +104,7 @@ update msg model =
 
                         Just user ->
                             { model
-                                | formAction = Delete
+                                | formAction = User.Delete
                                 , selectedUserId = Just user.id
                             }
                                 ! [ Rest.delete { model | selectedUserId = Just user.id } ]
@@ -112,7 +113,7 @@ update msg model =
 
         NewUser ->
             { model
-                | formAction = Create
+                | formAction = User.Create
                 , firstNameInput = ""
                 , lastNameInput = ""
                 , emailInput = ""
@@ -160,7 +161,7 @@ update msg model =
                 ! []
 
         ProcessUserPost (Ok user) ->
-            { model | formAction = None } ! [ Rest.get ]
+            { model | formAction = User.None } ! [ Rest.get ]
 
         ProcessUserPost (Err error) ->
             { model
@@ -205,7 +206,7 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateUserData : Maybe User -> Int -> Model -> FormAction -> Model
+populateUserData : Maybe BaseModel.User -> Int -> User.Model -> User.FormAction -> User.Model
 populateUserData user idx model action =
     case user of
         Nothing ->
@@ -231,7 +232,7 @@ populateUserData user idx model action =
             }
 
 
-sort_by_last_first : User -> String
+sort_by_last_first : BaseModel.User -> String
 sort_by_last_first u =
     u.last_name ++ u.first_name
 

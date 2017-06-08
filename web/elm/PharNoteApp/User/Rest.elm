@@ -2,7 +2,8 @@ module PharNoteApp.User.Rest exposing (..)
 
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Msg exposing (..)
-import PharNoteApp.User.Model exposing (..)
+import PharNoteApp.User.Model as Model
+import PharNoteApp.User.BaseModel as BaseModel
 import Http
 import Http exposing (..)
 import Json.Decode
@@ -10,14 +11,14 @@ import Json.Encode
 import Json.Decode.Pipeline
 
 
-listDecoder : Json.Decode.Decoder (List User)
+listDecoder : Json.Decode.Decoder (List BaseModel.User)
 listDecoder =
     Json.Decode.list decoder
 
 
-decoder : Json.Decode.Decoder User
+decoder : Json.Decode.Decoder BaseModel.User
 decoder =
-    Json.Decode.Pipeline.decode User
+    Json.Decode.Pipeline.decode BaseModel.User
         |> Json.Decode.Pipeline.required "id" Json.Decode.int
         |> Json.Decode.Pipeline.required "first_name" Json.Decode.string
         |> Json.Decode.Pipeline.required "last_name" Json.Decode.string
@@ -36,7 +37,7 @@ get =
     Http.send (\result -> AppMsg.MsgForUser (ProcessUserGet result)) (Http.get url listDecoder)
 
 
-payload : Model -> Json.Encode.Value
+payload : Model.Model -> Json.Encode.Value
 payload model =
     Json.Encode.object
         [ ( "first_name", Json.Encode.string model.firstNameInput )
@@ -46,7 +47,7 @@ payload model =
         ]
 
 
-post : Model -> Cmd AppMsg.Msg
+post : Model.Model -> Cmd AppMsg.Msg
 post model =
     let
         body =
@@ -59,7 +60,7 @@ post model =
         Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) (Http.post url body decoder)
 
 
-put : Model -> Cmd AppMsg.Msg
+put : Model.Model -> Cmd AppMsg.Msg
 put model =
     let
         putUrl =
@@ -92,7 +93,7 @@ put model =
 --Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
 
 
-delete : Model -> Cmd AppMsg.Msg
+delete : Model.Model -> Cmd AppMsg.Msg
 delete model =
     let
         putUrl =

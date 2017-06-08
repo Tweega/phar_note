@@ -1,6 +1,7 @@
 module PharNoteApp.Role.View exposing (view, findRole)
 
 import PharNoteApp.Role.Rest as Rest
+import PharNoteApp.Role.BaseModel as BaseModel
 import PharNoteApp.Role.Model as Role
 import PharNoteApp.Role.Model exposing (FormAction(..))
 import PharNoteApp.Role.Msg as RoleMsg
@@ -39,14 +40,14 @@ formColumn model =
             [ innerForm ]
 
 
-findRole : Int -> List Role.Role -> Maybe Role.Role
+findRole : Int -> List BaseModel.Role -> Maybe BaseModel.Role
 findRole id roles =
     roles
         |> List.filter (\role -> role.id == id)
         |> List.head
 
 
-fieldStringValue : Maybe Role.Role -> Role.FormAction -> (Role.Role -> String) -> String
+fieldStringValue : Maybe BaseModel.Role -> Role.FormAction -> (BaseModel.Role -> String) -> String
 fieldStringValue role formAction extractor =
     case role of
         Just role ->
@@ -59,7 +60,7 @@ fieldStringValue role formAction extractor =
             ""
 
 
-fieldIntValue : Maybe Role.Role -> Role.FormAction -> (Role.Role -> Int) -> String
+fieldIntValue : Maybe BaseModel.Role -> Role.FormAction -> (BaseModel.Role -> Int) -> String
 fieldIntValue role formAction extractor =
     case role of
         Just role ->
@@ -114,7 +115,7 @@ roleForm model =
             ]
 
 
-roleTable : List Role.Role -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
+roleTable : List BaseModel.Role -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
 roleTable roles selectedRole order =
     --this needs to be done in update, otherwise index out of phase with selected item
     let
@@ -158,13 +159,13 @@ roleTableHeader order =
         ]
 
 
-roleRows : List Role.Role -> Maybe Int -> List (Html AppMsg.Msg)
+roleRows : List BaseModel.Role -> Maybe Int -> List (Html AppMsg.Msg)
 roleRows roles selectedRole =
     roles
         |> List.map (roleRow selectedRole)
 
 
-roleRow : Maybe Int -> Role.Role -> Html AppMsg.Msg
+roleRow : Maybe Int -> BaseModel.Role -> Html AppMsg.Msg
 roleRow selectedRole role =
     let
         row_style =
@@ -206,6 +207,6 @@ reverse x y =
             EQ
 
 
-sort_by_role : Role.Role -> String
+sort_by_role : BaseModel.Role -> String
 sort_by_role u =
     u.role_name

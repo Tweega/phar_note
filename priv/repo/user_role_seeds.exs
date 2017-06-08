@@ -20,13 +20,12 @@ import Ecto.Query, only: [where: 3, or_where: 3]
 
 Repo.delete_all("user_roles_user")
 
-
 # Relationships
 r = Repo.get_by(Role, role_name: "Spell Learner") |> Repo.preload(:users)
 
 filter = User
-  |> where([u], u.last_name == "Weasley")
-  |> or_where([u], u.last_name == "Granger")
+  |> where([u], u.last_name != "Hagrid")
+  #|> or_where([u], u.last_name == "Granger")
 
 
 for u <- Repo.all(filter) do
@@ -41,7 +40,7 @@ end
 
 filter2 = User
    |> where([u], u.last_name == "Granger")
-   |> or_where([u], u.last_name == "patel")
+   |> or_where([u], u.first_name == "Percy")
 
 
 for u2 <- Repo.all(filter2) do

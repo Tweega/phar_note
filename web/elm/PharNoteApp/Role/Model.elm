@@ -1,18 +1,19 @@
 module PharNoteApp.Role.Model exposing (..)
 
+import PharNoteApp.User.BaseModel as UserBase
+import PharNoteApp.Role.BaseModel as RoleBase
 import Material.Table as Table
 import Http exposing (..)
 
 
-type alias Role =
-    { id : Int
-    , role_name : String
-    , role_desc : String
-    }
+-- type alias Role =
+--    { base : RoleBase.Role
+--    , users : List UserBase.User
+--    }
 
 
 type alias Model =
-    { roles : List Role
+    { roles : List RoleBase.Role
     , formAction : FormAction
     , selectedRole : Maybe Int
     , roleNameInput : String

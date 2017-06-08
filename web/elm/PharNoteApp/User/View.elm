@@ -1,6 +1,7 @@
 module PharNoteApp.User.View exposing (view, findUser)
 
 import PharNoteApp.User.Rest as Rest
+import PharNoteApp.User.BaseModel as BaseModel
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.Model exposing (FormAction(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
@@ -80,16 +81,15 @@ sampleTab2 model =
 
 formColumn : User.Model -> Html AppMsg.Msg
 formColumn model =
-    div []
-        [ userForm model ]
+    userDetails model
 
 
-findUser : Int -> Array User.User -> Maybe User.User
+findUser : Int -> Array BaseModel.User -> Maybe BaseModel.User
 findUser idx users =
     Array.get idx users
 
 
-fieldStringValue : Maybe User.User -> User.FormAction -> (User.User -> String) -> String
+fieldStringValue : Maybe BaseModel.User -> User.FormAction -> (BaseModel.User -> String) -> String
 fieldStringValue user formAction extractor =
     case user of
         Just user ->
@@ -102,7 +102,7 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe User.User -> User.FormAction -> (User.User -> Int) -> String
+fieldIntValue : Maybe BaseModel.User -> User.FormAction -> (BaseModel.User -> Int) -> String
 fieldIntValue user formAction extractor =
     case user of
         Just user ->
@@ -113,6 +113,75 @@ fieldIntValue user formAction extractor =
 
         Nothing ->
             ""
+
+
+userDetails : User.Model -> Html AppMsg.Msg
+userDetails model =
+    let
+        user =
+            case model.selectedUserIndex of
+                Just idx ->
+                    findUser idx model.users
+
+                Nothing ->
+                    Nothing
+
+        firstName =
+            fieldStringValue user Edit .first_name
+
+        lastName =
+            fieldStringValue user Edit .last_name
+
+        email =
+            fieldStringValue user Edit .email
+
+        photoUrl =
+            fieldStringValue user Edit .photo_url
+    in
+        Options.div
+            [ css "display" "flex"
+            , css "align-items" "flex-start"
+            , css "justify-content" "space-between"
+            ]
+            [ Options.div []
+                (List.map
+                    userInfo
+                    [ ( "First Name:", firstName )
+                    , ( "Last Name", lastName )
+                    , ( "Email", email )
+                    , ( "Photo Url", photoUrl )
+                    ]
+                )
+            , Options.div []
+                [ Options.img
+                    [ Options.attribute <| Html.Attributes.src photoUrl
+                    , css "height" "96px"
+                    , css "width" "96px"
+                    ]
+                    []
+                ]
+            ]
+
+
+userInfo : ( String, String ) -> Html AppMsg.Msg
+userInfo ( fieldName, fieldValue ) =
+    Options.div
+        [ css "width" "100%"
+        , css "float" "left"
+        ]
+        [ Options.div
+            [ css "color" "rgba(0,0,0,0.9)"
+            , css "width" "150px"
+            , css "float" "left"
+            , css "margin-top" "5px"
+            ]
+            [ text fieldName ]
+        , Options.div
+            [ css "color" "rgba(f,0,0,0.9)"
+            , css "float" "left"
+            ]
+            [ text fieldValue ]
+        ]
 
 
 userForm : User.Model -> Html AppMsg.Msg
@@ -171,7 +240,7 @@ userForm model =
             ]
 
 
-userTable : Array User.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
+userTable : Array BaseModel.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
 userTable users selectedUserId order =
     div
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
@@ -207,7 +276,7 @@ userTableHeader order =
         ]
 
 
-userRows : Array User.User -> Maybe Int -> List (Html AppMsg.Msg)
+userRows : Array BaseModel.User -> Maybe Int -> List (Html AppMsg.Msg)
 userRows users selectedUserId =
     let
         userId =
@@ -228,7 +297,7 @@ userRows users selectedUserId =
 --look at using array.fold(l/r)
 
 
-userRow : Int -> ( Int, User.User ) -> Html AppMsg.Msg
+userRow : Int -> ( Int, BaseModel.User ) -> Html AppMsg.Msg
 userRow userId ( idx, user ) =
     let
         row_style =
