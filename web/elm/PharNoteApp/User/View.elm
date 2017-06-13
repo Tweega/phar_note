@@ -144,6 +144,7 @@ userInfo ( fieldName, fieldValue ) =
         , Options.div
             [ css "color" "rgba(f,0,0,0.9)"
             , css "float" "left"
+            , css "margin-top" "5px"
             ]
             [ text fieldValue ]
         ]
@@ -499,23 +500,28 @@ roleCard roles mdlStore =
 roleDetails : List RoleBase.Role -> Html AppMsg.Msg
 roleDetails roles =
     Options.div
-        [ css "display" "flex"
-        , css "align-items" "flex-start"
-        , css "justify-content" "space-between"
+        [ css "height" "120px"
+        , css "width" "100%"
+        , css "float" "left"
         ]
-        (List.map roleInfo roles)
+        (List.indexedMap roleInfo roles)
 
 
-roleInfo : RoleBase.Role -> Html AppMsg.Msg
-roleInfo role =
+roleInfo : Int -> RoleBase.Role -> Html AppMsg.Msg
+roleInfo i role =
     Options.div
         [ css "width" "100%"
         , css "float" "left"
+        , css "margin-top" "5px"
         ]
         [ Options.div
-            [ css "color" "rgba(0,0,0,0.9)"
-            , css "width" "150px"
-            , css "margin-top" "5px"
+            [ css "width" "35%"
+            , css "color" "rgba(0,0,0,0.9)"
+            , css "float" "left"
             ]
             [ text role.role_name ]
+        , Options.div
+            [ css "float" "left"
+            ]
+            [ text role.role_desc ]
         ]
