@@ -2,13 +2,14 @@ module PharNoteApp.User.Update exposing (..)
 
 import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
-import PharNoteApp.User.BaseModel as BaseModel
 import PharNoteApp.User.Model as User
+import PharNoteApp.User.Model exposing (RefDataStatus(..))
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
 import Material.Table as Table
 import Array exposing (fromList)
+import Dict
 
 
 update : Msg -> User.Model -> ( User.Model, Cmd AppMsg.Msg )
@@ -123,6 +124,24 @@ update msg model =
             }
                 ! []
 
+        ProcessRefDataGet (Ok roles) ->
+            let
+                new_d =
+                    List.foldl (\role roleDict -> Dict.insert role.id role roleDict)
+                        Dict.empty
+                        roles
+            in
+                { model
+                    | refData = Loaded (User.RefData new_d)
+                }
+                    ! []
+
+        ProcessRefDataGet (Err error) ->
+            { model
+                | errors = Just error
+            }
+                ! []
+
         ProcessUserGet (Ok users) ->
             let
                 x =
@@ -206,7 +225,7 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateUserData : Maybe BaseModel.User -> Int -> User.Model -> User.FormAction -> User.Model
+populateUserData : Maybe User.UserWithRoles -> Int -> User.Model -> User.FormAction -> User.Model
 populateUserData user idx model action =
     case user of
         Nothing ->
@@ -232,7 +251,7 @@ populateUserData user idx model action =
             }
 
 
-sort_by_last_first : BaseModel.User -> String
+sort_by_last_first : User.UserWithRoles -> String
 sort_by_last_first u =
     u.last_name ++ u.first_name
 

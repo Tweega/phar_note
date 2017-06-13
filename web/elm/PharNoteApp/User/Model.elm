@@ -1,20 +1,30 @@
 module PharNoteApp.User.Model exposing (..)
 
-import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.Role.BaseModel as RoleBase
 import Material.Table as Table
 import Http exposing (..)
 import Array exposing (..)
+import Dict exposing (Dict)
 
 
--- type alias User =
---     { base : UserBase.User
---     , roles : List RoleBase.Role
---     }
+type alias UserWithRoles =
+    --duplicated from User.BaseModel
+    { id : Int
+    , first_name : String
+    , last_name : String
+    , email : String
+    , photo_url : String
+    , roles : List RoleBase.Role
+    }
+
+
+emptyUser : UserWithRoles
+emptyUser =
+    UserWithRoles 0 "" "" "" "" []
 
 
 type alias Model =
-    { users : Array UserBase.User
+    { users : Array UserWithRoles
     , formAction : FormAction
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
@@ -25,6 +35,17 @@ type alias Model =
     , lastNameInput : String
     , emailInput : String
     , photoUrlInput : String
+    , refData : RefDataStatus
+    }
+
+
+type RefDataStatus
+    = Loading
+    | Loaded RefData
+
+
+type alias RefData =
+    { roles : Dict Int RoleBase.Role
     }
 
 

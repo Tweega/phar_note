@@ -1,10 +1,10 @@
 module PharNoteApp.User.View exposing (view, findUser)
 
 import PharNoteApp.User.Rest as Rest
-import PharNoteApp.User.BaseModel as BaseModel
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.Model exposing (FormAction(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
+import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.HtmlUtils as HtmlUtils
 import Html exposing (..)
@@ -31,13 +31,16 @@ view model mdlStore =
         contents =
             userTable model.users model.selectedUserId model.order
 
-        tabContents =
-            case model.selectedTab of
-                0 ->
-                    sampleTab1 model
+        usr =
+            case model.selectedUserIndex of
+                Just idx ->
+                    findUser idx model.users
 
-                _ ->
-                    sampleTab2 model
+                Nothing ->
+                    Nothing
+
+        user =
+            Maybe.withDefault User.emptyUser usr
     in
         div []
             [ grid
@@ -55,41 +58,24 @@ view model mdlStore =
                     [ Grid.size All 4
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    [ userCard model mdlStore
+                    [ userCard user mdlStore
                     , Options.div
                         [ Grid.size All 1
                         , css "height" "32px"
                         ]
                         []
-                    , optionsCard model mdlStore
+                    , roleCard user.roles mdlStore
                     ]
                 ]
             ]
 
 
-sampleTab1 : User.Model -> List (Html AppMsg.Msg)
-sampleTab1 model =
-    [ text "alright??"
-    , formColumn model
-    ]
-
-
-sampleTab2 : User.Model -> List (Html AppMsg.Msg)
-sampleTab2 model =
-    [ div [] [ text "hello there" ] ]
-
-
-formColumn : User.Model -> Html AppMsg.Msg
-formColumn model =
-    userDetails model
-
-
-findUser : Int -> Array BaseModel.User -> Maybe BaseModel.User
+findUser : Int -> Array User.UserWithRoles -> Maybe User.UserWithRoles
 findUser idx users =
     Array.get idx users
 
 
-fieldStringValue : Maybe BaseModel.User -> User.FormAction -> (BaseModel.User -> String) -> String
+fieldStringValue : Maybe User.UserWithRoles -> User.FormAction -> (User.UserWithRoles -> String) -> String
 fieldStringValue user formAction extractor =
     case user of
         Just user ->
@@ -102,7 +88,7 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe BaseModel.User -> User.FormAction -> (BaseModel.User -> Int) -> String
+fieldIntValue : Maybe User.UserWithRoles -> User.FormAction -> (User.UserWithRoles -> Int) -> String
 fieldIntValue user formAction extractor =
     case user of
         Just user ->
@@ -115,52 +101,31 @@ fieldIntValue user formAction extractor =
             ""
 
 
-userDetails : User.Model -> Html AppMsg.Msg
-userDetails model =
-    let
-        user =
-            case model.selectedUserIndex of
-                Just idx ->
-                    findUser idx model.users
-
-                Nothing ->
-                    Nothing
-
-        firstName =
-            fieldStringValue user Edit .first_name
-
-        lastName =
-            fieldStringValue user Edit .last_name
-
-        email =
-            fieldStringValue user Edit .email
-
-        photoUrl =
-            fieldStringValue user Edit .photo_url
-    in
-        Options.div
-            [ css "display" "flex"
-            , css "align-items" "flex-start"
-            , css "justify-content" "space-between"
-            ]
-            [ Options.div []
-                (List.map
-                    userInfo
-                    [ ( "First Name:", firstName )
-                    , ( "Last Name", lastName )
-                    , ( "Email", email )
-                    , ( "Photo Url", photoUrl )
-                    ]
-                )
-            , Options.div []
-                [ Options.img
-                    [ Options.attribute <| Html.Attributes.src photoUrl
-                    , css "height" "96px"
-                    , css "width" "96px"
-                    ]
-                    []
+userDetails : User.UserWithRoles -> Html AppMsg.Msg
+userDetails user =
+    Options.div
+        [ css "display" "flex"
+        , css "align-items" "flex-start"
+        , css "justify-content" "space-between"
+        ]
+        [ Options.div []
+            (List.map
+                userInfo
+                [ ( "First Name:", user.first_name )
+                , ( "Last Name", user.last_name )
+                , ( "Email", user.email )
+                , ( "Photo Url", user.photo_url )
                 ]
+            )
+        , Options.div []
+            [ Options.img
+                [ Options.attribute <| Html.Attributes.src user.photo_url
+                , css "height" "96px"
+                , css "width" "96px"
+                ]
+                []
             ]
+        ]
 
 
 userInfo : ( String, String ) -> Html AppMsg.Msg
@@ -240,7 +205,7 @@ userForm model =
             ]
 
 
-userTable : Array BaseModel.User -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
+userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
 userTable users selectedUserId order =
     div
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
@@ -276,7 +241,7 @@ userTableHeader order =
         ]
 
 
-userRows : Array BaseModel.User -> Maybe Int -> List (Html AppMsg.Msg)
+userRows : Array User.UserWithRoles -> Maybe Int -> List (Html AppMsg.Msg)
 userRows users selectedUserId =
     let
         userId =
@@ -297,7 +262,7 @@ userRows users selectedUserId =
 --look at using array.fold(l/r)
 
 
-userRow : Int -> ( Int, BaseModel.User ) -> Html AppMsg.Msg
+userRow : Int -> ( Int, User.UserWithRoles ) -> Html AppMsg.Msg
 userRow userId ( idx, user ) =
     let
         row_style =
@@ -417,8 +382,8 @@ optionsCard model mdlStore =
             ]
 
 
-userCard : User.Model -> Material.Model -> Html AppMsg.Msg
-userCard model mdlStore =
+userCard : User.UserWithRoles -> Material.Model -> Html AppMsg.Msg
+userCard user mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -461,7 +426,7 @@ userCard model mdlStore =
                     [ text "Details" ]
                 ]
             , Card.text [ white ]
-                [ formColumn model
+                [ userDetails user
                 ]
             , Card.actions
                 [ Card.border ]
@@ -472,3 +437,85 @@ userCard model mdlStore =
                     [ text "Awesome" ]
                 ]
             ]
+
+
+roleCard : List RoleBase.Role -> Material.Model -> Html AppMsg.Msg
+roleCard roles mdlStore =
+    let
+        option title index =
+            Options.styled Html.li
+                [ css "margin" "4px 0" ]
+                [ Toggles.checkbox AppMsg.Mdl
+                    index
+                    mdlStore
+                    [ Toggles.ripple
+                    , Toggles.value (Maybe.withDefault False Nothing)
+
+                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+                    -- to be List (Material.Toggles.Property Msg)
+                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
+                    --, Options.onToggle (Toggle index)
+                    ]
+                    [ text title ]
+                ]
+    in
+        Card.view
+            [ css "width" "100%"
+            , Color.background (Color.color Color.Pink Color.S500)
+
+            --, Options.cs "demo-options"
+            ]
+            [ Card.title
+                [ Color.background (Color.color Color.Blue Color.S500)
+                , css "padding" "0"
+
+                -- Clear default padding to encompass scrim
+                , Color.background <| Color.color Color.Teal Color.S300
+                ]
+                [ Card.head
+                    [ white
+
+                    --, Options.scrim 0.75
+                    --, css "padding" "16px"
+                    -- Restore default padding inside scrim
+                    --, css "width" "100%"
+                    ]
+                    [ text "Roles" ]
+                ]
+            , Card.text [ white ]
+                [ roleDetails roles
+                ]
+            , Card.actions
+                [ Card.border ]
+                [ Button.render AppMsg.Mdl
+                    [ 2, 1 ]
+                    mdlStore
+                    [ Button.ripple, white ]
+                    [ text "Awesome" ]
+                ]
+            ]
+
+
+roleDetails : List RoleBase.Role -> Html AppMsg.Msg
+roleDetails roles =
+    Options.div
+        [ css "display" "flex"
+        , css "align-items" "flex-start"
+        , css "justify-content" "space-between"
+        ]
+        (List.map roleInfo roles)
+
+
+roleInfo : RoleBase.Role -> Html AppMsg.Msg
+roleInfo role =
+    Options.div
+        [ css "width" "100%"
+        , css "float" "left"
+        ]
+        [ Options.div
+            [ css "color" "rgba(0,0,0,0.9)"
+            , css "width" "150px"
+            , css "margin-top" "5px"
+            ]
+            [ text role.role_name ]
+        ]

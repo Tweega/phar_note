@@ -1,7 +1,7 @@
 module PharNoteApp.User.Msg exposing (..)
 
-import PharNoteApp.User.BaseModel as BaseModel
 import PharNoteApp.User.Model as User
+import PharNoteApp.Role.BaseModel as Role
 import Http exposing (..)
 
 
@@ -11,8 +11,9 @@ type Msg
     | SelectUser Int
     | DeleteUser Int
     | NewUser
-    | ProcessUserGet (Result Http.Error (List BaseModel.User))
-    | ProcessUserPost (Result Http.Error BaseModel.User)
+    | ProcessUserGet (Result Http.Error (List User.UserWithRoles))
+    | ProcessUserPost (Result Http.Error User.UserWithRoles)
+    | ProcessRefDataGet (Result Http.Error (List Role.Role))
     | SetFirstNameInput String
     | SetLastNameInput String
     | SetEmailInput String

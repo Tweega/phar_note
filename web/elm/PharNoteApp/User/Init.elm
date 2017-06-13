@@ -1,7 +1,7 @@
 module PharNoteApp.User.Init exposing (..)
 
-import PharNoteApp.User.Rest exposing (get)
-import PharNoteApp.User.Model exposing (Model, FormAction(..))
+import PharNoteApp.User.Rest exposing (getRefData)
+import PharNoteApp.User.Model exposing (Model, FormAction(..), RefDataStatus(..))
 import PharNoteApp.Msg as AppMsg
 import Material.Table as Table
 import Array exposing (empty)
@@ -10,7 +10,7 @@ import Array exposing (empty)
 init : ( Model, Cmd AppMsg.Msg )
 init =
     initialModel
-        ! []
+        ! [ getRefData ]
 
 
 
@@ -30,6 +30,7 @@ initialModel =
     , lastNameInput = ""
     , emailInput = ""
     , photoUrlInput = ""
+    , refData = Loading
     }
 
 
