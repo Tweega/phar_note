@@ -14,10 +14,10 @@ type Msg
     | ProcessUserGet (Result Http.Error (List User.UserWithRoles))
     | ProcessUserPost (Result Http.Error User.UserWithRoles)
     | ProcessRefDataGet (Result Http.Error (List Role.Role))
-    | SetFirstNameInput String
-    | SetLastNameInput String
-    | SetEmailInput String
-    | SetPhotoUrlInput String
+    | SetFirstName String
+    | SetLastName String
+    | SetEmail String
+    | SetPhotoUrl String
     | UserPost User.Model
     | UserPut User.Model
     | Reorder

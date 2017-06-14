@@ -1,7 +1,8 @@
-module PharNoteApp.User.View exposing (view, findUser)
+module PharNoteApp.User.View exposing (view, alwaysFindUser, maybeFindUser)
 
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
+import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.User.Model exposing (FormAction(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
@@ -31,16 +32,13 @@ view model mdlStore =
         contents =
             userTable model.users model.selectedUserId model.order
 
-        usr =
+        user =
             case model.selectedUserIndex of
                 Just idx ->
-                    findUser idx model.users
+                    alwaysFindUser idx model.users
 
                 Nothing ->
-                    Nothing
-
-        user =
-            Maybe.withDefault User.emptyUser usr
+                    User.emptyUserWithRoles
     in
         div []
             [ grid
@@ -70,9 +68,23 @@ view model mdlStore =
             ]
 
 
-findUser : Int -> Array User.UserWithRoles -> Maybe User.UserWithRoles
-findUser idx users =
+maybeFindUser : Int -> Array User.UserWithRoles -> Maybe User.UserWithRoles
+maybeFindUser idx users =
     Array.get idx users
+
+
+alwaysFindUser : Int -> Array User.UserWithRoles -> User.UserWithRoles
+alwaysFindUser idx users =
+    let
+        maybeUser =
+            Array.get idx users
+    in
+        case maybeUser of
+            Just usr ->
+                usr
+
+            Nothing ->
+                User.emptyUserWithRoles
 
 
 fieldStringValue : Maybe User.UserWithRoles -> User.FormAction -> (User.UserWithRoles -> String) -> String
@@ -154,24 +166,22 @@ userForm : User.Model -> Html AppMsg.Msg
 userForm model =
     let
         user =
-            case model.selectedUserIndex of
-                Just idx ->
-                    findUser idx model.users
+            case model.formAction of
+                Edit ->
+                    case model.selectedUserIndex of
+                        Just idx ->
+                            alwaysFindUser idx model.users
 
-                Nothing ->
-                    Nothing
+                        Nothing ->
+                            --this would be an error - edit with no selected user
+                            User.emptyUserWithRoles
 
-        firstName =
-            fieldStringValue user model.formAction .first_name
+                Create ->
+                    User.emptyUserWithRoles
 
-        lastName =
-            fieldStringValue user model.formAction .last_name
-
-        email =
-            fieldStringValue user model.formAction .email
-
-        photoUrl =
-            fieldStringValue user model.formAction .photo_url
+                _ ->
+                    --we should not be rendering user form for any other reason than Edit or Create
+                    User.emptyUserWithRoles
 
         buttonText =
             if model.formAction == Edit then
@@ -188,19 +198,19 @@ userForm model =
         Html.form []
             [ div [ class "form-group" ]
                 [ label [] [ text "First Name" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetFirstNameInput s)), value model.firstNameInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Last Name" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetLastNameInput s)), value model.lastNameInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetLastName s)), value user.last_name, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Email" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetEmailInput s)), value model.emailInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetEmail s)), value user.email, class "form-control" ] []
                 ]
             , div [ class "form-group" ]
                 [ label [] [ text "Photo URL" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetPhotoUrlInput s)), value model.photoUrlInput, class "form-control" ] []
+                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
                 ]
             , button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
             ]

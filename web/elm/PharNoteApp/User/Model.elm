@@ -1,5 +1,6 @@
 module PharNoteApp.User.Model exposing (..)
 
+import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.Role.BaseModel as RoleBase
 import Material.Table as Table
 import Http exposing (..)
@@ -18,23 +19,15 @@ type alias UserWithRoles =
     }
 
 
-emptyUser : UserWithRoles
-emptyUser =
-    UserWithRoles 0 "" "" "" "" []
-
-
 type alias Model =
     { users : Array UserWithRoles
     , formAction : FormAction
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
+    , scratchUser : UserWithRoles
     , selectedTab : Int
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
-    , firstNameInput : String
-    , lastNameInput : String
-    , emailInput : String
-    , photoUrlInput : String
     , refData : RefDataStatus
     }
 
@@ -54,3 +47,8 @@ type FormAction
     | Edit
     | Delete
     | None
+
+
+emptyUserWithRoles : UserWithRoles
+emptyUserWithRoles =
+    UserWithRoles 0 "" "" "" "" []

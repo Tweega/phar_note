@@ -10,3 +10,8 @@ type alias User =
     , email : String
     , photo_url : String
     }
+
+
+emptyUser : User
+emptyUser =
+    User 0 "" "" "" ""

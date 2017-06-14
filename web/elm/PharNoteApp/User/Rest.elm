@@ -2,6 +2,7 @@ module PharNoteApp.User.Rest exposing (..)
 
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Msg exposing (..)
+import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.User.Model as User
 import PharNoteApp.Role.Rest as Role
 import Http
@@ -44,14 +45,19 @@ getRefData =
     Http.send (\result -> AppMsg.MsgForUser (ProcessRefDataGet result)) (Http.get url Role.listDecoder)
 
 
-payload : User.Model -> Json.Encode.Value
-payload model =
-    Json.Encode.object
-        [ ( "first_name", Json.Encode.string model.firstNameInput )
-        , ( "last_name", Json.Encode.string model.lastNameInput )
-        , ( "email", Json.Encode.string model.emailInput )
-        , ( "photo_url", Json.Encode.string model.photoUrlInput )
-        ]
+payload : User.UserWithRoles -> Json.Encode.Value
+payload user =
+    let
+        uroles =
+            List.map (\r -> r.id) user.roles
+    in
+        Json.Encode.object
+            [ ( "first_name", Json.Encode.string user.first_name )
+            , ( "last_name", Json.Encode.string user.last_name )
+            , ( "email", Json.Encode.string user.email )
+            , ( "photo_url", Json.Encode.string user.photo_url )
+            , ( "roles", Json.Encode.list (List.map Json.Encode.int uroles) )
+            ]
 
 
 post : User.Model -> Cmd AppMsg.Msg
@@ -59,7 +65,7 @@ post model =
     let
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload model))
+                (Json.Encode.encode 0 (payload model.scratchUser))
     in
         --ProcessUserPost (Result Http.Error User)
         --Http.send ProcessUserPost (Http.post url body decoder)
@@ -80,7 +86,7 @@ put model =
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload model))
+                (Json.Encode.encode 0 (payload model.scratchUser))
 
         putRequest =
             Http.request
@@ -113,7 +119,7 @@ delete model =
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload model))
+                (Json.Encode.encode 0 (payload model.scratchUser))
 
         putRequest =
             Http.request

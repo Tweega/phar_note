@@ -3,6 +3,7 @@ module PharNoteApp.User.Update exposing (..)
 import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Model as User
+import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.User.Model exposing (RefDataStatus(..))
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
@@ -43,7 +44,7 @@ update msg model =
                         currentIdx
 
                 user =
-                    View.findUser idx model.users
+                    View.maybeFindUser idx model.users
 
                 newModel =
                     populateUserData user idx model model.formAction
@@ -53,7 +54,7 @@ update msg model =
         SelectUser idx ->
             let
                 user =
-                    View.findUser idx model.users
+                    View.maybeFindUser idx model.users
 
                 newModel =
                     populateUserData user idx model model.formAction
@@ -85,7 +86,7 @@ update msg model =
         EditUser idx ->
             let
                 user =
-                    View.findUser idx model.users
+                    View.maybeFindUser idx model.users
 
                 newModel =
                     populateUserData user idx model User.Edit
@@ -96,7 +97,7 @@ update msg model =
         DeleteUser idx ->
             let
                 usr =
-                    View.findUser idx model.users
+                    View.maybeFindUser idx model.users
 
                 r =
                     case usr of
@@ -115,10 +116,7 @@ update msg model =
         NewUser ->
             { model
                 | formAction = User.Create
-                , firstNameInput = ""
-                , lastNameInput = ""
-                , emailInput = ""
-                , photoUrlInput = ""
+                , scratchUser = User.emptyUserWithRoles
                 , selectedUserId = Nothing
                 , selectedUserIndex = Nothing
             }
@@ -145,30 +143,34 @@ update msg model =
         ProcessUserGet (Ok users) ->
             let
                 x =
-                    Debug.log "Fetching" "users"
+                    Debug.log "Fetched" "users"
 
-                first_user =
-                    Utils.first users
+                userArray =
+                    Array.fromList (users)
 
-                new_model =
-                    --if we have done an edit then the selected user and index will stay the same
-                    case first_user of
+                ( selectedUserId, selectedUserIndex ) =
+                    case model.selectedUserIndex of
                         Nothing ->
-                            model
+                            let
+                                first_user =
+                                    Array.get 0 userArray
+                            in
+                                case first_user of
+                                    Nothing ->
+                                        ( Nothing, Nothing )
 
-                        Just user ->
-                            --only fill in user details if we don't have any
-                            { model
-                                | firstNameInput = user.first_name
-                                , lastNameInput = user.last_name
-                                , emailInput = user.email
-                                , photoUrlInput = user.photo_url
-                                , selectedUserId = Just user.id
-                                , selectedUserIndex = Just 0
-                            }
+                                    Just user ->
+                                        ( Just user.id, Just 0 )
+
+                        _ ->
+                            ( model.selectedUserId, model.selectedUserIndex )
+
+                --if we have done an edit then the selected user and index will stay the same
             in
-                { new_model
-                    | users = Array.fromList (users)
+                { model
+                    | selectedUserId = selectedUserId
+                    , selectedUserIndex = selectedUserIndex
+                    , users = userArray
                     , errors = Nothing
                 }
                     ! []
@@ -188,23 +190,51 @@ update msg model =
             }
                 ! []
 
-        SetFirstNameInput value ->
-            { model | firstNameInput = value } ! []
-
-        SetLastNameInput value ->
-            { model | lastNameInput = value } ! []
-
-        SetEmailInput value ->
-            { model | emailInput = value } ! []
-
-        SetPhotoUrlInput value ->
-            { model | photoUrlInput = value } ! []
-
         UserPost model ->
             model ! [ Rest.post model ]
 
         UserPut model ->
             model ! [ Rest.put model ]
+
+        SetFirstName value ->
+            let
+                user =
+                    model.scratchUser
+
+                new_user =
+                    { user | first_name = value }
+            in
+                { model | scratchUser = new_user } ! []
+
+        SetLastName value ->
+            let
+                user =
+                    model.scratchUser
+
+                new_user =
+                    { user | last_name = value }
+            in
+                { model | scratchUser = new_user } ! []
+
+        SetEmail value ->
+            let
+                user =
+                    model.scratchUser
+
+                new_user =
+                    { user | email = value }
+            in
+                { model | scratchUser = new_user } ! []
+
+        SetPhotoUrl value ->
+            let
+                user =
+                    model.scratchUser
+
+                new_user =
+                    { user | photo_url = value }
+            in
+                { model | scratchUser = new_user } ! []
 
 
 
@@ -230,10 +260,7 @@ populateUserData user idx model action =
     case user of
         Nothing ->
             { model
-                | firstNameInput = ""
-                , lastNameInput = ""
-                , emailInput = ""
-                , photoUrlInput = ""
+                | scratchUser = User.emptyUserWithRoles
                 , formAction = action
                 , selectedUserId = Nothing
                 , selectedUserIndex = Nothing
@@ -241,10 +268,7 @@ populateUserData user idx model action =
 
         Just u ->
             { model
-                | firstNameInput = u.first_name
-                , lastNameInput = u.last_name
-                , emailInput = u.email
-                , photoUrlInput = u.photo_url
+                | scratchUser = User.UserWithRoles u.id u.first_name u.last_name u.email u.photo_url u.roles
                 , formAction = action
                 , selectedUserId = Just u.id
                 , selectedUserIndex = Just idx
