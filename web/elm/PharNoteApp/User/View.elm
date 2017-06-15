@@ -3,7 +3,7 @@ module PharNoteApp.User.View exposing (view, alwaysFindUser, maybeFindUser)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (FormAction(..))
+import PharNoteApp.User.Model exposing (FormAction(..), RefDataStatus(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -33,12 +33,32 @@ view model mdlStore =
             userTable model.users model.selectedUserId model.order
 
         user =
-            case model.selectedUserIndex of
-                Just idx ->
-                    alwaysFindUser idx model.users
+            case model.formAction of
+                Edit ->
+                    model.scratchUser
 
-                Nothing ->
-                    User.emptyUserWithRoles
+                Create ->
+                    model.scratchUser
+
+                _ ->
+                    case model.selectedUserIndex of
+                        Just idx ->
+                            alwaysFindUser idx model.users
+
+                        Nothing ->
+                            --is this right?  this would represent an error which should be noted?
+                            User.emptyUserWithRoles
+
+        cards =
+            case model.formAction of
+                Edit ->
+                    editCards
+
+                Create ->
+                    editCards
+
+                _ ->
+                    viewCards
     in
         div []
             [ grid
@@ -56,16 +76,44 @@ view model mdlStore =
                     [ Grid.size All 4
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    [ userCard user mdlStore
+                    (cards user model.refDataStatus model.formAction mdlStore)
+                ]
+            ]
+
+
+viewCards : User.UserWithRoles -> User.RefDataStatus -> User.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+viewCards user refDataStatus action mdlStore =
+    [ userCard user refDataStatus mdlStore
+    , Options.div
+        [ Grid.size All 1
+        , css "height" "32px"
+        ]
+        []
+    , roleCard user.roles mdlStore
+    ]
+
+
+editCards : User.UserWithRoles -> User.RefDataStatus -> User.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+editCards user refDataStatus action mdlStore =
+    --check that ref data is loaded.
+    let
+        html =
+            case refDataStatus of
+                Loaded data ->
+                    [ userEditCard user data action mdlStore
                     , Options.div
                         [ Grid.size All 1
                         , css "height" "32px"
                         ]
                         []
-                    , roleCard user.roles mdlStore
+
+                    --, roleCard user.roles mdlStore
                     ]
-                ]
-            ]
+
+                _ ->
+                    [ text "no ref data" ]
+    in
+        html
 
 
 maybeFindUser : Int -> Array User.UserWithRoles -> Maybe User.UserWithRoles
@@ -162,40 +210,22 @@ userInfo ( fieldName, fieldValue ) =
         ]
 
 
-userForm : User.Model -> Html AppMsg.Msg
-userForm model =
+userForm : User.UserWithRoles -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
+userForm user refData action mdlStore =
     let
-        user =
-            case model.formAction of
-                Edit ->
-                    case model.selectedUserIndex of
-                        Just idx ->
-                            alwaysFindUser idx model.users
-
-                        Nothing ->
-                            --this would be an error - edit with no selected user
-                            User.emptyUserWithRoles
-
-                Create ->
-                    User.emptyUserWithRoles
-
-                _ ->
-                    --we should not be rendering user form for any other reason than Edit or Create
-                    User.emptyUserWithRoles
-
         buttonText =
-            if model.formAction == Edit then
+            if action == Edit then
                 "Update"
             else
                 "Create"
 
         buttonAction =
-            if model.formAction == Edit then
-                AppMsg.MsgForUser (UserMsg.UserPut model)
+            if action == Edit then
+                AppMsg.MsgForUser (UserMsg.UserPut user)
             else
-                AppMsg.MsgForUser (UserMsg.UserPost model)
+                AppMsg.MsgForUser (UserMsg.UserPost user)
     in
-        Html.form []
+        div []
             [ div [ class "form-group" ]
                 [ label [] [ text "First Name" ]
                 , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
@@ -212,7 +242,24 @@ userForm model =
                 [ label [] [ text "Photo URL" ]
                 , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
                 ]
-            , button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
+
+            --, button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
+            , Button.render AppMsg.Mdl
+                [ 3, 0 ]
+                mdlStore
+                [ Button.ripple
+                , Button.accent
+                , Options.onClick (AppMsg.MsgForUser UserMsg.CancelNewUser)
+                ]
+                [ text "Create" ]
+            , Button.render AppMsg.Mdl
+                [ 3, 1 ]
+                mdlStore
+                [ Button.ripple
+                , Button.accent
+                , Options.onClick (AppMsg.MsgForUser UserMsg.CancelNewUser)
+                ]
+                [ text "Cancel" ]
             ]
 
 
@@ -388,13 +435,13 @@ optionsCard model mdlStore =
                     [ 1, 1 ]
                     mdlStore
                     [ Button.ripple, white ]
-                    [ text "Awesome" ]
+                    [ text "Great" ]
                 ]
             ]
 
 
-userCard : User.UserWithRoles -> Material.Model -> Html AppMsg.Msg
-userCard user mdlStore =
+userCard : User.UserWithRoles -> User.RefDataStatus -> Material.Model -> Html AppMsg.Msg
+userCard user refData mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -412,6 +459,22 @@ userCard user mdlStore =
                     ]
                     [ text title ]
                 ]
+
+        actions =
+            case refData of
+                Loaded data ->
+                    [ Button.render AppMsg.Mdl
+                        [ 1, 1 ]
+                        mdlStore
+                        [ Button.ripple
+                        , white
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                        ]
+                        [ text "Create user" ]
+                    ]
+
+                _ ->
+                    []
     in
         Card.view
             [ css "width" "100%"
@@ -441,12 +504,7 @@ userCard user mdlStore =
                 ]
             , Card.actions
                 [ Card.border ]
-                [ Button.render AppMsg.Mdl
-                    [ 1, 1 ]
-                    mdlStore
-                    [ Button.ripple, white ]
-                    [ text "Awesome" ]
-                ]
+                actions
             ]
 
 
@@ -501,8 +559,11 @@ roleCard roles mdlStore =
                 [ Button.render AppMsg.Mdl
                     [ 2, 1 ]
                     mdlStore
-                    [ Button.ripple, white ]
-                    [ text "Awesome" ]
+                    [ Button.ripple
+                    , white
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                    ]
+                    [ text "Marvelloos" ]
                 ]
             ]
 
@@ -535,3 +596,60 @@ roleInfo i role =
             ]
             [ text role.role_desc ]
         ]
+
+
+userEditCard : User.UserWithRoles -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
+userEditCard user refData action mdlStore =
+    let
+        option title index =
+            Options.styled Html.li
+                [ css "margin" "4px 0" ]
+                [ Toggles.checkbox AppMsg.Mdl
+                    index
+                    mdlStore
+                    [ Toggles.ripple
+                    , Toggles.value (Maybe.withDefault False Nothing)
+
+                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+                    -- to be List (Material.Toggles.Property Msg)
+                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
+                    --, Options.onToggle (Toggle index)
+                    ]
+                    [ text title ]
+                ]
+    in
+        Card.view
+            [ css "width" "100%"
+            , Color.background (Color.color Color.Green Color.S500)
+
+            --, Options.cs "demo-options"
+            ]
+            [ Card.title
+                [ Color.background (Color.color Color.Blue Color.S500)
+                , css "padding" "0"
+
+                -- Clear default padding to encompass scrim
+                , Color.background <| Color.color Color.Teal Color.S300
+                ]
+                [ Card.head
+                    [ white
+
+                    --, Options.scrim 0.75
+                    --, css "padding" "16px"
+                    -- Restore default padding inside scrim
+                    --, css "width" "100%"
+                    ]
+                    [ text "Details" ]
+                ]
+            , Card.text [ white ]
+                [ userForm user refData action mdlStore
+                ]
+            , Card.actions
+                [ Card.border ]
+                [ Button.render AppMsg.Mdl
+                    [ 1, 1 ]
+                    mdlStore
+                    [ Button.ripple, white ]
+                    [ text "jolly good" ]
+                ]
+            ]

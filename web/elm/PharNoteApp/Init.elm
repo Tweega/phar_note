@@ -13,25 +13,26 @@ import Navigation
 
 init : Navigation.Location -> ( AppModel.Model, Cmd AppMsg.Msg )
 init location =
-    --let
-    --  ( userData, userCmd ) =
-    --      UserInit.init
-    --  ( chartData, chartCmd ) =
-    --      ChartInit.init
-    --in
-    ( { mdl = Material.model
-      , history = Route.init (Route.locFor location)
-      , userData = UserInit.initialModel
-      , roleData = RoleInit.initialModel
-      , chartData = ChartInit.initialModel
-      , activeUser = ""
-      }
-    , Material.init AppMsg.Mdl
-      --, userCmd :: [ Material.init Mdl ] - cmd.batch or something like that
-    )
+    let
+        ( userData, userCmd ) =
+            UserInit.init
+
+        --  ( chartData, chartCmd ) =
+        --      ChartInit.init
+    in
+        { mdl = Material.model
+        , history = Route.init (Route.locFor location)
+        , userData = userData
+        , roleData = RoleInit.initialModel
+        , chartData = ChartInit.initialModel
+        , activeUser = ""
+        }
+            -- , Material.init AppMsg.Mdl
+            ! [ Material.init AppMsg.Mdl, userCmd ]
 
 
 
+-- cmd.batch or something like that
 --this approach fetches the data at the start.  Alternative is to do that when each 'page' is loaded
 --this might work for reference data but dynamic data should probably be fetched with the page
 --call UserInit.init to fetch initial data if needed.  Same for the other sections

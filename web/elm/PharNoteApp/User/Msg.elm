@@ -11,6 +11,7 @@ type Msg
     | SelectUser Int
     | DeleteUser Int
     | NewUser
+    | CancelNewUser
     | ProcessUserGet (Result Http.Error (List User.UserWithRoles))
     | ProcessUserPost (Result Http.Error User.UserWithRoles)
     | ProcessRefDataGet (Result Http.Error (List Role.Role))
@@ -18,8 +19,8 @@ type Msg
     | SetLastName String
     | SetEmail String
     | SetPhotoUrl String
-    | UserPost User.Model
-    | UserPut User.Model
+    | UserPost User.UserWithRoles
+    | UserPut User.UserWithRoles
     | Reorder
     | KeyX Int
     | SelectTab Int

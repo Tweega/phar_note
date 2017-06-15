@@ -1,4 +1,5 @@
 [x] remove the user redundant fields from user model - nested scratchUser object
+[x] use userWithRoles instead of plain User.
 [] put selectedUserId and index behind a single maybe
 [] do card for new /edit user
 [] post new user

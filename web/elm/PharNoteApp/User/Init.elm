@@ -24,11 +24,13 @@ initialModel =
     , formAction = None
     , selectedUserId = Nothing
     , selectedUserIndex = Nothing
+    , previousSelectedUserId = Nothing
+    , previousSelectedUserIndex = Nothing
     , selectedTab = 0
     , order = Just Table.Ascending
     , errors = Nothing
     , scratchUser = emptyUserWithRoles
-    , refData = Loading
+    , refDataStatus = Loading
     }
 
 

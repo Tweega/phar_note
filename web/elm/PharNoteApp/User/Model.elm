@@ -24,11 +24,13 @@ type alias Model =
     , formAction : FormAction
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
+    , previousSelectedUserId : Maybe Int
+    , previousSelectedUserIndex : Maybe Int
     , scratchUser : UserWithRoles
     , selectedTab : Int
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
-    , refData : RefDataStatus
+    , refDataStatus : RefDataStatus
     }
 
 
@@ -46,6 +48,7 @@ type FormAction
     = Create
     | Edit
     | Delete
+    | Cancel
     | None
 
 

@@ -28,21 +28,26 @@ decoder =
         |> Json.Decode.Pipeline.required "user_roles" Role.listDecoder
 
 
-url : String
-url =
+urlUsers : String
+urlUsers =
     "http://localhost:4000/api/users"
+
+
+urlRefData : String
+urlRefData =
+    "http://localhost:4000/api/roledata"
 
 
 get : Cmd AppMsg.Msg
 get =
     --Http.send AppMsg.MsgForUser ProcessUserGet (Http.get url listDecoder)
-    Http.send (\result -> AppMsg.MsgForUser (ProcessUserGet result)) (Http.get url listDecoder)
+    Http.send (\result -> AppMsg.MsgForUser (ProcessUserGet result)) (Http.get urlUsers listDecoder)
 
 
 getRefData : Cmd AppMsg.Msg
 getRefData =
     --Http.send AppMsg.MsgForUser ProcessUserGet (Http.get url listDecoder)
-    Http.send (\result -> AppMsg.MsgForUser (ProcessRefDataGet result)) (Http.get url Role.listDecoder)
+    Http.send (\result -> AppMsg.MsgForUser (ProcessRefDataGet result)) (Http.get urlRefData Role.listDecoder)
 
 
 payload : User.UserWithRoles -> Json.Encode.Value
@@ -60,33 +65,31 @@ payload user =
             ]
 
 
-post : User.Model -> Cmd AppMsg.Msg
-post model =
+post : User.UserWithRoles -> Cmd AppMsg.Msg
+post user =
     let
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload model.scratchUser))
+                (Json.Encode.encode 0 (payload user))
     in
         --ProcessUserPost (Result Http.Error User)
         --Http.send ProcessUserPost (Http.post url body decoder)
         --send first arg is a function that can translate a result into a message
-        Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) (Http.post url body decoder)
+        Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) (Http.post urlUsers body decoder)
 
 
-put : User.Model -> Cmd AppMsg.Msg
-put model =
+put : User.UserWithRoles -> Cmd AppMsg.Msg
+put user =
     let
         putUrl =
-            case model.selectedUserId of
-                Nothing ->
-                    url ++ "/bad"
-
-                Just id ->
-                    url ++ "/" ++ (toString id)
+            if user.id > 0 then
+                urlUsers ++ "/bad"
+            else
+                urlUsers ++ "/" ++ (toString user.id)
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload model.scratchUser))
+                (Json.Encode.encode 0 (payload user))
 
         putRequest =
             Http.request
@@ -106,20 +109,18 @@ put model =
 --Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
 
 
-delete : User.Model -> Cmd AppMsg.Msg
-delete model =
+delete : User.UserWithRoles -> Cmd AppMsg.Msg
+delete user =
     let
         putUrl =
-            case model.selectedUserId of
-                Nothing ->
-                    url ++ "/bad"
-
-                Just id ->
-                    url ++ "/" ++ (toString id)
+            if user.id > 0 then
+                urlUsers ++ "/bad"
+            else
+                urlUsers ++ "/" ++ (toString user.id)
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload model.scratchUser))
+                (Json.Encode.encode 0 (payload user))
 
         putRequest =
             Http.request

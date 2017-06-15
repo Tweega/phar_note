@@ -31,6 +31,7 @@ defmodule PharNote.Router do
 
     #user roles
     get "/roles", RoleController, :index
+    get "/roledata", RoleController, :role_data
     get "/roles/:id", RoleController, :show
     post "/roles", RoleController, :create
     put "/roles/:id", RoleController, :update

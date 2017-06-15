@@ -56,8 +56,8 @@ defmodule PharNote.Role do
     preload: [:users]
   end
 
-  def xx(query) do
+  def roles(query) do
     from u in query,
-      select: [u.role_name, u.role_desc]
+      select: map(u, [:id, :role_name, :role_desc])
   end
 end

@@ -7,6 +7,15 @@ defmodule PharNote.RoleController do
     json conn, roles
   end
 
+  def role_data(conn, _params) do
+    roles = PharNote.Role
+    |> PharNote.Role.roles
+    |> PharNote.Role.sorted
+    |> Repo.all
+    json conn, roles
+  end
+
+
   def index_data() do
     roles = PharNote.Role
     |> PharNote.Role.with_users

@@ -109,7 +109,7 @@ update msg model =
                                 | formAction = User.Delete
                                 , selectedUserId = Just user.id
                             }
-                                ! [ Rest.delete { model | selectedUserId = Just user.id } ]
+                                ! [ Rest.delete user ]
             in
                 r
 
@@ -119,26 +119,47 @@ update msg model =
                 , scratchUser = User.emptyUserWithRoles
                 , selectedUserId = Nothing
                 , selectedUserIndex = Nothing
+                , previousSelectedUserIndex = model.selectedUserIndex
+                , previousSelectedUserId = model.selectedUserId
             }
                 ! []
 
+        CancelNewUser ->
+            let
+                x =
+                    Debug.log "Cancel" "New user"
+            in
+                { model
+                    | formAction = User.Cancel
+                    , selectedUserId = model.previousSelectedUserId
+                    , selectedUserIndex = model.previousSelectedUserIndex
+                }
+                    ! []
+
         ProcessRefDataGet (Ok roles) ->
             let
+                x =
+                    Debug.log "Fetched" "refData"
+
                 new_d =
                     List.foldl (\role roleDict -> Dict.insert role.id role roleDict)
                         Dict.empty
                         roles
             in
                 { model
-                    | refData = Loaded (User.RefData new_d)
+                    | refDataStatus = Loaded (User.RefData new_d)
                 }
                     ! []
 
         ProcessRefDataGet (Err error) ->
-            { model
-                | errors = Just error
-            }
-                ! []
+            let
+                x =
+                    Debug.log "refdata error" error
+            in
+                { model
+                    | errors = Just error
+                }
+                    ! []
 
         ProcessUserGet (Ok users) ->
             let
@@ -190,11 +211,11 @@ update msg model =
             }
                 ! []
 
-        UserPost model ->
-            model ! [ Rest.post model ]
+        UserPost user ->
+            model ! [ Rest.post user ]
 
-        UserPut model ->
-            model ! [ Rest.put model ]
+        UserPut user ->
+            model ! [ Rest.put user ]
 
         SetFirstName value ->
             let
@@ -259,6 +280,7 @@ populateUserData : Maybe User.UserWithRoles -> Int -> User.Model -> User.FormAct
 populateUserData user idx model action =
     case user of
         Nothing ->
+            --could we realistically arrive here?
             { model
                 | scratchUser = User.emptyUserWithRoles
                 , formAction = action
