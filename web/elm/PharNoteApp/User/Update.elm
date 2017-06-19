@@ -10,7 +10,8 @@ import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
 import Material.Table as Table
 import Array exposing (fromList)
-import Dict
+import Dict exposing (Dict)
+import Set exposing (Set)
 
 
 update : Msg -> User.Model -> ( User.Model, Cmd AppMsg.Msg )
@@ -116,7 +117,7 @@ update msg model =
         NewUser ->
             { model
                 | formAction = User.Create
-                , scratchUser = User.emptyUserWithRoles
+                , scratchUser = User.emptyUserWithRoleSet
                 , selectedUserId = Nothing
                 , selectedUserIndex = Nothing
                 , previousSelectedUserIndex = model.selectedUserIndex
@@ -138,16 +139,12 @@ update msg model =
 
         ProcessRefDataGet (Ok roles) ->
             let
-                x =
-                    Debug.log "Fetched" "refData"
-
-                new_d =
-                    List.foldl (\role roleDict -> Dict.insert role.id role roleDict)
-                        Dict.empty
-                        roles
+                roleDict =
+                    List.map (\role -> ( role.id, role )) roles
+                        |> Dict.fromList
             in
                 { model
-                    | refDataStatus = Loaded (User.RefData new_d)
+                    | refDataStatus = Loaded (User.RefData roleDict)
                 }
                     ! []
 
@@ -212,10 +209,30 @@ update msg model =
                 ! []
 
         UserPost user ->
-            model ! [ Rest.post user ]
+            case model.refDataStatus of
+                Loaded refData ->
+                    let
+                        userWithRoles =
+                            User.scratchToUserWithRoles model.scratchUser refData
+                    in
+                        model ! [ Rest.post userWithRoles ]
+
+                _ ->
+                    --need to provide a message here.
+                    model ! []
 
         UserPut user ->
-            model ! [ Rest.put user ]
+            case model.refDataStatus of
+                Loaded refData ->
+                    let
+                        userWithRoles =
+                            User.scratchToUserWithRoles model.scratchUser refData
+                    in
+                        model ! [ Rest.put userWithRoles ]
+
+                _ ->
+                    --need to provide a message here.
+                    model ! []
 
         SetFirstName value ->
             let
@@ -257,6 +274,27 @@ update msg model =
             in
                 { model | scratchUser = new_user } ! []
 
+        ToggleRole roleID ->
+            let
+                user =
+                    model.scratchUser
+
+                roleSet =
+                    user.roles
+
+                newRoleSet =
+                    case Set.member roleID roleSet of
+                        True ->
+                            Set.remove roleID roleSet
+
+                        False ->
+                            Set.insert roleID roleSet
+
+                newUser =
+                    { user | roles = newRoleSet }
+            in
+                { model | scratchUser = newUser } ! []
+
 
 
 {- Rotate table ordering : Ascending -> Descending -> No sorting -> ... -}
@@ -277,24 +315,30 @@ toggleSort order =
 
 
 populateUserData : Maybe User.UserWithRoles -> Int -> User.Model -> User.FormAction -> User.Model
-populateUserData user idx model action =
+populateUserData user roleID model action =
     case user of
         Nothing ->
             --could we realistically arrive here?
             { model
-                | scratchUser = User.emptyUserWithRoles
+                | scratchUser = User.emptyUserWithRoleSet
                 , formAction = action
                 , selectedUserId = Nothing
                 , selectedUserIndex = Nothing
             }
 
         Just u ->
-            { model
-                | scratchUser = User.UserWithRoles u.id u.first_name u.last_name u.email u.photo_url u.roles
-                , formAction = action
-                , selectedUserId = Just u.id
-                , selectedUserIndex = Just idx
-            }
+            --if we only have role ids, not the whole role record, then we won't need the first map function
+            let
+                roleSet =
+                    List.map (\r -> r.id) u.roles
+                        |> Set.fromList
+            in
+                { model
+                    | scratchUser = User.UserWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
+                    , formAction = action
+                    , selectedUserId = Just u.id
+                    , selectedUserIndex = Just roleID
+                }
 
 
 sort_by_last_first : User.UserWithRoles -> String

@@ -1,6 +1,10 @@
 [x] remove the user redundant fields from user model - nested scratchUser object
 [x] use userWithRoles instead of plain User.
+[] display edit user casrd
+[] add roles to edit user card
+
 [] put selectedUserId and index behind a single maybe
 [] do card for new /edit user
-[] post new user
+[] post new usercd work
+
 [] put user

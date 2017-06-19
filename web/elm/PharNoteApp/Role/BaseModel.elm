@@ -6,3 +6,8 @@ type alias Role =
     , role_name : String
     , role_desc : String
     }
+
+
+emptyRole : Role
+emptyRole =
+    Role 0 "" ""

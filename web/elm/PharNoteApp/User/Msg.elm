@@ -19,8 +19,9 @@ type Msg
     | SetLastName String
     | SetEmail String
     | SetPhotoUrl String
-    | UserPost User.UserWithRoles
-    | UserPut User.UserWithRoles
+    | ToggleRole Int
+    | UserPost User.UserWithRoleSet
+    | UserPut User.UserWithRoleSet
     | Reorder
     | KeyX Int
     | SelectTab Int

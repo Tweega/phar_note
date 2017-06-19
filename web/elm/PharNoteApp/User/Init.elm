@@ -1,7 +1,7 @@
 module PharNoteApp.User.Init exposing (..)
 
 import PharNoteApp.User.Rest exposing (getRefData)
-import PharNoteApp.User.Model exposing (Model, FormAction(..), RefDataStatus(..), emptyUserWithRoles)
+import PharNoteApp.User.Model exposing (Model, FormAction(..), RefDataStatus(..), emptyUserWithRoleSet)
 import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.Msg as AppMsg
 import Material.Table as Table
@@ -29,7 +29,7 @@ initialModel =
     , selectedTab = 0
     , order = Just Table.Ascending
     , errors = Nothing
-    , scratchUser = emptyUserWithRoles
+    , scratchUser = emptyUserWithRoleSet
     , refDataStatus = Loading
     }
 

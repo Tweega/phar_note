@@ -3,7 +3,7 @@ module PharNoteApp.User.View exposing (view, alwaysFindUser, maybeFindUser)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (FormAction(..), RefDataStatus(..))
+import PharNoteApp.User.Model exposing (FormAction(..), RefDataStatus(..), UserType(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -24,6 +24,8 @@ import Material.Card as Card
 import Material.Button as Button
 import Material.Toggles as Toggles
 import Material.Elevation as Elevation
+import Set exposing (Set)
+import Dict exposing (Dict)
 
 
 view : User.Model -> Material.Model -> Html AppMsg.Msg
@@ -35,30 +37,27 @@ view model mdlStore =
         user =
             case model.formAction of
                 Edit ->
-                    model.scratchUser
+                    WithSet model.scratchUser
 
                 Create ->
-                    model.scratchUser
+                    WithSet model.scratchUser
 
                 _ ->
                     case model.selectedUserIndex of
                         Just idx ->
-                            alwaysFindUser idx model.users
+                            WithRoles (alwaysFindUser idx model.users)
 
                         Nothing ->
                             --is this right?  this would represent an error which should be noted?
-                            User.emptyUserWithRoles
+                            WithRoles User.emptyUserWithRoles
 
         cards =
-            case model.formAction of
-                Edit ->
-                    editCards
+            case user of
+                WithSet userWithRoleSet ->
+                    (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
 
-                Create ->
-                    editCards
-
-                _ ->
-                    viewCards
+                WithRoles userWithRoles ->
+                    (viewCards userWithRoles model.refDataStatus mdlStore)
     in
         div []
             [ grid
@@ -76,13 +75,13 @@ view model mdlStore =
                     [ Grid.size All 4
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    (cards user model.refDataStatus model.formAction mdlStore)
+                    cards
                 ]
             ]
 
 
-viewCards : User.UserWithRoles -> User.RefDataStatus -> User.FormAction -> Material.Model -> List (Html AppMsg.Msg)
-viewCards user refDataStatus action mdlStore =
+viewCards : User.UserWithRoles -> User.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
+viewCards user refDataStatus mdlStore =
     [ userCard user refDataStatus mdlStore
     , Options.div
         [ Grid.size All 1
@@ -93,21 +92,20 @@ viewCards user refDataStatus action mdlStore =
     ]
 
 
-editCards : User.UserWithRoles -> User.RefDataStatus -> User.FormAction -> Material.Model -> List (Html AppMsg.Msg)
-editCards user refDataStatus action mdlStore =
+editCards : User.UserWithRoleSet -> User.RefDataStatus -> User.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+editCards scratchUser refDataStatus action mdlStore =
     --check that ref data is loaded.
     let
         html =
             case refDataStatus of
-                Loaded data ->
-                    [ userEditCard user data action mdlStore
+                Loaded refData ->
+                    [ userEditCard scratchUser refData action mdlStore
                     , Options.div
                         [ Grid.size All 1
                         , css "height" "32px"
                         ]
                         []
-
-                    --, roleCard user.roles mdlStore
+                    , roleEditCard scratchUser.roles refData mdlStore
                     ]
 
                 _ ->
@@ -210,7 +208,7 @@ userInfo ( fieldName, fieldValue ) =
         ]
 
 
-userForm : User.UserWithRoles -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
+userForm : User.UserWithRoleSet -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
 userForm user refData action mdlStore =
     let
         buttonText =
@@ -598,8 +596,8 @@ roleInfo i role =
         ]
 
 
-userEditCard : User.UserWithRoles -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
-userEditCard user refData action mdlStore =
+userEditCard : User.UserWithRoleSet -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
+userEditCard scratchUser refData action mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -642,7 +640,7 @@ userEditCard user refData action mdlStore =
                     [ text "Details" ]
                 ]
             , Card.text [ white ]
-                [ userForm user refData action mdlStore
+                [ userForm scratchUser refData action mdlStore
                 ]
             , Card.actions
                 [ Card.border ]
@@ -653,3 +651,73 @@ userEditCard user refData action mdlStore =
                     [ text "jolly good" ]
                 ]
             ]
+
+
+roleOption : RoleBase.Role -> Int -> Bool -> Material.Model -> Html AppMsg.Msg
+roleOption role index value mdlStore =
+    Options.styled Html.li
+        [ css "margin" "4px 0" ]
+        [ Toggles.checkbox AppMsg.Mdl
+            [ 4, index ]
+            mdlStore
+            [ Toggles.ripple
+            , Toggles.value value
+
+            --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+            -- to be List (Material.Toggles.Property Msg)
+            , Options.onToggle (AppMsg.MsgForUser (UserMsg.ToggleRole role.id))
+
+            --, Options.onToggle (Toggle index)
+            ]
+            [ text role.role_name ]
+        ]
+
+
+roleOptions : Set Int -> User.RefData -> Material.Model -> List (Html AppMsg.Msg)
+roleOptions roleSet refData mdlStore =
+    --may want to sort the list
+    let
+        roles =
+            Dict.toList refData.roles
+    in
+        List.map
+            (\( index, role ) ->
+                let
+                    value =
+                        Set.member role.id roleSet
+                in
+                    roleOption role index value mdlStore
+            )
+            roles
+
+
+roleEditCard : Set Int -> User.RefData -> Material.Model -> Html AppMsg.Msg
+roleEditCard roleSet refData mdlStore =
+    Card.view
+        [ css "width" "100%"
+        , Color.background (Color.color Color.Pink Color.S500)
+        , Options.cs "demo-options"
+        ]
+        [ Card.text [ white ]
+            [ Options.styled Html.h3
+                [ css "font-size" "1em"
+                , css "margin" "0"
+                ]
+                [ text "Options"
+                ]
+            , Options.styled Html.ul
+                [ css "list-style-type" "none"
+                , css "margin" "0"
+                , css "padding" "0"
+                ]
+                (roleOptions roleSet refData mdlStore)
+            ]
+        , Card.actions
+            [ Card.border ]
+            [ Button.render AppMsg.Mdl
+                [ 1, 1 ]
+                mdlStore
+                [ Button.ripple, white ]
+                [ text "Great" ]
+            ]
+        ]
