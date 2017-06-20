@@ -48,7 +48,17 @@ update msg model =
                     View.maybeFindUser (Just idx) model.users
 
                 newModel =
-                    populateUserData user (Just idx) model model.formAction
+                    case user of
+                        Just u ->
+                            { model
+                                | selectedUserId = Just u.id
+                                , selectedUserIndex = Just idx
+                            }
+
+                        _ ->
+                            model
+
+                --populateScratchUserData user (Just idx) model model.formAction
             in
                 newModel ! []
 
@@ -58,7 +68,17 @@ update msg model =
                     View.maybeFindUser (Just idx) model.users
 
                 newModel =
-                    populateUserData user (Just idx) model model.formAction
+                    case user of
+                        Just u ->
+                            { model
+                                | selectedUserId = Just u.id
+                                , selectedUserIndex = Just idx
+                            }
+
+                        _ ->
+                            model
+
+                --populateScratchUserData user (Just idx) model model.formAction
             in
                 newModel
                     ! []
@@ -115,7 +135,7 @@ update msg model =
                     View.maybeFindUser idx model.users
 
                 newModel =
-                    populateUserData user idx model User.Edit
+                    populateScratchUserData user idx model User.Edit
             in
                 newModel
                     ! []
@@ -226,6 +246,9 @@ update msg model =
                     let
                         userWithRoles =
                             User.scratchToUserWithRoles model.scratchUser refData
+
+                        h =
+                            Debug.log "Roles" userWithRoles
                     in
                         model ! [ Rest.post userWithRoles ]
 
@@ -326,8 +349,8 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateUserData : Maybe User.UserWithRoles -> Maybe Int -> User.Model -> User.FormAction -> User.Model
-populateUserData maybeUser maybeUserIndex model action =
+populateScratchUserData : Maybe User.UserWithRoles -> Maybe Int -> User.Model -> User.FormAction -> User.Model
+populateScratchUserData maybeUser maybeUserIndex model action =
     case maybeUser of
         Nothing ->
             --could we realistically arrive here?

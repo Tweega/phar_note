@@ -31,6 +31,17 @@ type alias UserWithRoleSet =
     }
 
 
+type alias UserWithRoleString =
+    --duplicated again from User.BaseModel
+    { id : Int
+    , first_name : String
+    , last_name : String
+    , email : String
+    , photo_url : String
+    , roles : String
+    }
+
+
 type alias Model =
     { users : Array UserWithRoles
     , formAction : FormAction
@@ -79,8 +90,19 @@ emptyUserWithRoleSet =
     UserWithRoleSet 0 "" "" "" "" Set.empty
 
 
-scratchToUserWithRoles : UserWithRoleSet -> RefData -> UserWithRoles
+scratchToUserWithRoles : UserWithRoleSet -> RefData -> UserWithRoleString
 scratchToUserWithRoles user refData =
+    let
+        userRoles =
+            Set.toList user.roles
+                |> List.map (\i -> toString i)
+                |> String.join (",")
+    in
+        UserWithRoleString user.id user.first_name user.last_name user.email user.photo_url userRoles
+
+
+scratchToUserWithRoles_x : UserWithRoleSet -> RefData -> UserWithRoles
+scratchToUserWithRoles_x user refData =
     let
         userRoles =
             Set.toList user.roles

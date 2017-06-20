@@ -42,7 +42,7 @@ defmodule PharNote.User do
   def changeset_update(user, params \\ :empty) do
       user
         |> Repo.preload(:user_roles)
-        |> cast(params, [:first_name, :last_name, :email, :photo_url])
+        |> cast(params, [:first_name, :last_name, :email, :photo_url, :user_roles])
         |> cast_assoc(:user_roles)
         |> unique_constraint(:email)
   end
@@ -50,7 +50,7 @@ defmodule PharNote.User do
   def changeset_new(user, params \\ :empty) do
     #assuming here that new user will not have any roles, which is probably not going to be the case
     user
-      |> cast(params, [:first_name, :last_name, :email, :photo_url])
+      |> cast(params, [:first_name, :last_name, :email, :photo_url])      
       |> unique_constraint(:email)
   end
 
@@ -74,4 +74,31 @@ defmodule PharNote.User do
       inner_join: r in assoc(u, :user_roles),
       select: {u.first_name, u.last_name, r.role_name}
   end
+
+
+  def changesetx(user, params \\ %{}) do
+    # struct
+    # |> Ecto.Changeset.cast(params, [:title, :body])
+    # |> Ecto.Changeset.put_assoc(:tags, parse_tags(params))
+
+    user
+      |> Repo.preload(:user_roles)
+      |> cast(params, [:first_name, :last_name, :email, :photo_url])
+      |> put_assoc(:user_roles, parse_roles(params))
+      |> unique_constraint(:email)
+  end
+
+  defp parse_roles(params)  do
+    (params["user_roles"] || "")
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(& &1 == "")
+    |> Enum.map(&get_or_insert_tagx/1)
+  end
+
+  defp get_or_insert_tagx(roleID) do
+    Repo.get(PharNote.Role, roleID)
+  end
+
+
 end

@@ -50,27 +50,36 @@ getRefData =
     Http.send (\result -> AppMsg.MsgForUser (ProcessRefDataGet result)) (Http.get urlRefData Role.listDecoder)
 
 
-payload : User.UserWithRoles -> Json.Encode.Value
+payload : User.UserWithRoleString -> Json.Encode.Value
 payload user =
-    let
-        uroles =
-            List.map (\r -> r.id) user.roles
-    in
-        Json.Encode.object
-            [ ( "first_name", Json.Encode.string user.first_name )
-            , ( "last_name", Json.Encode.string user.last_name )
-            , ( "email", Json.Encode.string user.email )
-            , ( "photo_url", Json.Encode.string user.photo_url )
-            , ( "roles", Json.Encode.list (List.map Json.Encode.int uroles) )
-            ]
+    Json.Encode.object
+        [ ( "first_name", Json.Encode.string user.first_name )
+        , ( "last_name", Json.Encode.string user.last_name )
+        , ( "email", Json.Encode.string user.email )
+        , ( "photo_url", Json.Encode.string user.photo_url )
+        , ( "user_roles", Json.Encode.string user.roles )
+        ]
 
 
-post : User.UserWithRoles -> Cmd AppMsg.Msg
+payload2 : User.UserWithRoles -> Json.Encode.Value
+payload2 user =
+    Json.Encode.object
+        [ ( "first_name", Json.Encode.string user.first_name )
+        , ( "last_name", Json.Encode.string user.last_name )
+        , ( "email", Json.Encode.string user.email )
+        , ( "photo_url", Json.Encode.string user.photo_url )
+        ]
+
+
+post : User.UserWithRoleString -> Cmd AppMsg.Msg
 post user =
     let
         body =
             Http.stringBody "application/json"
                 (Json.Encode.encode 0 (payload user))
+
+        jj =
+            Debug.log "json" body
     in
         --ProcessUserPost (Result Http.Error User)
         --Http.send ProcessUserPost (Http.post url body decoder)
@@ -78,7 +87,7 @@ post user =
         Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) (Http.post urlUsers body decoder)
 
 
-put : User.UserWithRoles -> Cmd AppMsg.Msg
+put : User.UserWithRoleString -> Cmd AppMsg.Msg
 put user =
     let
         putUrl =
@@ -120,7 +129,7 @@ delete user =
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload user))
+                (Json.Encode.encode 0 (payload2 user))
 
         putRequest =
             Http.request

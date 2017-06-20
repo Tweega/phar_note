@@ -251,7 +251,7 @@ userForm user refData action mdlStore =
                 mdlStore
                 [ Button.ripple
                 , Button.accent
-                , Options.onClick (AppMsg.MsgForUser UserMsg.CancelNewUser)
+                , Options.onClick buttonAction
                 ]
                 [ text "Create" ]
             , Button.render AppMsg.Mdl

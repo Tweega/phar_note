@@ -1,5 +1,6 @@
 defmodule PharNote.UserController do
   use PharNote.Web, :controller
+  require Logger
 
   def index(conn, _params) do
     users = index_data()
@@ -34,12 +35,25 @@ defmodule PharNote.UserController do
   end
 
   def create(conn, params) do
+
+    #params = %{"email" => "ll", "first_name" => "luna", "last_name" => "lovegood", "photo_url" => "luna.jpg", "user_roles" => "12,13, 15"}
+
     changeset = PharNote.User.changeset_new(%PharNote.User{}, params)
     case Repo.insert(changeset) do
       {:ok, user} ->
-        #strip out the user_roles field - either that or do a cast_assoc on it
-        u2 = %PharNote.User{ user | user_roles: []}  #or nil
-        json conn |> put_status(:created), u2
+        Logger.debug("helloo there" )
+        Logger.debug(fn -> inspect (user) end)
+        cs = PharNote.User.changesetx(user, params)
+        Logger.debug(fn -> inspect (cs) end)
+        case Repo.update(cs) do
+          {:ok, newUser} ->
+            Logger.debug(fn -> inspect (newUser) end)
+            #strip out the user_roles field - either that or do a cast_assoc on it
+            u2 = %PharNote.User{ newUser | user_roles: []}  #or nil
+            json conn |> put_status(:created), u2 #why not just return user
+          {:error, _changeset} ->
+            json conn |> put_status(:bad_request), %{errors: ["unable to create user 1"]}
+        end
       {:error, _changeset} ->
         json conn |> put_status(:bad_request), %{errors: ["unable to create user"]}
     end
