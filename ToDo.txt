@@ -2,6 +2,7 @@
 [x] use userWithRoles instead of plain User.
 [] display edit user casrd
 [] add roles to edit user card
+[] why are we populating user data on every table row click - we only need it on edit actions.
 
 [] put selectedUserId and index behind a single maybe
 [] do card for new /edit user

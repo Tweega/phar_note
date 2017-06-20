@@ -45,20 +45,20 @@ update msg model =
                         currentIdx
 
                 user =
-                    View.maybeFindUser idx model.users
+                    View.maybeFindUser (Just idx) model.users
 
                 newModel =
-                    populateUserData user idx model model.formAction
+                    populateUserData user (Just idx) model model.formAction
             in
                 newModel ! []
 
         SelectUser idx ->
             let
                 user =
-                    View.maybeFindUser idx model.users
+                    View.maybeFindUser (Just idx) model.users
 
                 newModel =
-                    populateUserData user idx model model.formAction
+                    populateUserData user (Just idx) model model.formAction
             in
                 newModel
                     ! []
@@ -84,19 +84,11 @@ update msg model =
             in
                 { model | order = sortOrder, users = sortedUsers } ! []
 
-        EditUser idx ->
+        DeleteUser ->
             let
-                user =
-                    View.maybeFindUser idx model.users
+                idx =
+                    model.selectedUserIndex
 
-                newModel =
-                    populateUserData user idx model User.Edit
-            in
-                model
-                    ! []
-
-        DeleteUser idx ->
-            let
                 usr =
                     View.maybeFindUser idx model.users
 
@@ -114,6 +106,20 @@ update msg model =
             in
                 r
 
+        EditUser ->
+            let
+                idx =
+                    model.selectedUserIndex
+
+                user =
+                    View.maybeFindUser idx model.users
+
+                newModel =
+                    populateUserData user idx model User.Edit
+            in
+                newModel
+                    ! []
+
         NewUser ->
             { model
                 | formAction = User.Create
@@ -127,15 +133,21 @@ update msg model =
 
         CancelNewUser ->
             let
-                x =
-                    Debug.log "Cancel" "New user"
+                newModel =
+                    case model.formAction of
+                        User.Create ->
+                            { model
+                                | formAction = User.Cancel
+                                , selectedUserId = model.previousSelectedUserId
+                                , selectedUserIndex = model.previousSelectedUserIndex
+                            }
+
+                        _ ->
+                            { model
+                                | formAction = User.Cancel
+                            }
             in
-                { model
-                    | formAction = User.Cancel
-                    , selectedUserId = model.previousSelectedUserId
-                    , selectedUserIndex = model.previousSelectedUserIndex
-                }
-                    ! []
+                newModel ! []
 
         ProcessRefDataGet (Ok roles) ->
             let
@@ -314,9 +326,9 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateUserData : Maybe User.UserWithRoles -> Int -> User.Model -> User.FormAction -> User.Model
-populateUserData user roleID model action =
-    case user of
+populateUserData : Maybe User.UserWithRoles -> Maybe Int -> User.Model -> User.FormAction -> User.Model
+populateUserData maybeUser maybeUserIndex model action =
+    case maybeUser of
         Nothing ->
             --could we realistically arrive here?
             { model
@@ -337,7 +349,7 @@ populateUserData user roleID model action =
                     | scratchUser = User.UserWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
                     , formAction = action
                     , selectedUserId = Just u.id
-                    , selectedUserIndex = Just roleID
+                    , selectedUserIndex = maybeUserIndex
                 }
 
 

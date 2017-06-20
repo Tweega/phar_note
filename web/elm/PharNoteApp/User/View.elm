@@ -43,13 +43,7 @@ view model mdlStore =
                     WithSet model.scratchUser
 
                 _ ->
-                    case model.selectedUserIndex of
-                        Just idx ->
-                            WithRoles (alwaysFindUser idx model.users)
-
-                        Nothing ->
-                            --is this right?  this would represent an error which should be noted?
-                            WithRoles User.emptyUserWithRoles
+                    WithRoles (alwaysFindUser model.selectedUserIndex model.users)
 
         cards =
             case user of
@@ -114,16 +108,26 @@ editCards scratchUser refDataStatus action mdlStore =
         html
 
 
-maybeFindUser : Int -> Array User.UserWithRoles -> Maybe User.UserWithRoles
-maybeFindUser idx users =
-    Array.get idx users
+maybeFindUser : Maybe Int -> Array User.UserWithRoles -> Maybe User.UserWithRoles
+maybeFindUser maybeIndex users =
+    case maybeIndex of
+        Just idx ->
+            Array.get idx users
+
+        _ ->
+            Nothing
 
 
-alwaysFindUser : Int -> Array User.UserWithRoles -> User.UserWithRoles
-alwaysFindUser idx users =
+alwaysFindUser : Maybe Int -> Array User.UserWithRoles -> User.UserWithRoles
+alwaysFindUser maybeIndex users =
     let
         maybeUser =
-            Array.get idx users
+            case maybeIndex of
+                Just idx ->
+                    Array.get idx users
+
+                _ ->
+                    Nothing
     in
         case maybeUser of
             Just usr ->
@@ -559,7 +563,7 @@ roleCard roles mdlStore =
                     mdlStore
                     [ Button.ripple
                     , white
-                    , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
                     ]
                     [ text "Marvelloos" ]
                 ]
