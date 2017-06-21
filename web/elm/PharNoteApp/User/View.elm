@@ -53,7 +53,7 @@ view model mdlStore =
                 WithRoles userWithRoles ->
                     (viewCards userWithRoles model.refDataStatus mdlStore)
     in
-        div []
+        div [ style [ ( "height", "90vh" ), ( "width", "100vw" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
                 [ Options.many
                     [ css "display" "flex"
@@ -62,7 +62,7 @@ view model mdlStore =
                     ]
                 ]
                 [ cell [ Grid.size All 5 ]
-                    [ Options.div [ css "width" "100%" ] [ text "buttons here" ]
+                    [ Options.div [] [ text "buttons here" ]
                     , contents
                     ]
                 , cell
@@ -270,6 +270,11 @@ userTable users selectedUserId order =
     div
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
         , tabindex 0
+        , style
+            [ ( "height", "40%" )
+            , ( "overflow-y", "hidden" )
+            , ( "overflow-x", "hidden" )
+            ]
         ]
         [ Table.table
             [ Options.css "margin" "0px"

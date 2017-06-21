@@ -91,7 +91,7 @@ put : User.UserWithRoleString -> Cmd AppMsg.Msg
 put user =
     let
         putUrl =
-            if user.id > 0 then
+            if user.id < 1 then
                 urlUsers ++ "/bad"
             else
                 urlUsers ++ "/" ++ (toString user.id)

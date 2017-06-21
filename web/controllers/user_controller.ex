@@ -41,13 +41,9 @@ defmodule PharNote.UserController do
     changeset = PharNote.User.changeset_new(%PharNote.User{}, params)
     case Repo.insert(changeset) do
       {:ok, user} ->
-        Logger.debug("helloo there" )
-        Logger.debug(fn -> inspect (user) end)
         cs = PharNote.User.changesetx(user, params)
-        Logger.debug(fn -> inspect (cs) end)
         case Repo.update(cs) do
           {:ok, newUser} ->
-            Logger.debug(fn -> inspect (newUser) end)
             #strip out the user_roles field - either that or do a cast_assoc on it
             u2 = %PharNote.User{ newUser | user_roles: []}  #or nil
             json conn |> put_status(:created), u2 #why not just return user
@@ -69,8 +65,8 @@ defmodule PharNote.UserController do
   end
 
   defp perform_update(conn, user, params) do
-    changeset = PharNote.User.changeset_update(user, params)
-    case Repo.update(changeset) do
+    changeset = PharNote.User.changesetx(user, params)
+    case Repo.update(changeset) do      
       {:ok, user} ->
         u2 = hd(strip_role_users([user]))
         json conn |> put_status(:ok), u2
