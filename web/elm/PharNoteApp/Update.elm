@@ -78,7 +78,7 @@ urlUpdate model route =
         cmd =
             case route of
                 Just Route.Users ->
-                    case model.userData.selectedUserId of
+                    case model.userData.details.selectedUserId of
                         Nothing ->
                             [ UserData.get ]
 

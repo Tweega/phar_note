@@ -16,319 +16,426 @@ import Set exposing (Set)
 
 update : Msg -> User.Model -> ( User.Model, Cmd AppMsg.Msg )
 update msg model =
-    case msg of
-        NoOp ->
-            model ! []
+    let
+        details =
+            model.details
 
-        SelectTab idx ->
-            { model | selectedTab = idx } ! []
+        selector =
+            model.selector
+    in
+        case msg of
+            NoOp ->
+                model ! []
 
-        KeyX key ->
-            let
-                userCount =
-                    Array.length (model.users)
+            KeyDown key ->
+                let
+                    userCount =
+                        Array.length (details.users)
 
-                currentIdx =
-                    case model.selectedUserIndex of
-                        Nothing ->
-                            -1
+                    currentIdx =
+                        case details.selectedUserIndex of
+                            Nothing ->
+                                -1
 
-                        Just ndx ->
-                            ndx
+                            Just ndx ->
+                                ndx
 
-                idx =
-                    if key == 38 && currentIdx > 0 then
-                        currentIdx - 1
-                    else if key == 40 && currentIdx < userCount - 1 then
-                        currentIdx + 1
-                    else
-                        currentIdx
+                    idx =
+                        if key == 38 && currentIdx > 0 then
+                            currentIdx - 1
+                        else if key == 40 && currentIdx < userCount - 1 then
+                            currentIdx + 1
+                        else
+                            currentIdx
 
-                user =
-                    View.maybeFindUser (Just idx) model.users
+                    user =
+                        View.maybeFindUser (Just idx) details.users
 
-                newModel =
-                    case user of
-                        Just u ->
-                            { model
-                                | selectedUserId = Just u.id
-                                , selectedUserIndex = Just idx
-                            }
+                    newDetails =
+                        case user of
+                            Just u ->
+                                { details
+                                    | selectedUserId = Just u.id
+                                    , selectedUserIndex = Just idx
+                                }
 
-                        _ ->
-                            model
+                            _ ->
+                                details
 
-                --populateScratchUserData user (Just idx) model model.formAction
-            in
-                newModel ! []
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
 
-        SelectUser idx ->
-            let
-                user =
-                    View.maybeFindUser (Just idx) model.users
+                    --populateScratchUserData user (Just idx) model model.formAction
+                in
+                    newModel ! []
 
-                newModel =
-                    case user of
-                        Just u ->
-                            { model
-                                | selectedUserId = Just u.id
-                                , selectedUserIndex = Just idx
-                            }
+            SelectUser idx ->
+                let
+                    user =
+                        View.maybeFindUser (Just idx) details.users
 
-                        _ ->
-                            model
+                    ( newDetails, newSelector ) =
+                        case user of
+                            Just u ->
+                                ( { details
+                                    | selectedUserId = Just u.id
+                                    , selectedUserIndex = Just idx
+                                  }
+                                , { selector
+                                    | selectedUserId = Just u.id
+                                    , selectedUserIndex = Just idx
+                                  }
+                                )
 
-                --populateScratchUserData user (Just idx) model model.formAction
-            in
-                newModel
-                    ! []
+                            _ ->
+                                ( details, selector )
 
-        Reorder ->
-            let
-                sortOrder =
-                    toggleSort model.order
+                    newModel =
+                        { model
+                            | selector = newSelector
+                            , details = newDetails
+                        }
 
-                sort =
-                    case sortOrder of
-                        Just Table.Ascending ->
-                            List.sortBy sort_by_last_first
+                    --populateScratchUserData user (Just idx) model model.formAction
+                in
+                    newModel
+                        ! []
 
-                        Just Table.Descending ->
-                            List.sortWith (\x y -> reverse (sort_by_last_first x) (sort_by_last_first y))
+            Reorder ->
+                let
+                    sortOrder =
+                        toggleSort details.order
 
-                        Nothing ->
-                            identity
+                    sort =
+                        case sortOrder of
+                            Just Table.Ascending ->
+                                List.sortBy sort_by_last_first
 
-                sortedUsers =
-                    sort (Array.toList model.users) |> Array.fromList
-            in
-                { model | order = sortOrder, users = sortedUsers } ! []
+                            Just Table.Descending ->
+                                List.sortWith (\x y -> reverse (sort_by_last_first x) (sort_by_last_first y))
 
-        DeleteUser ->
-            let
-                idx =
-                    model.selectedUserIndex
+                            Nothing ->
+                                identity
 
-                usr =
-                    View.maybeFindUser idx model.users
+                    sortedUsers =
+                        sort (Array.toList details.users) |> Array.fromList
 
-                r =
-                    case usr of
-                        Nothing ->
-                            model ! []
+                    newDetails =
+                        { details | order = sortOrder, users = sortedUsers }
 
-                        Just user ->
-                            { model
-                                | formAction = User.Delete
-                                , selectedUserId = Just user.id
-                            }
-                                ! [ Rest.delete user ]
-            in
-                r
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-        EditUser ->
-            let
-                idx =
-                    model.selectedUserIndex
+            DeleteUser ->
+                let
+                    idx =
+                        details.selectedUserIndex
 
-                user =
-                    View.maybeFindUser idx model.users
+                    usr =
+                        View.maybeFindUser idx details.users
 
-                newModel =
-                    populateScratchUserData user idx model User.Edit
-            in
-                newModel
-                    ! []
+                    ( newDetails, cmds ) =
+                        case usr of
+                            Nothing ->
+                                ( details, [] )
 
-        NewUser ->
-            { model
-                | formAction = User.Create
-                , scratchUser = User.emptyUserWithRoleSet
-                , selectedUserId = Nothing
-                , selectedUserIndex = Nothing
-                , previousSelectedUserIndex = model.selectedUserIndex
-                , previousSelectedUserId = model.selectedUserId
-            }
-                ! []
+                            Just user ->
+                                ( { details
+                                    | formAction = User.Delete
+                                    , selectedUserId = Just user.id
+                                  }
+                                , [ Rest.delete user ]
+                                )
 
-        CancelNewUser ->
-            let
-                newModel =
-                    case model.formAction of
-                        User.Create ->
-                            { model
-                                | formAction = User.Cancel
-                                , selectedUserId = model.previousSelectedUserId
-                                , selectedUserIndex = model.previousSelectedUserIndex
-                            }
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! cmds
 
-                        _ ->
-                            { model
-                                | formAction = User.Cancel
-                            }
-            in
-                newModel ! []
+            EditUser ->
+                let
+                    idx =
+                        details.selectedUserIndex
 
-        ProcessRefDataGet (Ok roles) ->
-            let
-                roleDict =
-                    List.map (\role -> ( role.id, role )) roles
-                        |> Dict.fromList
-            in
-                { model
-                    | refDataStatus = Loaded (User.RefData roleDict)
-                }
-                    ! []
+                    user =
+                        View.maybeFindUser idx details.users
 
-        ProcessRefDataGet (Err error) ->
-            let
-                x =
-                    Debug.log "refdata error" error
-            in
-                { model
-                    | errors = Just error
-                }
-                    ! []
+                    newModel =
+                        populateScratchUserData user idx model User.Edit
+                in
+                    newModel
+                        ! []
 
-        ProcessUserGet (Ok users) ->
-            let
-                x =
-                    Debug.log "Fetched" "users"
+            NewUser ->
+                let
+                    newDetails =
+                        { details
+                            | formAction = User.Create
+                            , scratchUser = User.emptyUserWithRoleSet
+                            , selectedUserId = Nothing
+                            , selectedUserIndex = Nothing
+                            , previousSelectedUserIndex = details.selectedUserIndex
+                            , previousSelectedUserId = details.selectedUserId
+                        }
 
-                userArray =
-                    Array.fromList (users)
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-                ( selectedUserId, selectedUserIndex ) =
-                    case model.selectedUserIndex of
-                        Nothing ->
-                            let
-                                first_user =
-                                    Array.get 0 userArray
-                            in
-                                case first_user of
-                                    Nothing ->
-                                        ( Nothing, Nothing )
+            CancelNewUser ->
+                let
+                    newDetails =
+                        case details.formAction of
+                            User.Create ->
+                                { details
+                                    | formAction = User.Cancel
+                                    , selectedUserId = details.previousSelectedUserId
+                                    , selectedUserIndex = details.previousSelectedUserIndex
+                                }
 
-                                    Just user ->
-                                        ( Just user.id, Just 0 )
+                            _ ->
+                                { details
+                                    | formAction = User.Cancel
+                                }
 
-                        _ ->
-                            ( model.selectedUserId, model.selectedUserIndex )
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-                --if we have done an edit then the selected user and index will stay the same
-            in
-                { model
-                    | selectedUserId = selectedUserId
-                    , selectedUserIndex = selectedUserIndex
-                    , users = userArray
-                    , errors = Nothing
-                }
-                    ! []
+            ProcessRefDataGet (Ok roles) ->
+                let
+                    roleDict =
+                        List.map (\role -> ( role.id, role )) roles
+                            |> Dict.fromList
 
-        ProcessUserGet (Err error) ->
-            { model
-                | errors = Just error
-            }
-                ! []
+                    newDetails =
+                        { details
+                            | refDataStatus = Loaded (User.RefData roleDict)
+                        }
 
-        ProcessUserPost (Ok user) ->
-            { model | formAction = User.None } ! [ Rest.get ]
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-        ProcessUserPost (Err error) ->
-            { model
-                | errors = Just error
-            }
-                ! []
+            ProcessRefDataGet (Err error) ->
+                let
+                    newDetails =
+                        { details
+                            | errors = Just error
+                        }
 
-        UserPost user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            User.scratchToUserWithRoles model.scratchUser refData
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-                        h =
-                            Debug.log "Roles" userWithRoles
-                    in
-                        model ! [ Rest.post userWithRoles ]
+            ProcessUserGet (Ok users) ->
+                let
+                    x =
+                        Debug.log "Fetched" "users"
 
-                _ ->
-                    --need to provide a message here.
-                    model ! []
+                    userArray =
+                        Array.fromList (users)
 
-        UserPut user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            User.scratchToUserWithRoles model.scratchUser refData
-                    in
-                        model ! [ Rest.put userWithRoles ]
+                    ( selectedUserId, selectedUserIndex ) =
+                        case details.selectedUserIndex of
+                            Nothing ->
+                                let
+                                    first_user =
+                                        Array.get 0 userArray
+                                in
+                                    case first_user of
+                                        Nothing ->
+                                            ( Nothing, Nothing )
 
-                _ ->
-                    --need to provide a message here.
-                    model ! []
+                                        Just user ->
+                                            ( Just user.id, Just 0 )
 
-        SetFirstName value ->
-            let
-                user =
-                    model.scratchUser
+                            _ ->
+                                ( details.selectedUserId, details.selectedUserIndex )
 
-                new_user =
-                    { user | first_name = value }
-            in
-                { model | scratchUser = new_user } ! []
+                    --if we have done an edit then the selected user and index will stay the same
+                    newDetails =
+                        { details
+                            | selectedUserId = selectedUserId
+                            , selectedUserIndex = selectedUserIndex
+                            , users = userArray
+                            , errors = Nothing
+                        }
 
-        SetLastName value ->
-            let
-                user =
-                    model.scratchUser
+                    newSelector =
+                        { selector
+                            | selectedUserId = selectedUserId
+                            , selectedUserIndex = selectedUserIndex
+                        }
+                in
+                    { model
+                        | selector = newSelector
+                        , details = newDetails
+                    }
+                        ! []
 
-                new_user =
-                    { user | last_name = value }
-            in
-                { model | scratchUser = new_user } ! []
+            ProcessUserGet (Err error) ->
+                let
+                    newDetails =
+                        { details
+                            | errors = Just error
+                        }
 
-        SetEmail value ->
-            let
-                user =
-                    model.scratchUser
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-                new_user =
-                    { user | email = value }
-            in
-                { model | scratchUser = new_user } ! []
+            ProcessUserPost (Ok user) ->
+                let
+                    newDetails =
+                        { details | formAction = User.None }
+                in
+                    { model
+                        | details = newDetails
+                    }
+                        ! [ Rest.get ]
 
-        SetPhotoUrl value ->
-            let
-                user =
-                    model.scratchUser
+            ProcessUserPost (Err error) ->
+                let
+                    newDetails =
+                        { details
+                            | errors = Just error
+                        }
 
-                new_user =
-                    { user | photo_url = value }
-            in
-                { model | scratchUser = new_user } ! []
+                    newModel =
+                        { model
+                            | details = newDetails
+                        }
+                in
+                    newModel ! []
 
-        ToggleRole roleID ->
-            let
-                user =
-                    model.scratchUser
+            UserPost user ->
+                case details.refDataStatus of
+                    Loaded refData ->
+                        let
+                            userWithRoles =
+                                User.scratchToUserWithRoles details.scratchUser refData
 
-                roleSet =
-                    user.roles
+                            h =
+                                Debug.log "Roles" userWithRoles
+                        in
+                            model ! [ Rest.post userWithRoles ]
 
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
+                    _ ->
+                        --need to provide a message here.
+                        model ! []
 
-                        False ->
-                            Set.insert roleID roleSet
+            UserPut user ->
+                case details.refDataStatus of
+                    Loaded refData ->
+                        let
+                            userWithRoles =
+                                User.scratchToUserWithRoles details.scratchUser refData
+                        in
+                            model ! [ Rest.put userWithRoles ]
 
-                newUser =
-                    { user | roles = newRoleSet }
-            in
-                { model | scratchUser = newUser } ! []
+                    _ ->
+                        --need to provide a message here.
+                        model ! []
+
+            SetFirstName value ->
+                let
+                    user =
+                        details.scratchUser
+
+                    new_user =
+                        { user | first_name = value }
+
+                    newDetails =
+                        { details | scratchUser = new_user }
+                in
+                    { model | details = newDetails } ! []
+
+            SetLastName value ->
+                let
+                    user =
+                        details.scratchUser
+
+                    new_user =
+                        { user | last_name = value }
+
+                    newDetails =
+                        { details | scratchUser = new_user }
+                in
+                    { model | details = newDetails } ! []
+
+            SetEmail value ->
+                let
+                    user =
+                        details.scratchUser
+
+                    new_user =
+                        { user | email = value }
+
+                    newDetails =
+                        { details | scratchUser = new_user }
+                in
+                    { model | details = newDetails } ! []
+
+            SetPhotoUrl value ->
+                let
+                    user =
+                        details.scratchUser
+
+                    new_user =
+                        { user | photo_url = value }
+
+                    newDetails =
+                        { details | scratchUser = new_user }
+                in
+                    { model | details = newDetails } ! []
+
+            ToggleRole roleID ->
+                let
+                    user =
+                        details.scratchUser
+
+                    roleSet =
+                        user.roles
+
+                    newRoleSet =
+                        case Set.member roleID roleSet of
+                            True ->
+                                Set.remove roleID roleSet
+
+                            False ->
+                                Set.insert roleID roleSet
+
+                    newUser =
+                        { user | roles = newRoleSet }
+
+                    newDetails =
+                        { details | scratchUser = newUser }
+                in
+                    { model | details = newDetails } ! []
 
 
 
@@ -351,29 +458,38 @@ toggleSort order =
 
 populateScratchUserData : Maybe User.UserWithRoles -> Maybe Int -> User.Model -> User.FormAction -> User.Model
 populateScratchUserData maybeUser maybeUserIndex model action =
-    case maybeUser of
-        Nothing ->
-            --could we realistically arrive here?
-            { model
-                | scratchUser = User.emptyUserWithRoleSet
-                , formAction = action
-                , selectedUserId = Nothing
-                , selectedUserIndex = Nothing
-            }
+    let
+        details =
+            model.details
 
-        Just u ->
-            --if we only have role ids, not the whole role record, then we won't need the first map function
-            let
-                roleSet =
-                    List.map (\r -> r.id) u.roles
-                        |> Set.fromList
-            in
-                { model
-                    | scratchUser = User.UserWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
-                    , formAction = action
-                    , selectedUserId = Just u.id
-                    , selectedUserIndex = maybeUserIndex
-                }
+        newDetails =
+            case maybeUser of
+                Nothing ->
+                    --could we realistically arrive here?
+                    { details
+                        | scratchUser = User.emptyUserWithRoleSet
+                        , formAction = action
+                        , selectedUserId = Nothing
+                        , selectedUserIndex = Nothing
+                    }
+
+                Just u ->
+                    --if we only have role ids, not the whole role record, then we won't need the first map function
+                    let
+                        roleSet =
+                            List.map (\r -> r.id) u.roles
+                                |> Set.fromList
+                    in
+                        { details
+                            | scratchUser = User.UserWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
+                            , formAction = action
+                            , selectedUserId = Just u.id
+                            , selectedUserIndex = maybeUserIndex
+                        }
+    in
+        { model
+            | details = newDetails
+        }
 
 
 sort_by_last_first : User.UserWithRoles -> String

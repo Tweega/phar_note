@@ -29,8 +29,11 @@ import Dict exposing (Dict)
 
 
 view : User.Model -> Material.Model -> Html AppMsg.Msg
-view model mdlStore =
+view mdl mdlStore =
     let
+        model =
+            mdl.details
+
         contents =
             userTable model.users model.selectedUserId model.order
 
@@ -268,7 +271,7 @@ userForm user refData action mdlStore =
 userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
 userTable users selectedUserId order =
     div
-        [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
+        [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyDown x)) keyCode)
         , tabindex 0
         , style
             [ ( "height", "40%" )
@@ -354,97 +357,6 @@ userRow userId ( idx, user ) =
 white : Options.Property a b
 white =
     Color.text Color.white
-
-
-updatesCard : User.Model -> Material.Model -> Html AppMsg.Msg
-updatesCard model mdlStore =
-    Card.view
-        [ Elevation.e2
-        , css "width" "100%"
-        ]
-        [ Card.title
-            [ css "background" "url('images/pomegranate.jpg') center / cover"
-            , css "min-height" "200px"
-            , css "padding" "0"
-
-            -- Clear default padding to encompass scrim
-            , Color.background <| Color.color Color.Teal Color.S300
-            ]
-            [ Card.head
-                [ white
-                , Options.scrim 0.75
-                , css "padding" "16px"
-
-                -- Restore default padding inside scrim
-                , css "width" "100%"
-                ]
-                [ text "Grenadine" ]
-            ]
-        , Card.text []
-            [ text "Non-alcoholic syrup used for both its tart and sweet flavour as well as its deep red color." ]
-        , Card.actions
-            [ Card.border ]
-            [ Button.render AppMsg.Mdl
-                [ 1, 0 ]
-                mdlStore
-                [ Button.ripple, Button.accent ]
-                [ text "Ingredients" ]
-            ]
-        ]
-
-
-optionsCard : User.Model -> Material.Model -> Html AppMsg.Msg
-optionsCard model mdlStore =
-    let
-        option title index =
-            Options.styled Html.li
-                [ css "margin" "4px 0" ]
-                [ Toggles.checkbox AppMsg.Mdl
-                    index
-                    mdlStore
-                    [ Toggles.ripple
-                    , Toggles.value (Maybe.withDefault False Nothing)
-
-                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
-                    -- to be List (Material.Toggles.Property Msg)
-                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
-                    --, Options.onToggle (Toggle index)
-                    ]
-                    [ text title ]
-                ]
-    in
-        Card.view
-            [ css "width" "100%"
-            , Color.background (Color.color Color.Pink Color.S500)
-            , Options.cs "demo-options"
-            ]
-            [ Card.text [ white ]
-                [ Options.styled Html.h3
-                    [ css "font-size" "1em"
-                    , css "margin" "0"
-                    ]
-                    [ text "Options"
-                    ]
-                , Options.styled Html.ul
-                    [ css "list-style-type" "none"
-                    , css "margin" "0"
-                    , css "padding" "0"
-                    ]
-                    [ option "Clicks per object" [ 0 ]
-                    , option "Views per object" [ 1 ]
-                    , option "Objects selected" [ 2 ]
-                    , option "Objects viewed" [ 3 ]
-                    ]
-                ]
-            , Card.actions
-                [ Card.border ]
-                [ Button.render AppMsg.Mdl
-                    [ 1, 1 ]
-                    mdlStore
-                    [ Button.ripple, white ]
-                    [ text "Great" ]
-                ]
-            ]
 
 
 userCard : User.UserWithRoles -> User.RefDataStatus -> Material.Model -> Html AppMsg.Msg

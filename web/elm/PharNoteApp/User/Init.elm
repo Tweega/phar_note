@@ -20,17 +20,23 @@ init =
 
 initialModel : Model
 initialModel =
-    { users = Array.empty
-    , formAction = None
-    , selectedUserId = Nothing
-    , selectedUserIndex = Nothing
-    , previousSelectedUserId = Nothing
-    , previousSelectedUserIndex = Nothing
-    , selectedTab = 0
-    , order = Just Table.Ascending
-    , errors = Nothing
-    , scratchUser = emptyUserWithRoleSet
-    , refDataStatus = Loading
+    { selector =
+        { selectedUserId = Nothing
+        , selectedUserIndex = Nothing
+        }
+    , details =
+        { users = Array.empty
+        , formAction = None
+        , selectedUserId = Nothing
+        , selectedUserIndex = Nothing
+        , previousSelectedUserId = Nothing
+        , previousSelectedUserIndex = Nothing
+        , selectedTab = 0
+        , order = Just Table.Ascending
+        , errors = Nothing
+        , scratchUser = emptyUserWithRoleSet
+        , refDataStatus = Loading
+        }
     }
 
 

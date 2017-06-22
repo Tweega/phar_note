@@ -23,5 +23,4 @@ type Msg
     | UserPost User.UserWithRoleSet
     | UserPut User.UserWithRoleSet
     | Reorder
-    | KeyX Int
-    | SelectTab Int
+    | KeyDown Int

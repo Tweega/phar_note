@@ -43,17 +43,23 @@ type alias UserWithRoleString =
 
 
 type alias Model =
-    { users : Array UserWithRoles
-    , formAction : FormAction
-    , selectedUserId : Maybe Int
-    , selectedUserIndex : Maybe Int
-    , previousSelectedUserId : Maybe Int
-    , previousSelectedUserIndex : Maybe Int
-    , scratchUser : UserWithRoleSet
-    , selectedTab : Int
-    , order : Maybe Table.Order
-    , errors : Maybe Http.Error
-    , refDataStatus : RefDataStatus
+    { selector :
+        { selectedUserId : Maybe Int
+        , selectedUserIndex : Maybe Int
+        }
+    , details :
+        { users : Array UserWithRoles
+        , formAction : FormAction
+        , selectedUserId : Maybe Int
+        , selectedUserIndex : Maybe Int
+        , previousSelectedUserId : Maybe Int
+        , previousSelectedUserIndex : Maybe Int
+        , scratchUser : UserWithRoleSet
+        , selectedTab : Int
+        , order : Maybe Table.Order
+        , errors : Maybe Http.Error
+        , refDataStatus : RefDataStatus
+        }
     }
 
 
