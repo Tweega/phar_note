@@ -53,7 +53,7 @@ view model mdlStore =
                 WithRoles userWithRoles ->
                     (viewCards userWithRoles model.refDataStatus mdlStore)
     in
-        div [ style [ ( "height", "90vh" ), ( "width", "100vw" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
+        div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
                 [ Options.many
                     [ css "display" "flex"
@@ -272,6 +272,7 @@ userTable users selectedUserId order =
         , tabindex 0
         , style
             [ ( "height", "40%" )
+            , ( "width", "100%" )
             , ( "overflow-y", "hidden" )
             , ( "overflow-x", "hidden" )
             ]
@@ -343,7 +344,7 @@ userRow userId ( idx, user ) =
     in
         Table.tr row_style
             [ Table.td [] [ button [ class "button btn-primary" ] [ text "Edit" ] ]
-            , Table.td [] [ button [ class "button btn-primary" ] [ text "Delete" ] ]
+            , Table.td [] [ button [ onClick (AppMsg.MsgForUser UserMsg.DeleteUser), class "button btn-primary" ] [ text "Delete" ] ]
             , Table.td [] [ text user.first_name ]
             , Table.td [] [ text user.last_name ]
             , Table.td [] [ text user.email ]
@@ -571,6 +572,33 @@ roleCard roles mdlStore =
                     , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
                     ]
                     [ text "Marvelloos" ]
+                , Button.render AppMsg.Mdl
+                    [ 2, 2 ]
+                    mdlStore
+                    [ Button.icon
+                    , white
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                    ]
+                    [ Icon.i "person_add" ]
+                , Button.render AppMsg.Mdl
+                    [ 2, 3 ]
+                    mdlStore
+                    [ Button.icon
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
+                    ]
+                    [ Icon.i "mode_edit_black" ]
+                , Button.render AppMsg.Mdl
+                    [ 2, 4 ]
+                    mdlStore
+                    [ Button.icon
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
+                    ]
+                    [ Icon.i "delete_black" ]
+                , Button.render AppMsg.Mdl
+                    [ 2, 5 ]
+                    mdlStore
+                    [ Button.icon ]
+                    [ Icon.i "mode_comment" ]
                 ]
             ]
 

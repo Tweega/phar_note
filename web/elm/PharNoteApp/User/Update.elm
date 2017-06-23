@@ -111,20 +111,47 @@ update msg model =
 
                 usr =
                     View.maybeFindUser idx model.users
-
-                r =
-                    case usr of
-                        Nothing ->
-                            model ! []
-
-                        Just user ->
-                            { model
-                                | formAction = User.Delete
-                                , selectedUserId = Just user.id
-                            }
-                                ! [ Rest.delete user ]
             in
-                r
+                case usr of
+                    Nothing ->
+                        model ! []
+
+                    Just user ->
+                        --we need to identify a record to be current after successful delete
+                        let
+                            --this would be a cse of using one of those never fail things as if idx was Nothing we would not get here.
+                            i =
+                                case idx of
+                                    Just x ->
+                                        x
+
+                                    _ ->
+                                        0
+
+                            maybeNextUser =
+                                case View.maybeFindUser (Just (i + 1)) model.users of
+                                    Nothing ->
+                                        View.maybeFindUser (Just (i - 1)) model.users
+
+                                    Just u ->
+                                        Just u
+
+                            newModel =
+                                case maybeNextUser of
+                                    Nothing ->
+                                        { model
+                                            | formAction = User.Delete
+                                            , selectedUserId = Just user.id
+                                        }
+
+                                    Just nextUser ->
+                                        { model
+                                            | formAction = User.Delete
+                                            , selectedUserId = Just user.id
+                                            , previousSelectedUserId = Just nextUser.id
+                                        }
+                        in
+                            newModel ! [ Rest.delete user ]
 
         EditUser ->
             let
@@ -235,6 +262,20 @@ update msg model =
             { model | formAction = User.None } ! [ Rest.get ]
 
         ProcessUserPost (Err error) ->
+            { model
+                | errors = Just error
+            }
+                ! []
+
+        ProcessUserDelete (Ok user) ->
+            -- need to set current user to previousSelectedUserId
+            { model
+                | formAction = User.None
+                , selectedUserId = model.previousSelectedUserId
+            }
+                ! [ Rest.get ]
+
+        ProcessUserDelete (Err error) ->
             { model
                 | errors = Just error
             }

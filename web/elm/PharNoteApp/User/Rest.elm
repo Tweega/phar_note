@@ -122,7 +122,7 @@ delete : User.UserWithRoles -> Cmd AppMsg.Msg
 delete user =
     let
         putUrl =
-            if user.id > 0 then
+            if user.id < 1 then
                 urlUsers ++ "/bad"
             else
                 urlUsers ++ "/" ++ (toString user.id)
@@ -143,4 +143,4 @@ delete user =
                 }
     in
         --Http.send (AppMsg.MsgForUser ProcessUserPost) putRequest
-        Http.send (\result -> AppMsg.MsgForUser (ProcessUserPost result)) putRequest
+        Http.send (\result -> AppMsg.MsgForUser (ProcessUserDelete result)) putRequest

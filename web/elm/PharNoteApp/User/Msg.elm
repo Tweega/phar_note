@@ -14,6 +14,7 @@ type Msg
     | CancelNewUser
     | ProcessUserGet (Result Http.Error (List User.UserWithRoles))
     | ProcessUserPost (Result Http.Error User.UserWithRoles)
+    | ProcessUserDelete (Result Http.Error User.UserWithRoles)
     | ProcessRefDataGet (Result Http.Error (List Role.Role))
     | SetFirstName String
     | SetLastName String
