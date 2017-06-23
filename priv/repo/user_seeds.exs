@@ -13,6 +13,7 @@
 alias PharNote.Repo
 alias PharNote.User
 
+Repo.delete_all("user_roles_user")
 Repo.delete_all(User)
 
 

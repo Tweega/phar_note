@@ -128,13 +128,18 @@ update msg model =
                                     _ ->
                                         0
 
-                            maybeNextUser =
+                            ( maybeNextUser, nextIndex ) =
                                 case View.maybeFindUser (Just (i + 1)) model.users of
                                     Nothing ->
-                                        View.maybeFindUser (Just (i - 1)) model.users
+                                        case View.maybeFindUser (Just (i - 1)) model.users of
+                                            Nothing ->
+                                                ( Nothing, -1 )
+
+                                            Just uu ->
+                                                ( Just uu, i - 1 )
 
                                     Just u ->
-                                        Just u
+                                        ( Just u, i )
 
                             newModel =
                                 case maybeNextUser of
@@ -149,6 +154,7 @@ update msg model =
                                             | formAction = User.Delete
                                             , selectedUserId = Just user.id
                                             , previousSelectedUserId = Just nextUser.id
+                                            , previousSelectedUserIndex = Just nextIndex
                                         }
                         in
                             newModel ! [ Rest.delete user ]
@@ -242,6 +248,12 @@ update msg model =
                         _ ->
                             ( model.selectedUserId, model.selectedUserIndex )
 
+                y =
+                    Debug.log "user id" model.selectedUserId
+
+                z =
+                    Debug.log "user index" model.selectedUserIndex
+
                 --if we have done an edit then the selected user and index will stay the same
             in
                 { model
@@ -272,6 +284,7 @@ update msg model =
             { model
                 | formAction = User.None
                 , selectedUserId = model.previousSelectedUserId
+                , selectedUserIndex = model.previousSelectedUserIndex
             }
                 ! [ Rest.get ]
 

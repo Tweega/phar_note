@@ -34,6 +34,12 @@ view model mdlStore =
         contents =
             userTable model.users model.selectedUserId model.order
 
+        y =
+            Debug.log "view user id" model.selectedUserId
+
+        z =
+            Debug.log "view user index" model.selectedUserIndex
+
         user =
             case model.formAction of
                 Edit ->
@@ -66,7 +72,7 @@ view model mdlStore =
                     , contents
                     ]
                 , cell
-                    [ Grid.size All 4
+                    [ Grid.size All 6
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
                     cards
@@ -82,7 +88,8 @@ viewCards user refDataStatus mdlStore =
         , css "height" "32px"
         ]
         []
-    , roleCard user.roles mdlStore
+
+    --, roleCard user.roles mdlStore
     ]
 
 
@@ -99,7 +106,8 @@ editCards scratchUser refDataStatus action mdlStore =
                         , css "height" "32px"
                         ]
                         []
-                    , roleEditCard scratchUser.roles refData mdlStore
+
+                    --, roleEditCard scratchUser.roles refData mdlStore
                     ]
 
                 _ ->
@@ -214,55 +222,33 @@ userInfo ( fieldName, fieldValue ) =
 
 userForm : User.UserWithRoleSet -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
 userForm user refData action mdlStore =
-    let
-        buttonText =
-            if action == Edit then
-                "Update"
-            else
-                "Create"
-
-        buttonAction =
-            if action == Edit then
-                AppMsg.MsgForUser (UserMsg.UserPut user)
-            else
-                AppMsg.MsgForUser (UserMsg.UserPost user)
-    in
-        div []
-            [ div [ class "form-group" ]
-                [ label [] [ text "First Name" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
-                ]
-            , div [ class "form-group" ]
-                [ label [] [ text "Last Name" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetLastName s)), value user.last_name, class "form-control" ] []
-                ]
-            , div [ class "form-group" ]
-                [ label [] [ text "Email" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetEmail s)), value user.email, class "form-control" ] []
-                ]
-            , div [ class "form-group" ]
-                [ label [] [ text "Photo URL" ]
-                , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
-                ]
-
-            --, button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
-            , Button.render AppMsg.Mdl
-                [ 3, 0 ]
-                mdlStore
-                [ Button.ripple
-                , Button.accent
-                , Options.onClick buttonAction
-                ]
-                [ text "Create" ]
-            , Button.render AppMsg.Mdl
-                [ 3, 1 ]
-                mdlStore
-                [ Button.ripple
-                , Button.accent
-                , Options.onClick (AppMsg.MsgForUser UserMsg.CancelNewUser)
-                ]
-                [ text "Cancel" ]
+    div []
+        [ div [ class "form-group" ]
+            [ label [] [ text "First Name" ]
+            , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
             ]
+        , div [ class "form-group" ]
+            [ label [] [ text "Last Name" ]
+            , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetLastName s)), value user.last_name, class "form-control" ] []
+            ]
+        , div [ class "form-group" ]
+            [ label [] [ text "Email" ]
+            , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetEmail s)), value user.email, class "form-control" ] []
+            ]
+        , div [ class "form-group" ]
+            [ label [] [ text "Photo URL" ]
+            , input [ onInput (\s -> AppMsg.MsgForUser (UserMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
+            ]
+        , rolesHeading
+        , Options.styled Html.ul
+            [ css "list-style-type" "none"
+            , css "margin" "0"
+            , css "padding" "0"
+            ]
+            (roleOptions user.roles refData mdlStore)
+
+        --, button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
+        ]
 
 
 userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
@@ -280,6 +266,7 @@ userTable users selectedUserId order =
         [ Table.table
             [ Options.css "margin" "0px"
             , Options.css "padding" "0px"
+            , Options.css "width" "100%"
             ]
             [ userTableHeader order
             , tbody [] (userRows users selectedUserId)
@@ -291,9 +278,7 @@ userTableHeader : Maybe Table.Order -> Html AppMsg.Msg
 userTableHeader order =
     Table.thead []
         [ Table.tr []
-            [ Table.th [] []
-            , Table.th [] []
-            , Table.th
+            [ Table.th
                 [ order
                     |> Maybe.map Table.sorted
                     |> Maybe.withDefault nop
@@ -343,9 +328,7 @@ userRow userId ( idx, user ) =
                 )
     in
         Table.tr row_style
-            [ Table.td [] [ button [ class "button btn-primary" ] [ text "Edit" ] ]
-            , Table.td [] [ button [ onClick (AppMsg.MsgForUser UserMsg.DeleteUser), class "button btn-primary" ] [ text "Delete" ] ]
-            , Table.td [] [ text user.first_name ]
+            [ Table.td [] [ text user.first_name ]
             , Table.td [] [ text user.last_name ]
             , Table.td [] [ text user.email ]
             , Table.td [] [ text user.photo_url ]
@@ -472,17 +455,46 @@ userCard user refData mdlStore =
             case refData of
                 Loaded data ->
                     [ Button.render AppMsg.Mdl
-                        [ 1, 1 ]
+                        [ 2, 2 ]
                         mdlStore
-                        [ Button.ripple
+                        [ Button.icon
                         , white
                         , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
                         ]
-                        [ text "Create user" ]
+                        [ Icon.i "person_add" ]
+                    , Button.render AppMsg.Mdl
+                        [ 2, 3 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
+                        ]
+                        [ Icon.i "mode_edit_black" ]
+                    , Button.render AppMsg.Mdl
+                        [ 2, 4 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
+                        ]
+                        [ Icon.i "delete_black" ]
+                    , Button.render AppMsg.Mdl
+                        [ 2, 5 ]
+                        mdlStore
+                        [ Button.icon ]
+                        [ Icon.i "mode_comment" ]
                     ]
 
                 _ ->
                     []
+
+        textStuff =
+            if List.length user.roles > 0 then
+                [ userDetails user
+                , rolesHeading
+                , roleDetails user.roles
+                ]
+            else
+                [ userDetails user
+                ]
     in
         Card.view
             [ css "width" "100%"
@@ -508,12 +520,24 @@ userCard user refData mdlStore =
                     [ text "Details" ]
                 ]
             , Card.text [ white ]
-                [ userDetails user
+                [ Options.div [ css "height" "400px" ]
+                    textStuff
                 ]
             , Card.actions
                 [ Card.border ]
                 actions
             ]
+
+
+rolesHeading : Html AppMsg.Msg
+rolesHeading =
+    Options.div
+        [ white
+        , css "font-size" "1.3em"
+        , css "margin-top" "2em"
+        ]
+        [ text "Roles"
+        ]
 
 
 roleCard : List RoleBase.Role -> Material.Model -> Html AppMsg.Msg
@@ -565,14 +589,6 @@ roleCard roles mdlStore =
             , Card.actions
                 [ Card.border ]
                 [ Button.render AppMsg.Mdl
-                    [ 2, 1 ]
-                    mdlStore
-                    [ Button.ripple
-                    , white
-                    , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
-                    ]
-                    [ text "Marvelloos" ]
-                , Button.render AppMsg.Mdl
                     [ 2, 2 ]
                     mdlStore
                     [ Button.icon
@@ -606,8 +622,7 @@ roleCard roles mdlStore =
 roleDetails : List RoleBase.Role -> Html AppMsg.Msg
 roleDetails roles =
     Options.div
-        [ css "height" "120px"
-        , css "width" "100%"
+        [ css "width" "100%"
         , css "float" "left"
         ]
         (List.indexedMap roleInfo roles)
@@ -636,6 +651,18 @@ roleInfo i role =
 userEditCard : User.UserWithRoleSet -> User.RefData -> User.FormAction -> Material.Model -> Html AppMsg.Msg
 userEditCard scratchUser refData action mdlStore =
     let
+        buttonText =
+            if action == Edit then
+                "Update"
+            else
+                "Create"
+
+        buttonAction =
+            if action == Edit then
+                AppMsg.MsgForUser (UserMsg.UserPut scratchUser)
+            else
+                AppMsg.MsgForUser (UserMsg.UserPost scratchUser)
+
         option title index =
             Options.styled Html.li
                 [ css "margin" "4px 0" ]
@@ -682,10 +709,21 @@ userEditCard scratchUser refData action mdlStore =
             , Card.actions
                 [ Card.border ]
                 [ Button.render AppMsg.Mdl
-                    [ 1, 1 ]
+                    [ 3, 0 ]
                     mdlStore
-                    [ Button.ripple, white ]
-                    [ text "jolly good" ]
+                    [ Button.ripple
+                    , Button.accent
+                    , Options.onClick buttonAction
+                    ]
+                    [ text "Create" ]
+                , Button.render AppMsg.Mdl
+                    [ 3, 1 ]
+                    mdlStore
+                    [ Button.ripple
+                    , Button.accent
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.CancelNewUser)
+                    ]
+                    [ text "Cancel" ]
                 ]
             ]
 
