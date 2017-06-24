@@ -24,6 +24,7 @@ import Material.Card as Card
 import Material.Button as Button
 import Material.Toggles as Toggles
 import Material.Elevation as Elevation
+import Material.Slider as Slider
 import Set exposing (Set)
 import Dict exposing (Dict)
 
@@ -70,6 +71,7 @@ view model mdlStore =
                 [ cell [ Grid.size All 5 ]
                     [ Options.div [] [ text "buttons here" ]
                     , contents
+                    , slider model
                     ]
                 , cell
                     [ Grid.size All 6
@@ -304,7 +306,7 @@ userRows users selectedUserId startDisplayIndex endDisplayIndex =
                     -1
     in
         users
-            |> Array.slice startDisplayIndex endDisplayIndex
+            |> Array.slice startDisplayIndex (endDisplayIndex + 1)
             |> Array.toIndexedList
             |> List.map (userRow userId)
 
@@ -795,5 +797,15 @@ roleEditCard roleSet refData mdlStore =
                 mdlStore
                 [ Button.ripple, white ]
                 [ text "Great" ]
+            ]
+        ]
+
+
+slider : User.Model -> Html AppMsg.Msg
+slider model =
+    p [ style [ ( "width", "300px" ) ] ]
+        [ Slider.view
+            [ Slider.onChange (\value -> AppMsg.MsgForUser (UserMsg.UserSlider value))
+            , Slider.value 50.0
             ]
         ]

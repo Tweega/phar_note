@@ -44,6 +44,27 @@ update msg model =
                     else
                         currentIdx
 
+                --if selected user is off the beginning of screen then start window from index
+                startIndex =
+                    if idx < model.startDisplayIndex then
+                        idx
+                    else if idx > model.endDisplayIndex then
+                        model.endDisplayIndex - model.pageSize + 2
+                    else
+                        model.startDisplayIndex
+
+                endIndex =
+                    startIndex + model.pageSize - 1
+
+                j =
+                    Debug.log "idx" idx
+
+                k =
+                    Debug.log "start" startIndex
+
+                p =
+                    Debug.log "End" endIndex
+
                 user =
                     View.maybeFindUser (Just idx) model.users
 
@@ -53,6 +74,8 @@ update msg model =
                             { model
                                 | selectedUserId = Just u.id
                                 , selectedUserIndex = Just idx
+                                , startDisplayIndex = startIndex
+                                , endDisplayIndex = endIndex
                             }
 
                         _ ->
@@ -64,15 +87,21 @@ update msg model =
 
         SelectUser idx ->
             let
+                g =
+                    Debug.log "SELECT idx" idx
+
+                index =
+                    model.startDisplayIndex + idx
+
                 user =
-                    View.maybeFindUser (Just idx) model.users
+                    View.maybeFindUser (Just index) model.users
 
                 newModel =
                     case user of
                         Just u ->
                             { model
                                 | selectedUserId = Just u.id
-                                , selectedUserIndex = Just idx
+                                , selectedUserIndex = Just index
                             }
 
                         _ ->
@@ -249,6 +278,12 @@ update msg model =
                                         model.pageSize - 1
                                     else
                                         userCount - 1
+
+                                d =
+                                    Debug.log "f" firstIdx
+
+                                e =
+                                    Debug.log "f" lastIdx
                             in
                                 case first_user of
                                     Nothing ->
