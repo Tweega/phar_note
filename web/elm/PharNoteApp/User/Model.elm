@@ -49,6 +49,9 @@ type alias Model =
     , selectedUserIndex : Maybe Int
     , previousSelectedUserId : Maybe Int
     , previousSelectedUserIndex : Maybe Int
+    , pageSize : Int
+    , startDisplayIndex : Int
+    , endDisplayIndex : Int
     , scratchUser : UserWithRoleSet
     , selectedTab : Int
     , order : Maybe Table.Order

@@ -231,22 +231,41 @@ update msg model =
                 userArray =
                     Array.fromList (users)
 
-                ( selectedUserId, selectedUserIndex ) =
+                userCount =
+                    Array.length userArray
+
+                ( selectedUserId, selectedUserIndex, firstIndex, lastIndex ) =
                     case model.selectedUserIndex of
                         Nothing ->
                             let
                                 first_user =
                                     Array.get 0 userArray
+
+                                firstIdx =
+                                    0
+
+                                lastIdx =
+                                    if userCount > model.pageSize then
+                                        model.pageSize - 1
+                                    else
+                                        userCount - 1
                             in
                                 case first_user of
                                     Nothing ->
-                                        ( Nothing, Nothing )
+                                        ( Nothing, Nothing, -1, -1 )
 
                                     Just user ->
-                                        ( Just user.id, Just 0 )
+                                        ( Just user.id, Just 0, firstIdx, lastIdx )
 
+                        --working here.  If screen refreshes and other people have added/deleted users, then index will not be reliable.
+                        -- need to check if the retrieved user has the correct id, otherwise do a proper search on id
+                        --perhaps use dict, though it is a reasonable bet that the index will be within 1 or 2 of its previous value
+                        --so alternate search in each direction - more index will only have been affected by activity in the lower index range
+                        --if there has been a delete, then search lower indices - if there have been additions, then search higher
+                        --we won't know what has happened, so search both ways?
+                        --might alternatively consult the log for the past n seconds and calculate correct index from that
                         _ ->
-                            ( model.selectedUserId, model.selectedUserIndex )
+                            ( model.selectedUserId, model.selectedUserIndex, model.startDisplayIndex, model.endDisplayIndex )
 
                 y =
                     Debug.log "user id" model.selectedUserId
@@ -259,6 +278,8 @@ update msg model =
                 { model
                     | selectedUserId = selectedUserId
                     , selectedUserIndex = selectedUserIndex
+                    , startDisplayIndex = firstIndex
+                    , endDisplayIndex = lastIndex
                     , users = userArray
                     , errors = Nothing
                 }
@@ -383,6 +404,26 @@ update msg model =
                     { user | roles = newRoleSet }
             in
                 { model | scratchUser = newUser } ! []
+
+        UserSlider valuePC ->
+            let
+                len =
+                    Array.length model.users
+
+                reducedLen =
+                    len - model.pageSize
+
+                start =
+                    floor ((valuePC / 100) * (toFloat reducedLen))
+
+                end =
+                    start + model.pageSize
+            in
+                { model
+                    | startDisplayIndex = start
+                    , endDisplayIndex = end
+                }
+                    ! []
 
 
 

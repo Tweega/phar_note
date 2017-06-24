@@ -29,6 +29,9 @@ initialModel =
     , selectedTab = 0
     , order = Just Table.Ascending
     , errors = Nothing
+    , pageSize = 10
+    , startDisplayIndex = -1
+    , endDisplayIndex = -1
     , scratchUser = emptyUserWithRoleSet
     , refDataStatus = Loading
     }

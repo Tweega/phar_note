@@ -26,3 +26,4 @@ type Msg
     | Reorder
     | KeyX Int
     | SelectTab Int
+    | UserSlider Float

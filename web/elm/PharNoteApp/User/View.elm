@@ -32,7 +32,7 @@ view : User.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
         contents =
-            userTable model.users model.selectedUserId model.order
+            userTable model.users model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
 
         y =
             Debug.log "view user id" model.selectedUserId
@@ -251,8 +251,8 @@ userForm user refData action mdlStore =
         ]
 
 
-userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> Html AppMsg.Msg
-userTable users selectedUserId order =
+userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> Int -> Int -> Html AppMsg.Msg
+userTable users selectedUserId order startDisplayIndex endDisplayIndex =
     div
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
         , tabindex 0
@@ -269,7 +269,7 @@ userTable users selectedUserId order =
             , Options.css "width" "100%"
             ]
             [ userTableHeader order
-            , tbody [] (userRows users selectedUserId)
+            , tbody [] (userRows users selectedUserId startDisplayIndex endDisplayIndex)
             ]
         ]
 
@@ -292,8 +292,8 @@ userTableHeader order =
         ]
 
 
-userRows : Array User.UserWithRoles -> Maybe Int -> List (Html AppMsg.Msg)
-userRows users selectedUserId =
+userRows : Array User.UserWithRoles -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
+userRows users selectedUserId startDisplayIndex endDisplayIndex =
     let
         userId =
             case selectedUserId of
@@ -304,6 +304,7 @@ userRows users selectedUserId =
                     -1
     in
         users
+            |> Array.slice startDisplayIndex endDisplayIndex
             |> Array.toIndexedList
             |> List.map (userRow userId)
 
