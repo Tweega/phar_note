@@ -32,6 +32,7 @@ initialModel =
     , pageSize = 6
     , startDisplayIndex = -1
     , endDisplayIndex = -1
+    , userSliderValue = 0
     , scratchUser = emptyUserWithRoleSet
     , refDataStatus = Loading
     }

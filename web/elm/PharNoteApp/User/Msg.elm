@@ -25,5 +25,6 @@ type Msg
     | UserPut User.UserWithRoleSet
     | Reorder
     | KeyX Int
+    | PaginateUser Int
     | SelectTab Int
     | UserSlider Float

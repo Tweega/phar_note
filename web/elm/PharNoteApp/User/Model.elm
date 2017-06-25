@@ -52,6 +52,7 @@ type alias Model =
     , pageSize : Int
     , startDisplayIndex : Int
     , endDisplayIndex : Int
+    , userSliderValue : Float
     , scratchUser : UserWithRoleSet
     , selectedTab : Int
     , order : Maybe Table.Order

@@ -35,12 +35,6 @@ view model mdlStore =
         contents =
             userTable model.users model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
 
-        y =
-            Debug.log "view user id" model.selectedUserId
-
-        z =
-            Debug.log "view user index" model.selectedUserIndex
-
         user =
             case model.formAction of
                 Edit ->
@@ -71,7 +65,7 @@ view model mdlStore =
                 [ cell [ Grid.size All 5 ]
                     [ Options.div [] [ text "buttons here" ]
                     , contents
-                    , slider model
+                    , pager model
                     ]
                 , cell
                     [ Grid.size All 6
@@ -801,11 +795,73 @@ roleEditCard roleSet refData mdlStore =
         ]
 
 
+pager : User.Model -> Html AppMsg.Msg
+pager model =
+    let
+        pageCount =
+            floor (toFloat (Array.length model.users) / toFloat model.pageSize)
+
+        pageList =
+            List.range 0 pageCount
+
+        --|> List.reverse --reverse to have page isons increment from left to right
+        currentPage =
+            floor (toFloat model.endDisplayIndex / toFloat model.pageSize)
+
+        x =
+            Debug.log "currentPage" currentPage
+
+        y =
+            Debug.log "model.startDisplayIndex" model.startDisplayIndex
+
+        pageMarker i =
+            let
+                x =
+                    if currentPage == i then
+                        [ ( "backgroundColor", "blue" )
+                        , ( "border-bottom", "3px solid #73AD21" )
+                        ]
+                    else
+                        [ ( "backgroundColor", "black" ) ]
+
+                styleList =
+                    [ ( "display", "inline-block" )
+                    , ( "height", "15px" )
+                    , ( "width", "15px" )
+                    , ( "float", "right" )
+                    , ( "margin-top", "5px" )
+                    , ( "margin-left", "5px" )
+
+                    --  , ( "border", "3px solid #73AD21" )
+                    ]
+                        ++ x
+            in
+                div
+                    [ style styleList
+                    , HtmlUtils.onClickNoDefault (AppMsg.MsgForUser (UserMsg.PaginateUser i))
+                    ]
+                    []
+
+        html =
+            if pageCount > 0 then
+                (List.map pageMarker pageList)
+            else
+                []
+    in
+        div
+            []
+            html
+
+
+
+--[]
+
+
 slider : User.Model -> Html AppMsg.Msg
 slider model =
     p [ style [ ( "width", "300px" ) ] ]
         [ Slider.view
             [ Slider.onChange (\value -> AppMsg.MsgForUser (UserMsg.UserSlider value))
-            , Slider.value 50.0
+            , Slider.value model.userSliderValue
             ]
         ]

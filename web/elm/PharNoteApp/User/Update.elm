@@ -56,15 +56,6 @@ update msg model =
                 endIndex =
                     startIndex + model.pageSize - 1
 
-                j =
-                    Debug.log "idx" idx
-
-                k =
-                    Debug.log "start" startIndex
-
-                p =
-                    Debug.log "End" endIndex
-
                 user =
                     View.maybeFindUser (Just idx) model.users
 
@@ -87,9 +78,6 @@ update msg model =
 
         SelectUser idx ->
             let
-                g =
-                    Debug.log "SELECT idx" idx
-
                 index =
                     model.startDisplayIndex + idx
 
@@ -254,9 +242,6 @@ update msg model =
 
         ProcessUserGet (Ok users) ->
             let
-                x =
-                    Debug.log "Fetched" "users"
-
                 userArray =
                     Array.fromList (users)
 
@@ -278,12 +263,6 @@ update msg model =
                                         model.pageSize - 1
                                     else
                                         userCount - 1
-
-                                d =
-                                    Debug.log "f" firstIdx
-
-                                e =
-                                    Debug.log "f" lastIdx
                             in
                                 case first_user of
                                     Nothing ->
@@ -301,12 +280,6 @@ update msg model =
                         --might alternatively consult the log for the past n seconds and calculate correct index from that
                         _ ->
                             ( model.selectedUserId, model.selectedUserIndex, model.startDisplayIndex, model.endDisplayIndex )
-
-                y =
-                    Debug.log "user id" model.selectedUserId
-
-                z =
-                    Debug.log "user index" model.selectedUserIndex
 
                 --if we have done an edit then the selected user and index will stay the same
             in
@@ -356,9 +329,6 @@ update msg model =
                     let
                         userWithRoles =
                             User.scratchToUserWithRoles model.scratchUser refData
-
-                        h =
-                            Debug.log "Roles" userWithRoles
                     in
                         model ! [ Rest.post userWithRoles ]
 
@@ -457,6 +427,47 @@ update msg model =
                 { model
                     | startDisplayIndex = start
                     , endDisplayIndex = end
+                    , userSliderValue = valuePC
+                }
+                    ! []
+
+        PaginateUser page ->
+            let
+                g =
+                    Debug.log "page" page
+
+                idx =
+                    Maybe.withDefault 0 model.selectedUserIndex
+
+                offset =
+                    idx - model.startDisplayIndex
+
+                s =
+                    page * model.pageSize
+
+                userCount =
+                    Array.length model.users
+
+                start =
+                    if userCount - s < model.pageSize then
+                        userCount - model.pageSize
+                    else
+                        s
+
+                end =
+                    start + model.pageSize - 1
+
+                nextIdx =
+                    start + offset
+
+                nextUser =
+                    View.alwaysFindUser (Just nextIdx) model.users
+            in
+                { model
+                    | startDisplayIndex = start
+                    , endDisplayIndex = end
+                    , selectedUserId = Just nextUser.id
+                    , selectedUserIndex = Just nextIdx
                 }
                     ! []
 
