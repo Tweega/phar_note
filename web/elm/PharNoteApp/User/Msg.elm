@@ -31,3 +31,7 @@ type Msg
     | UserSlider Float
     | FilterDisplay User.FilterAction
     | ApplyUserFilter User.UserWithRoleSet
+    | ResetUserFilter
+    | SetFilterFirstName String
+    | SetFilterLastName String
+    | ToggleFilterRole Int

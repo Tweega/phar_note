@@ -484,8 +484,68 @@ update msg model =
             in
                 { model | filterAction = toggleAction } ! []
 
-        ApplyUserFilter userWithRoleSet ->
-            model ! []
+        ApplyUserFilter filterUser ->
+            let
+                x =
+                    Debug.log "hh" "userWithRoleSet"
+
+                fusers =
+                    Array.filter
+                        (\userWithRole ->
+                            let
+                                userRoleSet =
+                                    List.map (\r -> r.id) userWithRole.roles
+                                        |> Set.fromList
+                            in
+                                Set.size (Set.intersect filterUser.roles userRoleSet) > 0
+                        )
+                        model.users
+            in
+                { model | filteredUsers = fusers } ! []
+
+        SetFilterFirstName value ->
+            let
+                user =
+                    model.filterScratchUser
+
+                new_user =
+                    { user | first_name = value }
+            in
+                { model | filterScratchUser = new_user } ! []
+
+        SetFilterLastName value ->
+            let
+                user =
+                    model.filterScratchUser
+
+                new_user =
+                    { user | last_name = value }
+            in
+                { model | filterScratchUser = new_user } ! []
+
+        ToggleFilterRole roleID ->
+            let
+                user =
+                    model.filterScratchUser
+
+                roleSet =
+                    user.roles
+
+                newRoleSet =
+                    case Set.member roleID roleSet of
+                        True ->
+                            Set.remove roleID roleSet
+
+                        False ->
+                            Set.insert roleID roleSet
+
+                newUser =
+                    { user | roles = newRoleSet }
+            in
+                { model | filterScratchUser = newUser } ! []
+
+        ResetUserFilter ->
+            { model | filterScratchUser = User.emptyUserWithRoleSet } ! []
 
 
 

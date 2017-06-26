@@ -32,7 +32,7 @@ import Dict exposing (Dict)
 view : User.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
-        contents =
+        userTableContents =
             userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
 
         user =
@@ -53,55 +53,6 @@ view model mdlStore =
 
                 WithRoles userWithRoles ->
                     (viewCards userWithRoles model.refDataStatus mdlStore)
-
-        j act =
-            let
-                h =
-                    Options.div
-                        [ css "float" "right"
-                        ]
-                        [ Button.render AppMsg.Mdl
-                            [ 3, 1 ]
-                            mdlStore
-                            [ Button.icon
-                            , Options.onClick (AppMsg.MsgForUser (UserMsg.FilterDisplay act))
-                            ]
-                            [ case act of
-                                Hide ->
-                                    Options.div
-                                        [ css "float" "right"
-                                        ]
-                                        [ Icon.i "person_add"
-                                        ]
-
-                                Show ->
-                                    Options.div
-                                        [ css "float" "right"
-                                        ]
-                                        [ Icon.i "mode_edit_black"
-                                        ]
-                            ]
-                        ]
-
-                more =
-                    Options.div
-                        [ css "float" "left"
-                        , css "clear" "both"
-                        ]
-                        [ text " more filter stuff here" ]
-            in
-                case act of
-                    Hide ->
-                        [ Options.div
-                            []
-                            [ h ]
-                        ]
-
-                    Show ->
-                        [ Options.div
-                            []
-                            [ h, more ]
-                        ]
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -112,15 +63,7 @@ view model mdlStore =
                     ]
                 ]
                 [ cell [ Grid.size All 5 ]
-                    [ Options.div
-                        [ css "float" "left"
-                        , css "width" "100%"
-                        , css "border" "1px solid red"
-                        ]
-                        (j model.filterAction)
-                    , contents
-                    , pager model
-                    ]
+                    (myFunc model mdlStore)
                 , cell
                     [ Grid.size All 6
                     , Color.background <| Color.color Color.Red Color.S100
@@ -267,6 +210,19 @@ userInfo ( fieldName, fieldValue ) =
             , css "margin-top" "5px"
             ]
             [ text fieldValue ]
+        ]
+
+
+userEditItem : ( String, String, String -> AppMsg.Msg ) -> Html AppMsg.Msg
+userEditItem ( fieldName, fieldValue, userMsg ) =
+    div [ class "form-group" ]
+        [ label [] [ text fieldName ]
+        , input
+            [ value fieldValue
+            , onInput userMsg
+            , class "form-control"
+            ]
+            []
         ]
 
 
@@ -799,6 +755,26 @@ roleOption role index value mdlStore =
         ]
 
 
+roleFilterOption : RoleBase.Role -> Int -> Bool -> Material.Model -> Html AppMsg.Msg
+roleFilterOption role index value mdlStore =
+    Options.styled Html.li
+        [ css "margin" "4px 0" ]
+        [ Toggles.checkbox AppMsg.Mdl
+            [ 8, index ]
+            mdlStore
+            [ Toggles.ripple
+            , Toggles.value value
+
+            --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+            -- to be List (Material.Toggles.Property Msg)
+            , Options.onToggle (AppMsg.MsgForUser (UserMsg.ToggleFilterRole role.id))
+
+            --, Options.onToggle (Toggle index)
+            ]
+            [ text role.role_name ]
+        ]
+
+
 roleOptions : Set Int -> User.RefData -> Material.Model -> List (Html AppMsg.Msg)
 roleOptions roleSet refData mdlStore =
     --may want to sort the list
@@ -813,6 +789,24 @@ roleOptions roleSet refData mdlStore =
                         Set.member role.id roleSet
                 in
                     roleOption role index value mdlStore
+            )
+            roles
+
+
+roleFilterOptions : Set Int -> User.RefData -> Material.Model -> List (Html AppMsg.Msg)
+roleFilterOptions roleSet refData mdlStore =
+    --may want to sort the list
+    let
+        roles =
+            Dict.toList refData.roles
+    in
+        List.map
+            (\( index, role ) ->
+                let
+                    value =
+                        Set.member role.id roleSet
+                in
+                    roleFilterOption role index value mdlStore
             )
             roles
 
@@ -919,3 +913,211 @@ slider model =
             , Slider.value model.userSliderValue
             ]
         ]
+
+
+userFilter : User.FilterAction -> Material.Model -> Html AppMsg.Msg
+userFilter act mdlStore =
+    Options.div
+        [ css "float" "right"
+        ]
+        [ Button.render AppMsg.Mdl
+            [ 3, 1 ]
+            mdlStore
+            [ Button.icon
+            , Options.onClick (AppMsg.MsgForUser (UserMsg.FilterDisplay act))
+            ]
+            [ case act of
+                Hide ->
+                    Options.div
+                        [ css "float" "right"
+                        ]
+                        [ Icon.i "person_add"
+                        ]
+
+                Show ->
+                    Options.div
+                        [ css "float" "right"
+                        ]
+                        [ Icon.i "mode_edit_black"
+                        ]
+            ]
+        ]
+
+
+myFunc : User.Model -> Material.Model -> List (Html AppMsg.Msg)
+myFunc model mdlStore =
+    let
+        userTableContents =
+            userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
+
+        j : User.FilterAction -> Html AppMsg.Msg
+        j act =
+            Options.div
+                [ css "float" "right"
+                ]
+                [ Button.render AppMsg.Mdl
+                    [ 3, 1 ]
+                    mdlStore
+                    [ Button.icon
+                    , Options.onClick (AppMsg.MsgForUser (UserMsg.FilterDisplay act))
+                    ]
+                    [ case act of
+                        Hide ->
+                            Options.div
+                                [ css "float" "right"
+                                ]
+                                [ Icon.i "person_add"
+                                ]
+
+                        Show ->
+                            Options.div
+                                [ css "float" "right"
+                                ]
+                                [ Icon.i "mode_edit_black"
+                                ]
+                    ]
+                ]
+
+        more =
+            Options.div
+                [ css "float" "left"
+                , css "clear" "both"
+                , css "width" "100%"
+                , css "border" "1px solid red"
+                ]
+                (filterCards model.filterScratchUser model.refDataStatus mdlStore)
+
+        content =
+            case model.filterAction of
+                Hide ->
+                    [ userTableContents
+                    , pager model
+
+                    --, (userFilter model.filterAction mdlStore)
+                    , userFilter model.filterAction mdlStore
+                    ]
+
+                Show ->
+                    [ userTableContents
+                    , pager model
+
+                    --, (userFilter model.filterAction mdlStore)
+                    , userFilter model.filterAction mdlStore
+                    , more
+                    ]
+    in
+        content
+
+
+filterCards : User.UserWithRoleSet -> User.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
+filterCards scratchUser refDataStatus mdlStore =
+    --check that ref data is loaded.
+    let
+        html =
+            case refDataStatus of
+                Loaded refData ->
+                    [ userFilterCard scratchUser refData mdlStore
+                    , Options.div
+                        [ Grid.size All 1
+                        , css "height" "32px"
+                        ]
+                        []
+
+                    --, roleEditCard scratchUser.roles refData mdlStore
+                    ]
+
+                _ ->
+                    [ text "no ref data" ]
+    in
+        html
+
+
+userFilterCard : User.UserWithRoleSet -> User.RefData -> Material.Model -> Html AppMsg.Msg
+userFilterCard filterUser refData mdlStore =
+    let
+        btnAction =
+            AppMsg.MsgForUser (UserMsg.ApplyUserFilter filterUser)
+
+        option title index =
+            Options.styled Html.li
+                [ css "margin" "4px 0" ]
+                [ Toggles.checkbox AppMsg.Mdl
+                    [ 6, index ]
+                    mdlStore
+                    [ Toggles.ripple
+                    , Toggles.value (Maybe.withDefault False Nothing)
+
+                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
+                    -- to be List (Material.Toggles.Property Msg)
+                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
+                    --, Options.onToggle (Toggle index)
+                    ]
+                    [ text title ]
+                ]
+    in
+        Card.view
+            [ css "width" "100%"
+            , Color.background (Color.color Color.Green Color.S500)
+
+            --, Options.cs "demo-options"
+            ]
+            [ Card.title
+                [ Color.background (Color.color Color.Blue Color.S500)
+                , css "padding" "0"
+
+                -- Clear default padding to encompass scrim
+                , Color.background <| Color.color Color.Teal Color.S300
+                ]
+                [ Card.head
+                    [ white
+
+                    --, Options.scrim 0.75
+                    --, css "padding" "16px"
+                    -- Restore default padding inside scrim
+                    --, css "width" "100%"
+                    ]
+                    [ text "Details" ]
+                ]
+            , Card.text [ white ]
+                [ Options.div
+                    [ css "display" "flex"
+                    , css "align-items" "flex-start"
+                    , css "justify-content" "space-between"
+                    ]
+                    [ Options.div []
+                        (List.map
+                            userEditItem
+                            [ ( "First Name:", filterUser.first_name, (\f -> AppMsg.MsgForUser (UserMsg.SetFilterFirstName f)) )
+                            , ( "Last Name", filterUser.last_name, (\f -> AppMsg.MsgForUser (UserMsg.SetFilterLastName f)) )
+                            ]
+                        )
+                    , Options.div []
+                        [ Options.styled Html.ul
+                            [ css "list-style-type" "none"
+                            , css "margin" "0"
+                            , css "padding" "0"
+                            ]
+                            (roleFilterOptions filterUser.roles refData mdlStore)
+                        ]
+                    ]
+                ]
+            , Card.actions
+                [ Card.border ]
+                [ Button.render AppMsg.Mdl
+                    [ 3, 0 ]
+                    mdlStore
+                    [ Button.ripple
+                    , Button.accent
+                    , Options.onClick btnAction
+                    ]
+                    [ text "Apply" ]
+                , Button.render AppMsg.Mdl
+                    [ 3, 1 ]
+                    mdlStore
+                    [ Button.ripple
+                    , Button.accent
+                    , Options.onClick (AppMsg.MsgForUser UserMsg.ResetUserFilter)
+                    ]
+                    [ text "Rest" ]
+                ]
+            ]
