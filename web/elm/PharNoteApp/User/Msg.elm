@@ -28,3 +28,5 @@ type Msg
     | PaginateUser Int
     | SelectTab Int
     | UserSlider Float
+    | FilterDisplay
+    | ApplyUserFilter User.UserWithRoleSet

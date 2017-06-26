@@ -471,6 +471,12 @@ update msg model =
                 }
                     ! []
 
+        FilterDisplay ->
+            model ! []
+
+        ApplyUserFilter userWithRoleSet ->
+            model ! []
+
 
 
 {- Rotate table ordering : Ascending -> Descending -> No sorting -> ... -}

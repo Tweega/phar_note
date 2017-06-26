@@ -44,7 +44,9 @@ type alias UserWithRoleString =
 
 type alias Model =
     { users : Array UserWithRoles
+    , filteredUsers : Array UserWithRoles
     , formAction : FormAction
+    , filterDisplay : FilterDisplay
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
     , previousSelectedUserId : Maybe Int
@@ -54,6 +56,7 @@ type alias Model =
     , endDisplayIndex : Int
     , userSliderValue : Float
     , scratchUser : UserWithRoleSet
+    , filterScratchUser : UserWithRoleSet
     , selectedTab : Int
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
@@ -77,6 +80,11 @@ type FormAction
     | Delete
     | Cancel
     | None
+
+
+type FilterDisplay
+    = Show
+    | Hide
 
 
 type UserType
