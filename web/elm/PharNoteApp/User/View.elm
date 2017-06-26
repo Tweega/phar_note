@@ -3,7 +3,7 @@ module PharNoteApp.User.View exposing (view, alwaysFindUser, maybeFindUser)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (FormAction(..), RefDataStatus(..), UserType(..))
+import PharNoteApp.User.Model exposing (FormAction(..), FilterAction(..), RefDataStatus(..), UserType(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -33,7 +33,7 @@ view : User.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
         contents =
-            userTable model.users model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
+            userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
 
         user =
             case model.formAction of
@@ -44,7 +44,7 @@ view model mdlStore =
                     WithSet model.scratchUser
 
                 _ ->
-                    WithRoles (alwaysFindUser model.selectedUserIndex model.users)
+                    WithRoles (alwaysFindUser model.selectedUserIndex model.filteredUsers)
 
         cards =
             case user of
@@ -53,6 +53,55 @@ view model mdlStore =
 
                 WithRoles userWithRoles ->
                     (viewCards userWithRoles model.refDataStatus mdlStore)
+
+        j act =
+            let
+                h =
+                    Options.div
+                        [ css "float" "right"
+                        ]
+                        [ Button.render AppMsg.Mdl
+                            [ 3, 1 ]
+                            mdlStore
+                            [ Button.icon
+                            , Options.onClick (AppMsg.MsgForUser (UserMsg.FilterDisplay act))
+                            ]
+                            [ case act of
+                                Hide ->
+                                    Options.div
+                                        [ css "float" "right"
+                                        ]
+                                        [ Icon.i "person_add"
+                                        ]
+
+                                Show ->
+                                    Options.div
+                                        [ css "float" "right"
+                                        ]
+                                        [ Icon.i "mode_edit_black"
+                                        ]
+                            ]
+                        ]
+
+                more =
+                    Options.div
+                        [ css "float" "left"
+                        , css "clear" "both"
+                        ]
+                        [ text " more filter stuff here" ]
+            in
+                case act of
+                    Hide ->
+                        [ Options.div
+                            []
+                            [ h ]
+                        ]
+
+                    Show ->
+                        [ Options.div
+                            []
+                            [ h, more ]
+                        ]
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -63,7 +112,12 @@ view model mdlStore =
                     ]
                 ]
                 [ cell [ Grid.size All 5 ]
-                    [ Options.div [] [ text "buttons here" ]
+                    [ Options.div
+                        [ css "float" "left"
+                        , css "width" "100%"
+                        , css "border" "1px solid red"
+                        ]
+                        (j model.filterAction)
                     , contents
                     , pager model
                     ]
@@ -799,7 +853,7 @@ pager : User.Model -> Html AppMsg.Msg
 pager model =
     let
         pageCount =
-            floor (toFloat (Array.length model.users) / toFloat model.pageSize)
+            floor (toFloat (Array.length model.filteredUsers) / toFloat model.pageSize)
 
         pageList =
             List.range 0 pageCount

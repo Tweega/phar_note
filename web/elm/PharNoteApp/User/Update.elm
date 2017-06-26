@@ -4,12 +4,12 @@ import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (RefDataStatus(..))
+import PharNoteApp.User.Model exposing (RefDataStatus(..), FilterAction(..))
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
 import Material.Table as Table
-import Array exposing (fromList)
+import Array exposing (fromList, Array)
 import Dict exposing (Dict)
 import Set exposing (Set)
 
@@ -26,7 +26,7 @@ update msg model =
         KeyX key ->
             let
                 userCount =
-                    Array.length (model.users)
+                    Array.length (model.filteredUsers)
 
                 currentIdx =
                     case model.selectedUserIndex of
@@ -57,7 +57,7 @@ update msg model =
                     startIndex + model.pageSize - 1
 
                 user =
-                    View.maybeFindUser (Just idx) model.users
+                    View.maybeFindUser (Just idx) model.filteredUsers
 
                 newModel =
                     case user of
@@ -82,7 +82,7 @@ update msg model =
                     model.startDisplayIndex + idx
 
                 user =
-                    View.maybeFindUser (Just index) model.users
+                    View.maybeFindUser (Just index) model.filteredUsers
 
                 newModel =
                     case user of
@@ -117,7 +117,7 @@ update msg model =
                             identity
 
                 sortedUsers =
-                    sort (Array.toList model.users) |> Array.fromList
+                    sort (Array.toList model.filteredUsers) |> Array.fromList
             in
                 { model | order = sortOrder, users = sortedUsers } ! []
 
@@ -127,7 +127,7 @@ update msg model =
                     model.selectedUserIndex
 
                 usr =
-                    View.maybeFindUser idx model.users
+                    View.maybeFindUser idx model.filteredUsers
             in
                 case usr of
                     Nothing ->
@@ -146,9 +146,9 @@ update msg model =
                                         0
 
                             ( maybeNextUser, nextIndex ) =
-                                case View.maybeFindUser (Just (i + 1)) model.users of
+                                case View.maybeFindUser (Just (i + 1)) model.filteredUsers of
                                     Nothing ->
-                                        case View.maybeFindUser (Just (i - 1)) model.users of
+                                        case View.maybeFindUser (Just (i - 1)) model.filteredUsers of
                                             Nothing ->
                                                 ( Nothing, -1 )
 
@@ -182,7 +182,7 @@ update msg model =
                     model.selectedUserIndex
 
                 user =
-                    View.maybeFindUser idx model.users
+                    View.maybeFindUser idx model.filteredUsers
 
                 newModel =
                     populateScratchUserData user idx model User.Edit
@@ -289,6 +289,7 @@ update msg model =
                     , startDisplayIndex = firstIndex
                     , endDisplayIndex = lastIndex
                     , users = userArray
+                    , filteredUsers = applyFilter model.filterScratchUser userArray
                     , errors = Nothing
                 }
                     ! []
@@ -413,7 +414,7 @@ update msg model =
         UserSlider valuePC ->
             let
                 len =
-                    Array.length model.users
+                    Array.length model.filteredUsers
 
                 reducedLen =
                     len - model.pageSize
@@ -446,7 +447,7 @@ update msg model =
                     page * model.pageSize
 
                 userCount =
-                    Array.length model.users
+                    Array.length model.filteredUsers
 
                 start =
                     if userCount - s < model.pageSize then
@@ -461,7 +462,7 @@ update msg model =
                     start + offset
 
                 nextUser =
-                    View.alwaysFindUser (Just nextIdx) model.users
+                    View.alwaysFindUser (Just nextIdx) model.filteredUsers
             in
                 { model
                     | startDisplayIndex = start
@@ -471,8 +472,17 @@ update msg model =
                 }
                     ! []
 
-        FilterDisplay ->
-            model ! []
+        FilterDisplay action ->
+            let
+                toggleAction =
+                    case model.filterAction of
+                        Hide ->
+                            Show
+
+                        Show ->
+                            Hide
+            in
+                { model | filterAction = toggleAction } ! []
 
         ApplyUserFilter userWithRoleSet ->
             model ! []
@@ -539,3 +549,8 @@ reverse x y =
 
         EQ ->
             EQ
+
+
+applyFilter : User.UserWithRoleSet -> Array User.UserWithRoles -> Array User.UserWithRoles
+applyFilter filterUser userArray =
+    userArray

@@ -46,7 +46,7 @@ type alias Model =
     { users : Array UserWithRoles
     , filteredUsers : Array UserWithRoles
     , formAction : FormAction
-    , filterDisplay : FilterDisplay
+    , filterAction : FilterAction
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
     , previousSelectedUserId : Maybe Int
@@ -82,7 +82,7 @@ type FormAction
     | None
 
 
-type FilterDisplay
+type FilterAction
     = Show
     | Hide
 
