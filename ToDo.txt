@@ -1,3 +1,56 @@
+[] User tidy
+  [x]  align display columns on user details
+  []  put user table into card
+  []  page markers vertical?
+  []  add from to for page markers
+  []  reset page to 0/1  when filtering
+  []  increase pageSize for user table
+  []  add user count
+  []  Use proper filter buttons on details and filter
+  []  put confirmation dialog onto delete
+  []  when resetting filter - reload all users
+  []  refresh button? )spelling of reset
+  []  get rid of pink sticky outy bits on details
+  []  toggle  select all on filter roles
+  []  look at overriding mouseover on table - possiblly replace the mdl table?
+  []  fix sorting
+  []  filter on user names
+  []  reduce card sizes?
+  []  details and filter cards same size?
+  []  better colours for cards?
+  []  remove photo_url column
+  []  remove unused code
+  []  have a default picture place holder?
+  []  update card header to that it displays Details/Filter
+  []  tweega logo where it says something else goes here
+  []  review mdlStore indices
+  []  auto-calculate page size
+  []  make more sense to have the filter on the table?
+  []  put section title where it says elm-mdl dashboard example
+    []  app name and  version number
+    []  section title
+    []  app icon?
+    []  placeholder for logged on user
+
+
+
+
+New  functionality
+  []  Allow switching users, adding new logon..timeout for those logged on
+  []  Allow navigation bar to slide
+
+
+
+
+
+
+
+
+
+
+
+
+
 [x] remove the user redundant fields from user model - nested scratchUser object
 [x] use userWithRoles instead of plain User.
 [x] display edit user casrd

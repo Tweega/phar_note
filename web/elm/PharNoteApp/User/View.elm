@@ -33,7 +33,8 @@ view : User.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
         userTableContents =
-            userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
+            --userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
+            tableCard model mdlStore
 
         user =
             case model.formAction of
@@ -270,7 +271,7 @@ userTable users selectedUserId order startDisplayIndex endDisplayIndex =
         [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
         , tabindex 0
         , style
-            [ ( "height", "40%" )
+            [ ( "height", "100%" )
             , ( "width", "100%" )
             , ( "overflow-y", "hidden" )
             , ( "overflow-x", "hidden" )
@@ -287,6 +288,88 @@ userTable users selectedUserId order startDisplayIndex endDisplayIndex =
         ]
 
 
+tableCard : User.Model -> Material.Model -> Html AppMsg.Msg
+tableCard model mdlStore =
+    let
+        actions =
+            case model.refDataStatus of
+                Loaded data ->
+                    [ Button.render AppMsg.Mdl
+                        [ 4, 2 ]
+                        mdlStore
+                        [ Button.icon
+                        , white
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                        ]
+                        [ Icon.i "person_add" ]
+                    , Button.render AppMsg.Mdl
+                        [ 4, 3 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
+                        ]
+                        [ Icon.i "mode_edit_black" ]
+                    , Button.render AppMsg.Mdl
+                        [ 4, 4 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
+                        ]
+                        [ Icon.i "delete_black" ]
+                    , Button.render AppMsg.Mdl
+                        [ 4, 5 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
+                        ]
+                        [ Icon.i "mode_comment" ]
+                    ]
+
+                _ ->
+                    []
+
+        textStuff =
+            userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
+    in
+        Card.view
+            [ css "width" "100%"
+            , Color.background (Color.color Color.Yellow Color.S500)
+
+            --, Options.cs "demo-options"
+            ]
+            [ Card.title
+                [ Color.background (Color.color Color.Blue Color.S500)
+                , css "padding" "0"
+
+                -- Clear default padding to encompass scrim
+                , Color.background <| Color.color Color.Teal Color.S300
+                ]
+                [ Card.head
+                    [ white
+
+                    --, Options.scrim 0.75
+                    --, css "padding" "16px"
+                    -- Restore default padding inside scrim
+                    , css "width" "100%"
+                    ]
+                    [ text "Users" ]
+                ]
+            , Card.text
+                [ css "height" "400px"
+                , css "width" "100%"
+                ]
+                [ Options.div
+                    [ css "height" "400px"
+                    , css "width" "100%"
+                    ]
+                    [ textStuff ]
+                ]
+            , Card.actions
+                [ Card.border ]
+                actions
+            ]
+
+
 userTableHeader : Maybe Table.Order -> Html AppMsg.Msg
 userTableHeader order =
     Table.thead []
@@ -300,7 +383,7 @@ userTableHeader order =
                 [ text "First Name" ]
             , Table.th [] [ text "last Name" ]
             , Table.th [] [ text "Email" ]
-            , Table.th [] [ text "Photo url" ]
+            , Table.th [ css "width" "100%" ] [ text "Photo url" ]
             ]
         ]
 
@@ -345,7 +428,7 @@ userRow userId ( idx, user ) =
             [ Table.td [] [ text user.first_name ]
             , Table.td [] [ text user.last_name ]
             , Table.td [] [ text user.email ]
-            , Table.td [] [ text user.photo_url ]
+            , Table.td [ css "width" "100%" ] [ text user.photo_url ]
             ]
 
 
@@ -652,8 +735,8 @@ roleInfo i role =
         , css "margin-top" "5px"
         ]
         [ Options.div
-            [ css "width" "35%"
-            , css "color" "rgba(0,0,0,0.9)"
+            [ css "color" "rgba(0,0,0,0.9)"
+            , css "width" "150px"
             , css "float" "left"
             ]
             [ text role.role_name ]
