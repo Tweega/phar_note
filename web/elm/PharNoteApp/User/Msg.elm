@@ -30,7 +30,7 @@ type Msg
     | Reorder
     | KeyX Int
     | PaginateUser Int
-    | SelectTab Int
+    | SelectTab User.UserTab
     | UserSlider Float
     | ApplyUserFilter User.UserWithRoleSet
     | ResetUserFilter

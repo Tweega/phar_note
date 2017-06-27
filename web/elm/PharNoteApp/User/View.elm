@@ -52,15 +52,12 @@ view model mdlStore =
                     (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
 
                 WithRoles userWithRoles ->
-                    (viewCards userWithRoles model.refDataStatus mdlStore)
+                    case model.selectedTab of
+                        Details ->
+                            (viewCards userWithRoles model.refDataStatus mdlStore)
 
-        tabContents =
-            case model.selectedTab of
-                Details ->
-                    cards
-
-                Filter ->
-                    cards
+                        Filter ->
+                            (filterCards model.filterScratchUser model.refDataStatus mdlStore)
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -78,30 +75,7 @@ view model mdlStore =
                     [ Grid.size All 6
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    --cards
-                    [ Tabs.render
-                        AppMsg.Mdl
-                        [ 8, 0 ]
-                        mdlStore
-                        [ Tabs.ripple
-                        , Tabs.onSelectTab (\t -> AppMsg.MsgForUser (UserMsg.SelectTab t))
-                        , Tabs.activeTab (User.userTabToInt model.selectedTab)
-                        ]
-                        [ Tabs.label
-                            [ Options.center ]
-                            [ Icon.i "info_outline"
-                            , Options.span [ css "width" "4px" ] []
-                            , text "About tabs"
-                            ]
-                        , Tabs.label
-                            [ Options.center ]
-                            [ Icon.i "code"
-                            , Options.span [ css "width" "4px" ] []
-                            , text "Example"
-                            ]
-                        ]
-                        tabContents
-                    ]
+                    cards
                 ]
             ]
 
@@ -519,7 +493,9 @@ userCard user refData mdlStore =
                     , Button.render AppMsg.Mdl
                         [ 2, 5 ]
                         mdlStore
-                        [ Button.icon ]
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
+                        ]
                         [ Icon.i "mode_comment" ]
                     ]
 
@@ -993,6 +969,32 @@ userFilterCard filterUser refData mdlStore =
                     ]
                     [ text title ]
                 ]
+
+        actions =
+            [ Button.render AppMsg.Mdl
+                [ 3, 0 ]
+                mdlStore
+                [ Button.ripple
+                , Button.accent
+                , Options.onClick btnAction
+                ]
+                [ text "Apply" ]
+            , Button.render AppMsg.Mdl
+                [ 3, 1 ]
+                mdlStore
+                [ Button.ripple
+                , Button.accent
+                , Options.onClick (AppMsg.MsgForUser UserMsg.ResetUserFilter)
+                ]
+                [ text "Rest" ]
+            , Button.render AppMsg.Mdl
+                [ 3, 2 ]
+                mdlStore
+                [ Button.icon
+                , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Details))
+                ]
+                [ Icon.i "mode_comment" ]
+            ]
     in
         Card.view
             [ css "width" "100%"
@@ -1042,21 +1044,5 @@ userFilterCard filterUser refData mdlStore =
                 ]
             , Card.actions
                 [ Card.border ]
-                [ Button.render AppMsg.Mdl
-                    [ 3, 0 ]
-                    mdlStore
-                    [ Button.ripple
-                    , Button.accent
-                    , Options.onClick btnAction
-                    ]
-                    [ text "Apply" ]
-                , Button.render AppMsg.Mdl
-                    [ 3, 1 ]
-                    mdlStore
-                    [ Button.ripple
-                    , Button.accent
-                    , Options.onClick (AppMsg.MsgForUser UserMsg.ResetUserFilter)
-                    ]
-                    [ text "Rest" ]
-                ]
+                actions
             ]

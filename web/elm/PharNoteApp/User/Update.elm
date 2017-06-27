@@ -20,12 +20,8 @@ update msg model =
         NoOp ->
             model ! []
 
-        SelectTab idx ->
-            let
-                t =
-                    User.intToUserTab idx
-            in
-                { model | selectedTab = t } ! []
+        SelectTab userTab ->
+            { model | selectedTab = userTab } ! []
 
         KeyX key ->
             let
