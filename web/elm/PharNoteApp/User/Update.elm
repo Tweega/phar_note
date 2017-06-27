@@ -4,7 +4,7 @@ import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (RefDataStatus(..), FilterAction(..))
+import PharNoteApp.User.Model exposing (RefDataStatus(..))
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
@@ -21,7 +21,11 @@ update msg model =
             model ! []
 
         SelectTab idx ->
-            { model | selectedTab = idx } ! []
+            let
+                t =
+                    User.intToUserTab idx
+            in
+                { model | selectedTab = t } ! []
 
         KeyX key ->
             let
@@ -471,18 +475,6 @@ update msg model =
                     , selectedUserIndex = Just nextIdx
                 }
                     ! []
-
-        FilterDisplay action ->
-            let
-                toggleAction =
-                    case model.filterAction of
-                        Hide ->
-                            Show
-
-                        Show ->
-                            Hide
-            in
-                { model | filterAction = toggleAction } ! []
 
         ApplyUserFilter filterUser ->
             let

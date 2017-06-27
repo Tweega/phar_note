@@ -3,7 +3,7 @@ module PharNoteApp.User.View exposing (view, alwaysFindUser, maybeFindUser)
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (FormAction(..), FilterAction(..), RefDataStatus(..), UserType(..))
+import PharNoteApp.User.Model exposing (FormAction(..), UserTab(..), RefDataStatus(..), UserType(..))
 import PharNoteApp.User.Msg as UserMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -53,6 +53,14 @@ view model mdlStore =
 
                 WithRoles userWithRoles ->
                     (viewCards userWithRoles model.refDataStatus mdlStore)
+
+        tabContents =
+            case model.selectedTab of
+                Details ->
+                    cards
+
+                Filter ->
+                    cards
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -63,12 +71,37 @@ view model mdlStore =
                     ]
                 ]
                 [ cell [ Grid.size All 5 ]
-                    (myFunc model mdlStore)
+                    [ userTableContents
+                    , pager model
+                    ]
                 , cell
                     [ Grid.size All 6
                     , Color.background <| Color.color Color.Red Color.S100
                     ]
-                    cards
+                    --cards
+                    [ Tabs.render
+                        AppMsg.Mdl
+                        [ 8, 0 ]
+                        mdlStore
+                        [ Tabs.ripple
+                        , Tabs.onSelectTab (\t -> AppMsg.MsgForUser (UserMsg.SelectTab t))
+                        , Tabs.activeTab (User.userTabToInt model.selectedTab)
+                        ]
+                        [ Tabs.label
+                            [ Options.center ]
+                            [ Icon.i "info_outline"
+                            , Options.span [ css "width" "4px" ] []
+                            , text "About tabs"
+                            ]
+                        , Tabs.label
+                            [ Options.center ]
+                            [ Icon.i "code"
+                            , Options.span [ css "width" "4px" ] []
+                            , text "Example"
+                            ]
+                        ]
+                        tabContents
+                    ]
                 ]
             ]
 
@@ -913,100 +946,6 @@ slider model =
             , Slider.value model.userSliderValue
             ]
         ]
-
-
-userFilter : User.FilterAction -> Material.Model -> Html AppMsg.Msg
-userFilter act mdlStore =
-    Options.div
-        [ css "float" "right"
-        ]
-        [ Button.render AppMsg.Mdl
-            [ 3, 1 ]
-            mdlStore
-            [ Button.icon
-            , Options.onClick (AppMsg.MsgForUser (UserMsg.FilterDisplay act))
-            ]
-            [ case act of
-                Hide ->
-                    Options.div
-                        [ css "float" "right"
-                        ]
-                        [ Icon.i "person_add"
-                        ]
-
-                Show ->
-                    Options.div
-                        [ css "float" "right"
-                        ]
-                        [ Icon.i "mode_edit_black"
-                        ]
-            ]
-        ]
-
-
-myFunc : User.Model -> Material.Model -> List (Html AppMsg.Msg)
-myFunc model mdlStore =
-    let
-        userTableContents =
-            userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
-
-        j : User.FilterAction -> Html AppMsg.Msg
-        j act =
-            Options.div
-                [ css "float" "right"
-                ]
-                [ Button.render AppMsg.Mdl
-                    [ 3, 1 ]
-                    mdlStore
-                    [ Button.icon
-                    , Options.onClick (AppMsg.MsgForUser (UserMsg.FilterDisplay act))
-                    ]
-                    [ case act of
-                        Hide ->
-                            Options.div
-                                [ css "float" "right"
-                                ]
-                                [ Icon.i "person_add"
-                                ]
-
-                        Show ->
-                            Options.div
-                                [ css "float" "right"
-                                ]
-                                [ Icon.i "mode_edit_black"
-                                ]
-                    ]
-                ]
-
-        more =
-            Options.div
-                [ css "float" "left"
-                , css "clear" "both"
-                , css "width" "100%"
-                , css "border" "1px solid red"
-                ]
-                (filterCards model.filterScratchUser model.refDataStatus mdlStore)
-
-        content =
-            case model.filterAction of
-                Hide ->
-                    [ userTableContents
-                    , pager model
-
-                    --, (userFilter model.filterAction mdlStore)
-                    , userFilter model.filterAction mdlStore
-                    ]
-
-                Show ->
-                    [ userTableContents
-                    , pager model
-
-                    --, (userFilter model.filterAction mdlStore)
-                    , userFilter model.filterAction mdlStore
-                    , more
-                    ]
-    in
-        content
 
 
 filterCards : User.UserWithRoleSet -> User.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)

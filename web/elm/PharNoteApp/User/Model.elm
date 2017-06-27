@@ -46,7 +46,6 @@ type alias Model =
     { users : Array UserWithRoles
     , filteredUsers : Array UserWithRoles
     , formAction : FormAction
-    , filterAction : FilterAction
     , selectedUserId : Maybe Int
     , selectedUserIndex : Maybe Int
     , previousSelectedUserId : Maybe Int
@@ -57,11 +56,16 @@ type alias Model =
     , userSliderValue : Float
     , scratchUser : UserWithRoleSet
     , filterScratchUser : UserWithRoleSet
-    , selectedTab : Int
+    , selectedTab : UserTab
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
     , refDataStatus : RefDataStatus
     }
+
+
+type UserTab
+    = Details
+    | Filter
 
 
 type RefDataStatus
@@ -80,11 +84,6 @@ type FormAction
     | Delete
     | Cancel
     | None
-
-
-type FilterAction
-    = Show
-    | Hide
 
 
 type UserType
@@ -125,3 +124,23 @@ scratchToUserWithRoles_x user refData =
                     )
     in
         UserWithRoles user.id user.first_name user.last_name user.email user.photo_url userRoles
+
+
+userTabToInt : UserTab -> Int
+userTabToInt uTab =
+    case uTab of
+        Details ->
+            0
+
+        Filter ->
+            1
+
+
+intToUserTab : Int -> UserTab
+intToUserTab iTab =
+    case iTab of
+        1 ->
+            Filter
+
+        _ ->
+            Details

@@ -1,7 +1,10 @@
 module PharNoteApp.User.Msg exposing (..)
 
 import PharNoteApp.User.Model as User
-import PharNoteApp.User.Model exposing (FilterAction(..))
+
+
+--import PharNoteApp.User.Model exposing (FilterAction(..))
+
 import PharNoteApp.Role.BaseModel as Role
 import Http exposing (..)
 
@@ -29,7 +32,6 @@ type Msg
     | PaginateUser Int
     | SelectTab Int
     | UserSlider Float
-    | FilterDisplay User.FilterAction
     | ApplyUserFilter User.UserWithRoleSet
     | ResetUserFilter
     | SetFilterFirstName String

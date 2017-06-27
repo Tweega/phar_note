@@ -1,7 +1,7 @@
 module PharNoteApp.User.Init exposing (..)
 
 import PharNoteApp.User.Rest exposing (getRefData)
-import PharNoteApp.User.Model exposing (Model, FormAction(..), FilterAction(..), RefDataStatus(..), emptyUserWithRoleSet)
+import PharNoteApp.User.Model exposing (Model, FormAction(..), UserTab(..), RefDataStatus(..), emptyUserWithRoleSet)
 import PharNoteApp.User.BaseModel as UserBase
 import PharNoteApp.Msg as AppMsg
 import Material.Table as Table
@@ -22,13 +22,12 @@ initialModel : Model
 initialModel =
     { users = Array.empty
     , filteredUsers = Array.empty
-    , filterAction = Hide
     , formAction = None
     , selectedUserId = Nothing
     , selectedUserIndex = Nothing
     , previousSelectedUserId = Nothing
     , previousSelectedUserIndex = Nothing
-    , selectedTab = 0
+    , selectedTab = Details
     , order = Just Table.Ascending
     , errors = Nothing
     , pageSize = 6
