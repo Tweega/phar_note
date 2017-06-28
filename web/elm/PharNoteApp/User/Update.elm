@@ -485,7 +485,8 @@ update msg model =
                 { model
                     | filteredUsers = fusers
                     , filterState = Applied
-                    , selectedTab = Details
+
+                    --  , selectedTab = Details
                 }
                     ! []
 

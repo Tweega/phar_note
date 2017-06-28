@@ -32,10 +32,16 @@ type Msg
     | PaginateUser Int
     | SelectTab User.UserTab
     | UserSlider Float
-    | ApplyUserFilter User.UserWithRoleSet
-    | ResetUserFilter
     | SetFilterFirstName String
     | SetFilterLastName String
     | ToggleFilterRole Int
+    | ApplyUserFilter User.UserWithRoleSet
+    | ResetUserFilter
     | ClearUserFilter
     | CancelUserFilter
+
+
+
+--reset - clears entries on filter formAction
+-- clear - goes back to original user list
+-- cancel - just closes the filter form.

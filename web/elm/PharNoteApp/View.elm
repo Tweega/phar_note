@@ -58,7 +58,7 @@ view model =
             , tabs = ( [], [] )
             , main =
                 [ viewBody model
-                , helpDialog model
+                , confirmDialog model
                 ]
                     ++ Charts.createDefinitions
             }
@@ -217,26 +217,30 @@ viewBody model =
             text "404"
 
 
-helpDialog : Model -> Html AppMsg.Msg
-helpDialog model =
+confirmDialog : Model -> Html AppMsg.Msg
+confirmDialog model =
     Dialog.view
         []
-        [ Dialog.title [] [ text "About" ]
+        [ Dialog.title [ css "font-size" "1em" ] [ text "Are you sure?" ]
         , Dialog.content []
             [ Html.p []
-                [ text "elm-mdl is awesome." ]
-            , Html.p []
-                [ text "it really is." ]
+                [ text "Proceed with delete?" ]
             ]
         , Dialog.actions []
             [ Options.styled Html.span
                 [ Dialog.closeOn "click" ]
                 [ Button.render AppMsg.Mdl
+                    [ 5, 1, 7 ]
+                    model.mdl
+                    [ Button.ripple
+                    ]
+                    [ text "Mistake" ]
+                , Button.render AppMsg.Mdl
                     [ 5, 1, 6 ]
                     model.mdl
                     [ Button.ripple
                     ]
-                    [ text "Close" ]
+                    [ text "Do it!" ]
                 ]
             ]
         ]

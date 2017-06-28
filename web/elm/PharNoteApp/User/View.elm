@@ -20,6 +20,7 @@ import Json.Decode as Json
 import Array exposing (..)
 import Material
 import Material.Icon as Icon
+import Material.Tooltip as Tooltip
 import Material.Card as Card
 import Material.Button as Button
 import Material.Toggles as Toggles
@@ -34,12 +35,7 @@ view model mdlStore =
     let
         userTableContents =
             --userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
-            case model.selectedTab of
-                Details ->
-                    tableCard model mdlStore
-
-                Filter ->
-                    (filterCards model.filterScratchUser model.refDataStatus mdlStore)
+            tableCard model mdlStore
 
         user =
             case model.formAction of
@@ -53,12 +49,17 @@ view model mdlStore =
                     WithRoles (alwaysFindUser model.selectedUserIndex model.filteredUsers)
 
         cards =
-            case user of
-                WithSet userWithRoleSet ->
-                    (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
+            case model.selectedTab of
+                Details ->
+                    case user of
+                        WithSet userWithRoleSet ->
+                            (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
 
-                WithRoles userWithRoles ->
-                    (viewCards userWithRoles model.refDataStatus mdlStore)
+                        WithRoles userWithRoles ->
+                            (viewCards userWithRoles model.refDataStatus mdlStore)
+
+                Filter ->
+                    (filterCards model.filterScratchUser model.refDataStatus mdlStore)
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -291,13 +292,16 @@ userTable users selectedUserId order startDisplayIndex endDisplayIndex =
 tableCard : User.Model -> Material.Model -> Html AppMsg.Msg
 tableCard model mdlStore =
     let
-        ( msg, icon ) =
+        ( msg, icon, tooltip ) =
             case model.selectedTab of
                 Details ->
-                    ( (AppMsg.MsgForUser (UserMsg.SelectTab Filter)), "filter_list" )
+                    ( (AppMsg.MsgForUser (UserMsg.SelectTab Filter)), "filter_list", "Show filter form" )
 
                 Filter ->
-                    ( (AppMsg.MsgForUser (UserMsg.SelectTab Details)), "people" )
+                    ( (AppMsg.MsgForUser (UserMsg.SelectTab Details)), "people", "Close filter form" )
+
+        userCount =
+            Array.length model.filteredUsers
 
         actions =
             case model.refDataStatus of
@@ -307,8 +311,23 @@ tableCard model mdlStore =
                         mdlStore
                         [ Button.icon
                         , Options.onClick msg
+                        , css "float" "left"
                         ]
-                        [ Icon.i icon ]
+                        [ Icon.view icon
+                            [ Tooltip.attach AppMsg.Mdl [ 4, 11 ] ]
+                        , Tooltip.render AppMsg.Mdl
+                            [ 4, 11 ]
+                            mdlStore
+                            []
+                            [ text tooltip ]
+                        ]
+                    , Options.div
+                        [ css "float" "right"
+                        , css "font-size" "0.8em"
+                        , css "margin-right" "15px"
+                        , css "margin-top" "5px"
+                        ]
+                        [ text ("(" ++ toString userCount ++ " users)") ]
                     ]
 
                 _ ->
@@ -350,7 +369,9 @@ tableCard model mdlStore =
                     [ textStuff ]
                 ]
             , Card.actions
-                [ Card.border ]
+                [ Card.border
+                , css "float" "left"
+                ]
                 actions
             ]
 
@@ -994,17 +1015,17 @@ slider model =
         ]
 
 
-filterCards : User.UserWithRoleSet -> User.RefDataStatus -> Material.Model -> Html AppMsg.Msg
+filterCards : User.UserWithRoleSet -> User.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
 filterCards scratchUser refDataStatus mdlStore =
     --check that ref data is loaded.
     let
         html =
             case refDataStatus of
                 Loaded refData ->
-                    userFilterCard scratchUser refData mdlStore
+                    [ userFilterCard scratchUser refData mdlStore ]
 
                 _ ->
-                    text "no ref data"
+                    [ text "no ref data" ]
     in
         html
 
@@ -1012,9 +1033,6 @@ filterCards scratchUser refDataStatus mdlStore =
 userFilterCard : User.UserWithRoleSet -> User.RefData -> Material.Model -> Html AppMsg.Msg
 userFilterCard filterUser refData mdlStore =
     let
-        btnAction =
-            AppMsg.MsgForUser (UserMsg.ApplyUserFilter filterUser)
-
         option title index =
             Options.styled Html.li
                 [ css "margin" "4px 0" ]
@@ -1032,31 +1050,70 @@ userFilterCard filterUser refData mdlStore =
                     [ text title ]
                 ]
 
-        actions =
+        --makeAction msg icon tooltip index =
+        acts =
             [ Button.render AppMsg.Mdl
-                [ 3, 0 ]
-                mdlStore
-                [ Button.ripple
-                , Button.accent
-                , Options.onClick btnAction
-                ]
-                [ text "Apply" ]
-            , Button.render AppMsg.Mdl
                 [ 3, 1 ]
                 mdlStore
-                [ Button.ripple
-                , Button.accent
-                , Options.onClick (AppMsg.MsgForUser UserMsg.ResetUserFilter)
+                [ Button.icon
+                , Options.onClick (AppMsg.MsgForUser (UserMsg.ApplyUserFilter filterUser))
+                , css "float" "left"
                 ]
-                [ text "Rest" ]
+                [ Icon.view "filter_list"
+                    [ Tooltip.attach AppMsg.Mdl [ 3, 11 ] ]
+                , Tooltip.render AppMsg.Mdl
+                    [ 3, 11 ]
+                    mdlStore
+                    []
+                    [ text "Apply filter" ]
+                ]
+
+            --
+            --                 [ Icon.view "add"
+            --     [ Tooltip.attach Mdl [0] ]
+            -- , Tooltip.render Mdl [0] model.mdl
+            --     []
+            --     [ text "This is an add icon" ]
+            -- ]
+            -- , Button.render AppMsg.Mdl
+            --     [ 3, 1 ]
+            --     mdlStore
+            --     [ Button.ripple
+            --     , Button.accent
+            --     , Options.onClick (AppMsg.MsgForUser UserMsg.ResetUserFilter)
+            --     ]
+            --     [ text "Reset" ]
             , Button.render AppMsg.Mdl
-                [ 3, 2 ]
+                [ 3, 3 ]
                 mdlStore
                 [ Button.icon
-                , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Details))
+                , Options.onClick (AppMsg.MsgForUser UserMsg.CancelUserFilter)
+                , css "float" "right"
+                , css "margin-right" "15px"
                 ]
-                [ Icon.i "mode_comment" ]
+                [ Icon.i "people" ]
             ]
+
+        actions =
+            acts
+                ++ [ Button.render AppMsg.Mdl
+                        [ 3, 2 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.ClearUserFilter)
+                        , css "float" "left"
+                        ]
+                        [ Icon.view "undo"
+                            [ Tooltip.attach AppMsg.Mdl [ 3, 21 ] ]
+                        , Tooltip.render AppMsg.Mdl
+                            [ 3, 21 ]
+                            mdlStore
+                            []
+                            [ text "Revert to original user list" ]
+                        ]
+                   ]
+
+        --[ text "Close" ]
     in
         Card.view
             [ css "width" "100%"
@@ -1105,6 +1162,8 @@ userFilterCard filterUser refData mdlStore =
                     ]
                 ]
             , Card.actions
-                [ Card.border ]
+                [ Card.border
+                , css "float" "left"
+                ]
                 actions
             ]
