@@ -4,7 +4,7 @@ import PharNoteApp.User.Msg exposing (..)
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Model as User
 import PharNoteApp.User.BaseModel as UserBase
-import PharNoteApp.User.Model exposing (RefDataStatus(..))
+import PharNoteApp.User.Model exposing (RefDataStatus(..), FilterState(..), UserTab(..))
 import PharNoteApp.User.Rest as Rest
 import PharNoteApp.User.View as View
 import PharNoteApp.Utils as Utils
@@ -252,7 +252,7 @@ update msg model =
                     case model.selectedUserIndex of
                         Nothing ->
                             let
-                                first_user =
+                                firstUser =
                                     Array.get 0 userArray
 
                                 firstIdx =
@@ -264,20 +264,13 @@ update msg model =
                                     else
                                         userCount - 1
                             in
-                                case first_user of
+                                case firstUser of
                                     Nothing ->
                                         ( Nothing, Nothing, -1, -1 )
 
                                     Just user ->
                                         ( Just user.id, Just 0, firstIdx, lastIdx )
 
-                        --working here.  If screen refreshes and other people have added/deleted users, then index will not be reliable.
-                        -- need to check if the retrieved user has the correct id, otherwise do a proper search on id
-                        --perhaps use dict, though it is a reasonable bet that the index will be within 1 or 2 of its previous value
-                        --so alternate search in each direction - more index will only have been affected by activity in the lower index range
-                        --if there has been a delete, then search lower indices - if there have been additions, then search higher
-                        --we won't know what has happened, so search both ways?
-                        --might alternatively consult the log for the past n seconds and calculate correct index from that
                         _ ->
                             ( model.selectedUserId, model.selectedUserIndex, model.startDisplayIndex, model.endDisplayIndex )
 
@@ -489,7 +482,26 @@ update msg model =
                         )
                         model.users
             in
-                { model | filteredUsers = fusers } ! []
+                { model
+                    | filteredUsers = fusers
+                    , filterState = Applied
+                    , selectedTab = Details
+                }
+                    ! []
+
+        ResetUserFilter ->
+            { model | filterScratchUser = User.emptyUserWithRoleSet } ! []
+
+        CancelUserFilter ->
+            { model | selectedTab = Details } ! []
+
+        ClearUserFilter ->
+            { model
+                | filteredUsers = model.users
+                , filterState = NoFilter
+                , filterScratchUser = User.emptyUserWithRoleSet
+            }
+                ! []
 
         SetFilterFirstName value ->
             let
@@ -531,9 +543,6 @@ update msg model =
                     { user | roles = newRoleSet }
             in
                 { model | filterScratchUser = newUser } ! []
-
-        ResetUserFilter ->
-            { model | filterScratchUser = User.emptyUserWithRoleSet } ! []
 
 
 

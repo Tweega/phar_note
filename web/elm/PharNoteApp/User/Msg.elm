@@ -37,3 +37,5 @@ type Msg
     | SetFilterFirstName String
     | SetFilterLastName String
     | ToggleFilterRole Int
+    | ClearUserFilter
+    | CancelUserFilter

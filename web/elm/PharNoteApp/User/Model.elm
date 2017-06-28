@@ -60,12 +60,18 @@ type alias Model =
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
     , refDataStatus : RefDataStatus
+    , filterState : FilterState
     }
 
 
 type UserTab
     = Details
     | Filter
+
+
+type FilterState
+    = Applied
+    | NoFilter
 
 
 type RefDataStatus

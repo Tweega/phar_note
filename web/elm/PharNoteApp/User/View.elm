@@ -34,7 +34,12 @@ view model mdlStore =
     let
         userTableContents =
             --userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
-            tableCard model mdlStore
+            case model.selectedTab of
+                Details ->
+                    tableCard model mdlStore
+
+                Filter ->
+                    (filterCards model.filterScratchUser model.refDataStatus mdlStore)
 
         user =
             case model.formAction of
@@ -53,12 +58,7 @@ view model mdlStore =
                     (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
 
                 WithRoles userWithRoles ->
-                    case model.selectedTab of
-                        Details ->
-                            (viewCards userWithRoles model.refDataStatus mdlStore)
-
-                        Filter ->
-                            (filterCards model.filterScratchUser model.refDataStatus mdlStore)
+                    (viewCards userWithRoles model.refDataStatus mdlStore)
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -291,38 +291,24 @@ userTable users selectedUserId order startDisplayIndex endDisplayIndex =
 tableCard : User.Model -> Material.Model -> Html AppMsg.Msg
 tableCard model mdlStore =
     let
+        ( msg, icon ) =
+            case model.selectedTab of
+                Details ->
+                    ( (AppMsg.MsgForUser (UserMsg.SelectTab Filter)), "filter_list" )
+
+                Filter ->
+                    ( (AppMsg.MsgForUser (UserMsg.SelectTab Details)), "people" )
+
         actions =
             case model.refDataStatus of
                 Loaded data ->
                     [ Button.render AppMsg.Mdl
-                        [ 4, 2 ]
+                        [ 4, 1 ]
                         mdlStore
                         [ Button.icon
-                        , white
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                        , Options.onClick msg
                         ]
-                        [ Icon.i "person_add" ]
-                    , Button.render AppMsg.Mdl
-                        [ 4, 3 ]
-                        mdlStore
-                        [ Button.icon
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
-                        ]
-                        [ Icon.i "mode_edit_black" ]
-                    , Button.render AppMsg.Mdl
-                        [ 4, 4 ]
-                        mdlStore
-                        [ Button.icon
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
-                        ]
-                        [ Icon.i "delete_black" ]
-                    , Button.render AppMsg.Mdl
-                        [ 4, 5 ]
-                        mdlStore
-                        [ Button.icon
-                        , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
-                        ]
-                        [ Icon.i "mode_comment" ]
+                        [ Icon.i icon ]
                     ]
 
                 _ ->
@@ -359,8 +345,7 @@ tableCard model mdlStore =
                 , css "width" "100%"
                 ]
                 [ Options.div
-                    [ css "height" "400px"
-                    , css "width" "100%"
+                    [ css "width" "100%"
                     ]
                     [ textStuff ]
                 ]
@@ -565,21 +550,23 @@ userCard user refData mdlStore =
                         [ Button.icon
                         , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
                         ]
-                        [ Icon.i "mode_edit_black" ]
+                        [ Icon.i "mode_edit" ]
                     , Button.render AppMsg.Mdl
                         [ 2, 4 ]
                         mdlStore
                         [ Button.icon
                         , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
                         ]
-                        [ Icon.i "delete_black" ]
+                        [ Icon.i "delete" ]
                     , Button.render AppMsg.Mdl
                         [ 2, 5 ]
                         mdlStore
                         [ Button.icon
                         , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
+                        , white
                         ]
-                        [ Icon.i "mode_comment" ]
+                        [ Icon.i "people"
+                        ]
                     ]
 
                 _ ->
@@ -1007,25 +994,17 @@ slider model =
         ]
 
 
-filterCards : User.UserWithRoleSet -> User.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
+filterCards : User.UserWithRoleSet -> User.RefDataStatus -> Material.Model -> Html AppMsg.Msg
 filterCards scratchUser refDataStatus mdlStore =
     --check that ref data is loaded.
     let
         html =
             case refDataStatus of
                 Loaded refData ->
-                    [ userFilterCard scratchUser refData mdlStore
-                    , Options.div
-                        [ Grid.size All 1
-                        , css "height" "32px"
-                        ]
-                        []
-
-                    --, roleEditCard scratchUser.roles refData mdlStore
-                    ]
+                    userFilterCard scratchUser refData mdlStore
 
                 _ ->
-                    [ text "no ref data" ]
+                    text "no ref data"
     in
         html
 
