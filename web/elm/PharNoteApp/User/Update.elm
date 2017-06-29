@@ -258,47 +258,10 @@ update msg model =
                 userArray =
                     Array.fromList (users)
 
-                userCount =
-                    Array.length userArray
-
-                ( selectedUserId, selectedUserIndex, firstIndex, lastIndex ) =
-                    case model.selectedUserIndex of
-                        Nothing ->
-                            let
-                                firstUser =
-                                    Array.get 0 userArray
-
-                                firstIdx =
-                                    0
-
-                                lastIdx =
-                                    if userCount > model.pageSize then
-                                        model.pageSize - 1
-                                    else
-                                        userCount - 1
-                            in
-                                case firstUser of
-                                    Nothing ->
-                                        ( Nothing, Nothing, -1, -1 )
-
-                                    Just user ->
-                                        ( Just user.id, Just 0, firstIdx, lastIdx )
-
-                        _ ->
-                            ( model.selectedUserId, model.selectedUserIndex, model.startDisplayIndex, model.endDisplayIndex )
-
-                --if we have done an edit then the selected user and index will stay the same
+                newModel =
+                    filteredModel { model | users = userArray }
             in
-                { model
-                    | selectedUserId = selectedUserId
-                    , selectedUserIndex = selectedUserIndex
-                    , startDisplayIndex = firstIndex
-                    , endDisplayIndex = lastIndex
-                    , users = userArray
-                    , filteredUsers = applyFilter model.filterScratchUser userArray
-                    , errors = Nothing
-                }
-                    ! []
+                newModel ! []
 
         ProcessUserGet (Err error) ->
             { model
@@ -480,28 +443,10 @@ update msg model =
 
         ApplyUserFilter filterUser ->
             let
-                x =
-                    Debug.log "hh" "userWithRoleSet"
-
-                fusers =
-                    Array.filter
-                        (\userWithRole ->
-                            let
-                                userRoleSet =
-                                    List.map (\r -> r.id) userWithRole.roles
-                                        |> Set.fromList
-                            in
-                                Set.size (Set.intersect filterUser.roles userRoleSet) > 0
-                        )
-                        model.users
+                fm =
+                    { model | filterState = Applied, selectedUserIndex = Nothing }
             in
-                { model
-                    | filteredUsers = fusers
-                    , filterState = Applied
-
-                    --  , selectedTab = Details
-                }
-                    ! []
+                (filteredModel fm) ! []
 
         ResetUserFilter ->
             { model | filterScratchUser = User.emptyUserWithRoleSet } ! []
@@ -510,12 +455,15 @@ update msg model =
             { model | selectedTab = Details } ! []
 
         ClearUserFilter ->
-            { model
-                | filteredUsers = model.users
-                , filterState = NoFilter
-                , filterScratchUser = User.emptyUserWithRoleSet
-            }
-                ! []
+            let
+                fm =
+                    { model
+                        | filterState = NoFilter
+                        , filterScratchUser = User.emptyUserWithRoleSet
+                        , selectedUserIndex = Nothing
+                    }
+            in
+                (filteredModel fm) ! []
 
         SetFilterFirstName value ->
             let
@@ -624,4 +572,65 @@ reverse x y =
 
 applyFilter : User.UserWithRoleSet -> Array User.UserWithRoles -> Array User.UserWithRoles
 applyFilter filterUser userArray =
-    userArray
+    Array.filter
+        (\userWithRole ->
+            let
+                userRoleSet =
+                    List.map (\r -> r.id) userWithRole.roles
+                        |> Set.fromList
+            in
+                Set.size (Set.intersect filterUser.roles userRoleSet) > 0
+        )
+        userArray
+
+
+filteredModel : User.Model -> User.Model
+filteredModel model =
+    let
+        filteredUsers =
+            case model.filterState of
+                Applied ->
+                    applyFilter model.filterScratchUser model.users
+
+                _ ->
+                    model.users
+
+        userCount =
+            Array.length filteredUsers
+
+        ( selectedUserId, selectedUserIndex, firstIndex, lastIndex ) =
+            case model.selectedUserIndex of
+                Nothing ->
+                    let
+                        firstUser =
+                            Array.get 0 filteredUsers
+
+                        firstIdx =
+                            0
+
+                        lastIdx =
+                            if userCount > model.pageSize then
+                                model.pageSize - 1
+                            else
+                                userCount - 1
+                    in
+                        case firstUser of
+                            Nothing ->
+                                ( Nothing, Nothing, -1, -1 )
+
+                            Just user ->
+                                ( Just user.id, Just 0, firstIdx, lastIdx )
+
+                _ ->
+                    ( model.selectedUserId, model.selectedUserIndex, model.startDisplayIndex, model.endDisplayIndex )
+
+        --if we have done an edit then the selected user and index will stay the same
+    in
+        { model
+            | selectedUserId = selectedUserId
+            , selectedUserIndex = selectedUserIndex
+            , startDisplayIndex = firstIndex
+            , endDisplayIndex = lastIndex
+            , filteredUsers = filteredUsers
+            , errors = Nothing
+        }

@@ -585,7 +585,8 @@ userCard user refData action mdlStore =
                                 [ 2, 2 ]
                                 mdlStore
                                 [ Button.icon
-                                , white
+
+                                --, white
                                 , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
                                 , css "float" "left"
                                 ]
@@ -852,7 +853,7 @@ userEditCard scratchUser refData action mdlStore =
                     , Button.accent
                     , Options.onClick buttonAction
                     ]
-                    [ text "Create" ]
+                    [ text buttonText ]
                 , Button.render AppMsg.Mdl
                     [ 3, 1 ]
                     mdlStore
