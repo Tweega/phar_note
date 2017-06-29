@@ -121,6 +121,19 @@ update msg model =
             in
                 { model | order = sortOrder, users = sortedUsers } ! []
 
+        CancelDeleteUser ->
+            { model | formAction = User.None } ! []
+
+        ConfirmDeleteUser ->
+            let
+                idx =
+                    model.selectedUserIndex
+
+                usr =
+                    View.maybeFindUser idx model.filteredUsers
+            in
+                { model | formAction = User.ConfirmDelete } ! []
+
         DeleteUser ->
             let
                 idx =
@@ -136,7 +149,7 @@ update msg model =
                     Just user ->
                         --we need to identify a record to be current after successful delete
                         let
-                            --this would be a cse of using one of those never fail things as if idx was Nothing we would not get here.
+                            --this would be a case of using one of those Maybe.andThen things as if idx was Nothing we would not get here.
                             i =
                                 case idx of
                                     Just x ->
@@ -207,14 +220,14 @@ update msg model =
                     case model.formAction of
                         User.Create ->
                             { model
-                                | formAction = User.Cancel
+                                | formAction = User.CancelNewUser
                                 , selectedUserId = model.previousSelectedUserId
                                 , selectedUserIndex = model.previousSelectedUserIndex
                             }
 
                         _ ->
                             { model
-                                | formAction = User.Cancel
+                                | formAction = User.CancelNewUser
                             }
             in
                 newModel ! []

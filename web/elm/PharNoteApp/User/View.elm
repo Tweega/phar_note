@@ -56,7 +56,7 @@ view model mdlStore =
                             (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
 
                         WithRoles userWithRoles ->
-                            (viewCards userWithRoles model.refDataStatus mdlStore)
+                            (viewCards userWithRoles model.refDataStatus model.formAction mdlStore)
 
                 Filter ->
                     (filterCards model.filterScratchUser model.refDataStatus mdlStore)
@@ -82,9 +82,9 @@ view model mdlStore =
             ]
 
 
-viewCards : User.UserWithRoles -> User.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
-viewCards user refDataStatus mdlStore =
-    [ userCard user refDataStatus mdlStore
+viewCards : User.UserWithRoles -> User.RefDataStatus -> User.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+viewCards user refDataStatus action mdlStore =
+    [ userCard user refDataStatus action mdlStore
     , Options.div
         [ Grid.size All 1
         , css "height" "32px"
@@ -534,8 +534,8 @@ optionsCard model mdlStore =
             ]
 
 
-userCard : User.UserWithRoles -> User.RefDataStatus -> Material.Model -> Html AppMsg.Msg
-userCard user refData mdlStore =
+userCard : User.UserWithRoles -> User.RefDataStatus -> User.FormAction -> Material.Model -> Html AppMsg.Msg
+userCard user refData action mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -555,43 +555,71 @@ userCard user refData mdlStore =
                 ]
 
         actions =
-            case refData of
-                Loaded data ->
+            case action of
+                User.ConfirmDelete ->
                     [ Button.render AppMsg.Mdl
-                        [ 2, 2 ]
+                        [ 3, 1 ]
                         mdlStore
-                        [ Button.icon
-                        , white
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
-                        ]
-                        [ Icon.i "person_add" ]
-                    , Button.render AppMsg.Mdl
-                        [ 2, 3 ]
-                        mdlStore
-                        [ Button.icon
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
-                        ]
-                        [ Icon.i "mode_edit" ]
-                    , Button.render AppMsg.Mdl
-                        [ 2, 4 ]
-                        mdlStore
-                        [ Button.icon
+                        [ Button.ripple
+                        , Button.accent
                         , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
+                        , css "float" "right"
                         ]
-                        [ Icon.i "delete" ]
+                        [ text "Do it!" ]
                     , Button.render AppMsg.Mdl
-                        [ 2, 5 ]
+                        [ 3, 1 ]
                         mdlStore
-                        [ Button.icon
-                        , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
-                        , white
+                        [ Button.ripple
+                        , Button.accent
+                        , Options.onClick (AppMsg.MsgForUser UserMsg.CancelDeleteUser)
+                        , css "float" "right"
                         ]
-                        [ Icon.i "people"
-                        ]
+                        [ text "Mistake" ]
+                    , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this user?" ]
                     ]
 
                 _ ->
-                    []
+                    case refData of
+                        Loaded data ->
+                            [ Button.render AppMsg.Mdl
+                                [ 2, 2 ]
+                                mdlStore
+                                [ Button.icon
+                                , white
+                                , Options.onClick (AppMsg.MsgForUser UserMsg.NewUser)
+                                , css "float" "left"
+                                ]
+                                [ Icon.i "person_add" ]
+                            , Button.render AppMsg.Mdl
+                                [ 2, 3 ]
+                                mdlStore
+                                [ Button.icon
+                                , Options.onClick (AppMsg.MsgForUser UserMsg.EditUser)
+                                , css "float" "left"
+                                ]
+                                [ Icon.i "mode_edit" ]
+                            , Button.render AppMsg.Mdl
+                                [ 2, 5 ]
+                                mdlStore
+                                [ Button.icon
+                                , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
+                                , css "float" "left"
+                                ]
+                                [ Icon.i "people"
+                                ]
+                            , Button.render AppMsg.Mdl
+                                [ 2, 4 ]
+                                mdlStore
+                                [ Button.icon
+                                , Options.onClick (AppMsg.MsgForUser UserMsg.ConfirmDeleteUser)
+                                , css "float" "right"
+                                , css "margin-right" "15px"
+                                ]
+                                [ Icon.i "delete" ]
+                            ]
+
+                        _ ->
+                            []
 
         textStuff =
             if List.length user.roles > 0 then
@@ -631,7 +659,9 @@ userCard user refData mdlStore =
                     textStuff
                 ]
             , Card.actions
-                [ Card.border ]
+                [ Card.border
+                , css "float" "left"
+                ]
                 actions
             ]
 

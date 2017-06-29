@@ -87,8 +87,9 @@ type alias RefData =
 type FormAction
     = Create
     | Edit
+    | ConfirmDelete
     | Delete
-    | Cancel
+    | CancelNewUser
     | None
 
 

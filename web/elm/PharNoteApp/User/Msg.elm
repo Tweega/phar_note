@@ -39,6 +39,8 @@ type Msg
     | ResetUserFilter
     | ClearUserFilter
     | CancelUserFilter
+    | ConfirmDeleteUser
+    | CancelDeleteUser
 
 
 
