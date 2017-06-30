@@ -73,7 +73,10 @@ urlUpdate : Model -> Maybe Route.Route -> ( Model, Cmd Msg )
 urlUpdate model route =
     let
         newModel =
-            { model | history = route :: model.history }
+            { model
+                | history = route :: model.history
+                , activeRoute = route
+            }
 
         cmd =
             case route of

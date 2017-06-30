@@ -118,8 +118,12 @@ update msg model =
 
                 sortedUsers =
                     sort (Array.toList model.filteredUsers) |> Array.fromList
+
+                nextUser =
+                    View.alwaysFindUser model.selectedUserIndex sortedUsers
             in
-                { model | order = sortOrder, users = sortedUsers } ! []
+                --the user index and id will nno longer match up now.  Either need to find current user, or keep selector on same page/offset
+                { model | order = sortOrder, filteredUsers = sortedUsers, selectedUserId = Just nextUser.id } ! []
 
         CancelDeleteUser ->
             { model | formAction = User.None } ! []

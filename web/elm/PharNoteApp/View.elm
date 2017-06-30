@@ -66,15 +66,19 @@ view model =
 
 viewHeader : Model -> Html AppMsg.Msg
 viewHeader model =
-    Layout.row
-        [ Color.background <| Color.color Color.Grey Color.S100
-        , Color.text <| Color.color Color.Grey Color.S900
-        ]
-        [ Layout.title [] [ text "elm-mdl Dashboard Example" ]
-        , Layout.spacer
-        , Layout.navigation []
-            [ text "something else goes here" ]
-        ]
+    let
+        details =
+            routeDetails model.activeRoute
+    in
+        Layout.row
+            [ Color.background <| Color.color Color.Grey Color.S100
+            , Color.text <| Color.color Color.Grey Color.S900
+            ]
+            [ Layout.title [] [ text details.title ]
+            , Layout.spacer
+            , Layout.navigation []
+                [ text "something else goes here" ]
+            ]
 
 
 type alias MenuItem =
@@ -86,7 +90,7 @@ type alias MenuItem =
 
 menuItems : List MenuItem
 menuItems =
-    [ { text = "Dashboard", iconName = "dashboard", route = Just Home }
+    [ { text = "Dashboard", iconName = "dashboard", route = Just Chart }
     , { text = "Users", iconName = "group", route = Just Users }
     , { text = "Roles", iconName = "alarm", route = Just Roles }
     , { text = "Reports", iconName = "list", route = Nothing }
@@ -204,7 +208,7 @@ drawerHeader model =
 viewBody : Model -> Html AppMsg.Msg
 viewBody model =
     case model.history |> List.head |> Maybe.withDefault Nothing of
-        Just Home ->
+        Just Chart ->
             ChartView.view model.chartData
 
         Just Users ->

@@ -398,13 +398,15 @@ userTableHeader order =
     Table.thead []
         [ Table.tr []
             [ Table.th
+                []
+                [ text "First Name" ]
+            , Table.th
                 [ order
                     |> Maybe.map Table.sorted
                     |> Maybe.withDefault nop
                 , Options.onClick (AppMsg.MsgForUser UserMsg.Reorder)
                 ]
-                [ text "First Name" ]
-            , Table.th [] [ text "last Name" ]
+                [ text "last Name" ]
             , Table.th [] [ text "Email" ]
             , Table.th [ css "width" "100%" ] [ text "Photo url" ]
             ]

@@ -50,13 +50,13 @@ defmodule PharNote.User do
   def changeset_new(user, params \\ :empty) do
     #assuming here that new user will not have any roles, which is probably not going to be the case
     user
-      |> cast(params, [:first_name, :last_name, :email, :photo_url])      
+      |> cast(params, [:first_name, :last_name, :email, :photo_url])
       |> unique_constraint(:email)
   end
 
   def sorted(query) do
     from u in query,
-    order_by: [desc: u.last_name]
+    order_by: [asc: u.last_name]
   end
 
   def with_roles(query) do

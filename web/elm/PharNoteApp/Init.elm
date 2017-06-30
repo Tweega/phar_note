@@ -19,13 +19,16 @@ init location =
 
         --  ( chartData, chartCmd ) =
         --      ChartInit.init
+        maybeRoute =
+            Route.locFor location
     in
         { mdl = Material.model
-        , history = Route.init (Route.locFor location)
+        , history = Route.init maybeRoute
         , userData = userData
         , roleData = RoleInit.initialModel
         , chartData = ChartInit.initialModel
         , activeUser = ""
+        , activeRoute = maybeRoute
         }
             -- , Material.init AppMsg.Mdl
             ! [ Material.init AppMsg.Mdl, userCmd ]

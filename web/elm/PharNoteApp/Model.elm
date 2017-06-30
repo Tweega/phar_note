@@ -17,4 +17,5 @@ type alias Model =
     , roleData : Role.Model
     , chartData : Chart.Model
     , activeUser : String --this should be a whole data structure?
+    , activeRoute : Maybe Route
     }

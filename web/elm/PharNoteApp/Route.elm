@@ -5,7 +5,7 @@ import UrlParser exposing (parsePath, oneOf, map, top, s, (</>), string)
 
 
 type Route
-    = Home
+    = Chart
     | Users
     | Roles
 
@@ -17,7 +17,7 @@ type alias RouteModel =
 pathParser : UrlParser.Parser (Route -> a) a
 pathParser =
     oneOf
-        [ map Home top
+        [ map Chart top
         , map Users (s "users")
         , map Roles (s "roles")
         ]
@@ -27,7 +27,7 @@ init : Maybe Route -> List (Maybe Route)
 init location =
     case location of
         Nothing ->
-            [ Just Home ]
+            [ Just Chart ]
 
         something ->
             [ something ]
@@ -36,7 +36,7 @@ init location =
 urlFor : Route -> String
 urlFor loc =
     case loc of
-        Home ->
+        Chart ->
             "/"
 
         Users ->
@@ -49,3 +49,25 @@ urlFor loc =
 locFor : Navigation.Location -> Maybe Route
 locFor path =
     parsePath pathParser path
+
+
+type alias RouteDetails =
+    { title : String
+    , desc : String
+    }
+
+
+routeDetails : Maybe Route -> RouteDetails
+routeDetails maybeRoute =
+    case maybeRoute of
+        Just Chart ->
+            RouteDetails "Chart report sample" "this page has sample reports"
+
+        Just Users ->
+            RouteDetails "User Administration" "Add, Edit Delete users"
+
+        Just Roles ->
+            RouteDetails "Role Administration" "Add, Edit Delete roles"
+
+        _ ->
+            RouteDetails "" ""
