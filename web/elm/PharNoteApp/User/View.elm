@@ -266,27 +266,44 @@ userForm user refData action mdlStore =
         ]
 
 
-userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> Int -> Int -> Html AppMsg.Msg
-userTable users selectedUserId order startDisplayIndex endDisplayIndex =
-    div
-        [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
-        , tabindex 0
-        , style
-            [ ( "height", "100%" )
-            , ( "width", "100%" )
-            , ( "overflow-y", "hidden" )
-            , ( "overflow-x", "hidden" )
+userTable : Array User.UserWithRoles -> Maybe Int -> Maybe Table.Order -> User.FormAction -> Int -> Int -> Html AppMsg.Msg
+userTable users selectedUserId order action startDisplayIndex endDisplayIndex =
+    let
+        divAt =
+            case action of
+                User.None ->
+                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
+                    ]
+
+                User.CancelNewUser ->
+                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForUser (UserMsg.KeyX x)) keyCode)
+                    ]
+
+                _ ->
+                    []
+
+        divAttributes =
+            [ tabindex 0
+            , style
+                [ ( "height", "100%" )
+                , ( "width", "100%" )
+                , ( "overflow-y", "hidden" )
+                , ( "overflow-x", "hidden" )
+                ]
             ]
-        ]
-        [ Table.table
-            [ Options.css "margin" "0px"
-            , Options.css "padding" "0px"
-            , Options.css "width" "100%"
+                ++ divAt
+    in
+        div
+            divAttributes
+            [ Table.table
+                [ Options.css "margin" "0px"
+                , Options.css "padding" "0px"
+                , Options.css "width" "100%"
+                ]
+                [ userTableHeader order
+                , tbody [] (userRows users action selectedUserId startDisplayIndex endDisplayIndex)
+                ]
             ]
-            [ userTableHeader order
-            , tbody [] (userRows users selectedUserId startDisplayIndex endDisplayIndex)
-            ]
-        ]
 
 
 tableCard : User.Model -> Material.Model -> Html AppMsg.Msg
@@ -334,7 +351,7 @@ tableCard model mdlStore =
                     []
 
         textStuff =
-            userTable model.filteredUsers model.selectedUserId model.order model.startDisplayIndex model.endDisplayIndex
+            userTable model.filteredUsers model.selectedUserId model.order model.formAction model.startDisplayIndex model.endDisplayIndex
     in
         Card.view
             [ css "width" "100%"
@@ -394,8 +411,8 @@ userTableHeader order =
         ]
 
 
-userRows : Array User.UserWithRoles -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
-userRows users selectedUserId startDisplayIndex endDisplayIndex =
+userRows : Array User.UserWithRoles -> User.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
+userRows users action selectedUserId startDisplayIndex endDisplayIndex =
     let
         userId =
             case selectedUserId of
@@ -408,7 +425,7 @@ userRows users selectedUserId startDisplayIndex endDisplayIndex =
         users
             |> Array.slice startDisplayIndex (endDisplayIndex + 1)
             |> Array.toIndexedList
-            |> List.map (userRow userId)
+            |> List.map (userRow action userId)
 
 
 
@@ -416,19 +433,40 @@ userRows users selectedUserId startDisplayIndex endDisplayIndex =
 --look at using array.fold(l/r)
 
 
-userRow : Int -> ( Int, User.UserWithRoles ) -> Html AppMsg.Msg
-userRow userId ( idx, user ) =
+userRow : User.FormAction -> Int -> ( Int, User.UserWithRoles ) -> Html AppMsg.Msg
+userRow action userId ( idx, user ) =
     let
+        f allowSelect =
+            []
+                |> (\a ->
+                        if userId == user.id then
+                            Options.css "background-color" "green" :: a
+                        else
+                            a
+                   )
+                |> (\a ->
+                        if allowSelect == True then
+                            Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser idx)) :: a
+                        else
+                            a
+                   )
+
         row_style =
-            if userId == user.id then
-                (Options.css "background-color" "green"
-                    :: Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser idx))
-                    :: []
-                )
-            else
-                (Options.onClick (AppMsg.MsgForUser (UserMsg.SelectUser idx))
-                    :: []
-                )
+            case action of
+                User.None ->
+                    f True
+
+                User.CancelNewUser ->
+                    f True
+
+                User.Edit ->
+                    f False
+
+                User.ConfirmDelete ->
+                    f False
+
+                _ ->
+                    []
     in
         Table.tr row_style
             [ Table.td [] [ text user.first_name ]
@@ -557,25 +595,33 @@ userCard user refData action mdlStore =
         actions =
             case action of
                 User.ConfirmDelete ->
-                    [ Button.render AppMsg.Mdl
-                        [ 3, 1 ]
-                        mdlStore
-                        [ Button.ripple
-                        , Button.accent
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
-                        , css "float" "right"
+                    [ Options.div [ css "background-color" "red", css "overflow" "hidden" ]
+                        [ Options.div
+                            [ css "background-color" "white", css "float" "right", css "overflow" "hidden" ]
+                            [ Button.render AppMsg.Mdl
+                                [ 3, 2 ]
+                                mdlStore
+                                [ Button.ripple
+                                , Options.onClick (AppMsg.MsgForUser UserMsg.CancelDeleteUser)
+                                , Button.accent
+                                , css "float" "right"
+                                , Elevation.e2
+                                ]
+                                [ text "Mistake" ]
+                            , Button.render AppMsg.Mdl
+                                [ 3, 1 ]
+                                mdlStore
+                                [ Button.ripple
+                                , Button.accent
+                                , Options.onClick (AppMsg.MsgForUser UserMsg.DeleteUser)
+                                , css "float" "right"
+                                , css "margin-right" "1em"
+                                , Elevation.e2
+                                ]
+                                [ text "Do it!" ]
+                            ]
+                        , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this user?" ]
                         ]
-                        [ text "Do it!" ]
-                    , Button.render AppMsg.Mdl
-                        [ 3, 1 ]
-                        mdlStore
-                        [ Button.ripple
-                        , Button.accent
-                        , Options.onClick (AppMsg.MsgForUser UserMsg.CancelDeleteUser)
-                        , css "float" "right"
-                        ]
-                        [ text "Mistake" ]
-                    , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this user?" ]
                     ]
 
                 _ ->
@@ -599,15 +645,6 @@ userCard user refData action mdlStore =
                                 , css "float" "left"
                                 ]
                                 [ Icon.i "mode_edit" ]
-                            , Button.render AppMsg.Mdl
-                                [ 2, 5 ]
-                                mdlStore
-                                [ Button.icon
-                                , Options.onClick (AppMsg.MsgForUser (UserMsg.SelectTab Filter))
-                                , css "float" "left"
-                                ]
-                                [ Icon.i "people"
-                                ]
                             , Button.render AppMsg.Mdl
                                 [ 2, 4 ]
                                 mdlStore
