@@ -12,7 +12,7 @@ import PharNoteApp.Role.View as RoleView
 import PharNoteApp.Chart.View as ChartView
 import PharNoteApp.Route exposing (..)
 import Html exposing (Html, text, div, span, form)
-import Html.Attributes exposing (href, src)
+import Html.Attributes exposing (href, src, style)
 import Material.Layout as Layout
 import Material.Snackbar as Snackbar
 import Material.Icon as Icon
@@ -77,7 +77,9 @@ viewHeader model =
             [ Layout.title [] [ text details.title ]
             , Layout.spacer
             , Layout.navigation []
-                [ text "something else goes here" ]
+                [ Html.img [ style [ ( "max-height", "50px" ) ], src "images/Hogwartscrest.png" ]
+                    []
+                ]
             ]
 
 
