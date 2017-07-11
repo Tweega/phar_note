@@ -1,4 +1,4 @@
-defmodule PharNote.Repo.Migrations.AddEquipmentRolesTable do
+defmodule PharNote.Repo.Migrations.AddEquipmentPrecisionTable do
   use Ecto.Migration
 
   #each campaign defines a list of equipment types to be used.
@@ -8,7 +8,7 @@ defmodule PharNote.Repo.Migrations.AddEquipmentRolesTable do
   # so we might in this case also have a history table.
   #if we have a history table we might have the current implementer of role in the role table.
   def change do
-    create table(:equipment_role_precision) do
+    create table(:equipment_precision) do
       timestamps()
     end
   end

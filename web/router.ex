@@ -39,5 +39,8 @@ defmodule PharNote.Router do
 
     #resources "/users", UserController, only: [:index]
 
+    #test
+    get "/test", TestController, :index
+
   end
 end

@@ -4,11 +4,8 @@ defmodule PharNote.Repo.Migrations.AddCampaignEquipmentRolesFields do
   # ie scale may be used for the same task during the campaign owing to possible servicing etc.
   def change do
     alter table(:campaign_equipment_roles) do
-      add :name,        :string
-      add :description, :string
-
       add :campaign_id,    references(:campaigns)
-      add :equipment_class_id,    references(:equipment_classes)
+      add :equipment_role_id,    references(:equipment_roles)
     end
   end
 end

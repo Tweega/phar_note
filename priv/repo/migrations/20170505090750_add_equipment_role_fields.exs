@@ -6,8 +6,9 @@ defmodule PharNote.Repo.Migrations.AddEquipmentRoleFields do
     alter table(:equipment_roles) do
       add :name, :string
       add :description, :string
-      #has many equipment
-      #belongs_to equipment_class
+
+      #add :equipment_class_id,    references(:equipment_classes)
+      add :precision_id,    references(:equipment_precision)
     end
   end
 end

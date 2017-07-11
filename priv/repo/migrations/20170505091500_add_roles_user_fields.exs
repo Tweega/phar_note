@@ -3,8 +3,8 @@ defmodule PharNote.Repo.Migrations.AddUserRolesFields do
 
   def change do
     alter table(:user_roles) do
-      add :name,        :string
-      add :description, :string
+      add :role_name,        :string
+      add :role_desc, :string
     end
   end
 end

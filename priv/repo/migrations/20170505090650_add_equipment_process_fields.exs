@@ -5,8 +5,8 @@ defmodule PharNote.Repo.Migrations.AddEquipmentProcessFields do
   #not sure how the state stuff is going to work in detail
   def change do
     alter table(:equipment_process) do
-      add :name, :string,
-      add :name, :description
+      add :name, :string
+      add :description, :string
       #do we need to know the context type for this? - equipment should be context enough.
       #but processes may start during other processes.  the equipment id is only the root.
       #ignore context for the moment, but we shall likely have to provide this at some point.

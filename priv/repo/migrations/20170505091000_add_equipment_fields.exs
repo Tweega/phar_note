@@ -7,8 +7,8 @@ defmodule PharNote.Repo.Migrations.AddEquipmentFields do
       add :code, :string
       add :description, :string
 
-      #add :equipment_class_id,    references(:equipment_classes)
-      add :equipment_role_id,    references(:equipment_roles)
+      #add :equipment_class_id,    references(:equipment_classes) - through precision
+      add :equipment_precision_id,    references(:equipment_precision)
 
     end
   end

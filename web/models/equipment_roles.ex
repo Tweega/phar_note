@@ -12,12 +12,12 @@ defmodule PharNote.EquipmentRoles do
   schema "equipment_roles" do
     field :name,    :string
     field :description,         :string
-
+    
     #belongs_to :equipment_roles, PharNote.EquipmentRoles
     #belongs_to :equipment_roles_roles, PharNote.EquipmentRoles
 
-    has_one :equipment_class, PharNote.EquipmentClasses
-    has_one :precision, PharNote.EquipmentRolePrecision
+    #belongs_to :equipment_class, PharNote.EquipmentClasses - through precision
+    belongs_to :precision, PharNote.EquipmentRolePrecision
 
     timestamps()
   end
@@ -27,8 +27,8 @@ defmodule PharNote.EquipmentRoles do
   """
   def changeset(equipment_roles, params \\ :empty) do
     equipment_roles
-      |> cast(params, [:name, :description, :equipment_class])
-      |> unique_constraint(:code)
+      |> cast(params, [:name, :description, :precision, :equipment_class_id])
+      |> unique_constraint(:precision, :equipment_class_id)
   end
 
   def changeset_update(equipment_roles, params \\ :empty) do

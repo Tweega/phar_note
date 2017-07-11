@@ -21,7 +21,7 @@ defmodule PharNote.EquipmentProcessInstructions do
   @doc """
   Builds a changeset based on the `struct` and `params`.
   """
-  def changeset(user, paramsaa \\ :empty) do
+  def changeset(user, params \\ :empty) do
     user
       |> cast(params, [:name, :description, :equipment_roles])
       |> unique_constraint(:name)

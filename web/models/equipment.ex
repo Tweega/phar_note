@@ -14,8 +14,8 @@ defmodule PharNote.Equipment do
     field :code,     :string
     field :description,         :string
 
-    #belongs_to :equipment_classes, PharNote.EquipmentClasses
-    has_one :equipment_role, PharNote.EquipmentRoles
+    #belongs_to :equipment_classes, PharNote.EquipmentClasses - through EquipmentPrecesion
+    belongs_to :equipment_precision, PharNote.EquipmentPrecision
 
     timestamps()
   end

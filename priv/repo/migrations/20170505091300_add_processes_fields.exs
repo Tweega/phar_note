@@ -8,6 +8,7 @@ defmodule PharNote.Repo.Migrations.AddProcessesFields do
   def change do
     alter table(:processes) do
       add :placeholder, :string
+      #name, desc, context
     end
   end
 end
