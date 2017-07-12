@@ -27,4 +27,16 @@ defmodule PharNote.EquipmentClasses do
       |> unique_constraint(:name)
   end
 
+
+  def class(query) do
+
+      from ec in query,
+            select: %{ class: ec.name }
+  end
+
+  def sorted(query) do
+    from ec in query,
+    order_by: [asc: ec.name]
+  end
+
 end

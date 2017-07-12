@@ -37,6 +37,28 @@ defmodule PharNote.Router do
     put "/roles/:id", RoleController, :update
     delete "/roles/:id", RoleController, :delete
 
+    #Equipment
+    get "/equipment", EquipmentController, :index
+    get "/equipment/:id", UserController, :show
+    post "/equipment", UserController, :create
+    put "/equipment/:id", UserController, :update
+    delete "/equipment/:id", UserController, :delete
+
+    #EquipmentClass
+    get "/equipmentclass", EquipmentClassesController, :index
+    get "/equipmentclass/:id", UserController, :show
+    post "/equipmentclass", UserController, :create
+    put "/equipmentclass/:id", UserController, :update
+    delete "/equipmentclass/:id", UserController, :delete
+
+    #EquipmentPrecision
+    get "/equipmentprecision", EquipmentPrecisionController, :index
+    get "/equipmentprecision/:id", UserController, :show
+    post "/equipmentprecision", UserController, :create
+    put "/equipmentprecision/:id", UserController, :update
+    delete "/equipmentprecision/:id", UserController, :delete
+
+
     #resources "/users", UserController, only: [:index]
 
     #test

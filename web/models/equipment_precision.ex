@@ -12,7 +12,7 @@ defmodule PharNote.EquipmentPrecision do
   schema "equipment_precision" do
     field :precision,    :string
 
-    has_one :equipment_role, PharNote.EquipmentRoles
+    has_one :equipment, PharNote.Equipment
     belongs_to :equipment_classes, PharNote.EquipmentClasses
 
     timestamps()
@@ -26,5 +26,13 @@ defmodule PharNote.EquipmentPrecision do
       |> cast(params, [:precision])
       |> unique_constraint(:name)
   end
+
+  def precision(query) do
+      from p in query,
+            join: c in PharNote.EquipmentClasses, on: [id: p.equipment_classes_id],
+            select: %{ precision: p.precision, class: c.name },
+            order_by: [asc: c.name, asc: p.precision]
+  end
+
 
 end

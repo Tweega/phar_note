@@ -86,13 +86,12 @@ Repo.insert! %Equipment{ code: "PUMP2", name: "batchroom pump", equipment_precis
 Repo.insert! %Equipment{ code: "PUMP3", name: "Troublesome plumbing", equipment_precision_id: pump2.id }
 Repo.insert! %Equipment{ code: "PUMP4", name: "Flood battler", equipment_precision_id: pump3.id }
 
-Repo.insert! %Equipment{ code: "PUMP1", name: "squib starter", equipment_precision_id: wand1.id }
-Repo.insert! %Equipment{ code: "PUMP1", name: "Accio special", equipment_precision_id: wand1.id }
-Repo.insert! %Equipment{ code: "PUMP1", name: "Ollivander starter", equipment_precision_id: wand1.id }
-Repo.insert! %Equipment{ code: "PUMP1", name: "Hermione developer", equipment_precision_id: wand2.id }
-
-Repo.insert! %Equipment{ code: "PUMP1", name: "Dumblestars", equipment_precision_id: wand3.id }
-Repo.insert! %Equipment{ code: "PUMP1", name: "Flamel arts", equipment_precision_id: wand3.id }
+Repo.insert! %Equipment{ code: "WAND1", name: "squib starter", equipment_precision_id: wand1.id }
+Repo.insert! %Equipment{ code: "WAND2", name: "Accio special", equipment_precision_id: wand1.id }
+Repo.insert! %Equipment{ code: "WAND3", name: "Ollivander starter", equipment_precision_id: wand1.id }
+Repo.insert! %Equipment{ code: "WAND4", name: "Hermione developer", equipment_precision_id: wand2.id }
+Repo.insert! %Equipment{ code: "WAND5", name: "Dumblestars", equipment_precision_id: wand3.id }
+Repo.insert! %Equipment{ code: "WAND6", name: "Flamel arts", equipment_precision_id: wand3.id }
 
 
 #for this class, preload precisions,
