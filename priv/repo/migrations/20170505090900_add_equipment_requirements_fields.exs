@@ -12,11 +12,9 @@ defmodule PharNote.Repo.Migrations.AddEquipmentRequirementsFields do
 
   def change do
     alter table(:equipment_requirements) do
-      add :requirement,    :string # this value could perhaps default to the name of the equipment fulfilling the requirement.
-      add :precision, :string  #requirement text sufficient for this?
-
       add :campaign_id,    references(:campaigns)
-      add :equipment_id,    references(:equipment)  #this is the equipment that currently fulfils the requirement.
+      add :equipment_precision_id,    references(:equipment_precision)  
+      add :requirement_fulfilment_id,    references(:requirement_fulfilment)  #this is the equipment that currently fulfils the requirement.
     end
   end
 end

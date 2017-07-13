@@ -1,7 +1,7 @@
 defmodule PharNote.UserController do
   use PharNote.Web, :controller
   require Logger
-
+  
   def index(conn, _params) do
     users = index_data()
             #  |> Enum.map(fn(user) -> cleanup(user) end)
@@ -21,10 +21,10 @@ defmodule PharNote.UserController do
   def strip_role_users(users) do
     Enum.map(users, fn u ->
       #what I want back is a new list of roles
-      new_roles = Enum.map(u.user_roles, fn r ->
+      new_roles = Enum.map(u.roles, fn r ->
         %PharNote.Role{ r | users: []}
       end)
-      %PharNote.User{u | user_roles: new_roles}
+      %PharNote.User{u | roles: new_roles}
     end)
   end
 
@@ -45,7 +45,7 @@ defmodule PharNote.UserController do
         case Repo.update(cs) do
           {:ok, newUser} ->
             #strip out the user_roles field - either that or do a cast_assoc on it
-            u2 = %PharNote.User{ newUser | user_roles: []}  #or nil
+            u2 = %PharNote.User{ newUser | roles: []}  #or nil
             json conn |> put_status(:created), u2 #why not just return user
           {:error, _changeset} ->
             json conn |> put_status(:bad_request), %{errors: ["unable to create user 1"]}
@@ -66,7 +66,7 @@ defmodule PharNote.UserController do
 
   defp perform_update(conn, user, params) do
     changeset = PharNote.User.changesetx(user, params)
-    case Repo.update(changeset) do      
+    case Repo.update(changeset) do
       {:ok, user} ->
         u2 = hd(strip_role_users([user]))
         json conn |> put_status(:ok), u2
@@ -79,7 +79,7 @@ defmodule PharNote.UserController do
     user = Repo.get(PharNote.User, id)
     if user do
       Repo.delete(user)
-      u2 = %PharNote.User{ user | user_roles: []}  #or nil
+      u2 = %PharNote.User{ user | roles: []}  #or nil
       json conn |> put_status(:accepted), u2
     else
       json conn |> put_status(:not_found), %{errors: ["invalid user"]}

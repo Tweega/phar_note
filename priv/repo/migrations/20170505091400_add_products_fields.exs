@@ -3,8 +3,9 @@ defmodule PharNote.Repo.Migrations.AddProductsFields do
 
   def change do
     alter table(:products) do
-      add :name, :string
-      add :description, :string
+      add :product_name, :string
+      add :product_desc, :string
+      add :active_ingredient, :boolean
 
       #possible strengths?
     end

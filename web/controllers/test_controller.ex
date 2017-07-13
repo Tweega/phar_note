@@ -76,10 +76,10 @@ defmodule PharNote.TestController do
   def strip_role_users(users) do
     Enum.map(users, fn u ->
       #what I want back is a new list of roles
-      new_roles = Enum.map(u.user_roles, fn r ->
+      new_roles = Enum.map(u.roles, fn r ->
         %PharNote.Role{ r | users: []}
       end)
-      %PharNote.User{u | user_roles: new_roles}
+      %PharNote.User{u | roles: new_roles}
     end)
   end
 

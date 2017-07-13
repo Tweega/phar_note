@@ -18,7 +18,7 @@ alias PharNote.Repo
 import Ecto.Query, only: [where: 3, or_where: 3]
 
 
-Repo.delete_all("user_roles_user")
+Repo.delete_all("user_roles")
 
 # Relationships
 r = Repo.get_by(Role, role_name: "Spell Learner") |> Repo.preload(:users)
@@ -30,9 +30,9 @@ filter = User
 
 for u <- Repo.all(filter) do
   u
-    |> Repo.preload([:user_roles])
+    |> Repo.preload([:roles])
     |> Changeset.change
-    |> Changeset.put_assoc(:user_roles, [r])
+    |> Changeset.put_assoc(:roles, [r])
     |> Repo.update!
 end
   r2 = Repo.get_by(Role, role_name: "Prefect") |> Repo.preload(:users)
@@ -45,12 +45,12 @@ filter2 = User
 
 for u2 <- Repo.all(filter2) do
   u3 = u2
-    |> Repo.preload([:user_roles])
+    |> Repo.preload([:roles])
 
-  roles = [r2 | u3.user_roles]
+  roles = [r2 | u3.roles]
 
   u3
     |> Changeset.change
-    |> Changeset.put_assoc(:user_roles, Enum.map(roles, &Changeset.change/1))
+    |> Changeset.put_assoc(:roles, Enum.map(roles, &Changeset.change/1))
     |> Repo.update!
 end

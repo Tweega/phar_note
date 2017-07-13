@@ -1,8 +1,8 @@
-defmodule PharNote.Repo.Migrations.AddUserRolesFields do
+defmodule PharNote.Repo.Migrations.AddRolesFields do
   use Ecto.Migration
 
   def change do
-    alter table(:user_roles) do
+    alter table(:roles) do
       add :role_name,        :string
       add :role_desc, :string
     end

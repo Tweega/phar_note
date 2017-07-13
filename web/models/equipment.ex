@@ -67,53 +67,40 @@ def test_preload_join(query) do
 end
 
 
-def test_join(query) do
+    def test_join(query) do
 
-    from eq in query,
-          join: p in PharNote.EquipmentPrecision, on: [id: eq.equipment_precision_id],
-          join: c in PharNote.EquipmentClasses, on: [id: p.equipment_classes_id],
-         # select: %{ equipment: %{ equip: map(eq, [:name, :code]), precision: map(p, [:id, :precision]), class: map(c, [:name])}}
-          select: %{ equipment_name: eq.name, equipment_code: eq.code, precision: p.precision, class: c.name }
+        from eq in query,
+              join: p in PharNote.EquipmentPrecision, on: [id: eq.equipment_precision_id],
+              join: c in PharNote.EquipmentClasses, on: [id: p.equipment_classes_id],
+             # select: %{ equipment: %{ equip: map(eq, [:name, :code]), precision: map(p, [:id, :precision]), class: map(c, [:name])}}
+              select: %{ equipment_name: eq.name, equipment_code: eq.code, precision: p.precision, class: c.name }
 
-          #select: {struct(eq, [:equipment_precision_id, :name]), map(p, [:id, :precision])}
+              #select: {struct(eq, [:equipment_precision_id, :name]), map(p, [:id, :precision])}
 
-         # select: map([eq, p], [p.precision, eq.name])
+             # select: map([eq, p], [p.precision, eq.name])
 
-          #select: {p.precision, eq.name}
+              #select: {p.precision, eq.name}
 
-          #where: eq.equipment_precision_id == p.id,
+              #where: eq.equipment_precision_id == p.id,
 
-   #        select([t,l], %{
-   #    id: t.id,
-   #    slug: t.slug,
-   #    name: t.name,
-   #    user_does_like: fragment("(CASE WHEN l1.id > 0 THEN true ELSE false END) AS user_does_like")
-   #  })
-   #
-   #  query = from s in Song,
-   # left_join: v in assoc(:votes),
-   # select: %{id: s.id, name: s.name, artist: s.artist, num_votes: count(v.id)}
+       #        select([t,l], %{
+       #    id: t.id,
+       #    slug: t.slug,
+       #    name: t.name,
+       #    user_does_like: fragment("(CASE WHEN l1.id > 0 THEN true ELSE false END) AS user_does_like")
+       #  })
+       #
+       #  query = from s in Song,
+       # left_join: v in assoc(:votes),
+       # select: %{id: s.id, name: s.name, artist: s.artist, num_votes: count(v.id)}
 
-  #  user = Blog.Repo.one from user in Blog.User,
-  # where: user.id == ^user_id,
-  # left_join: posts in assoc(user, :posts),
-  # left_join: comments in assoc(posts, :comments),
-  # preload: [posts: {posts, comments: comments}]
-end
+      #  user = Blog.Repo.one from user in Blog.User,
+      # where: user.id == ^user_id,
+      # left_join: posts in assoc(user, :posts),
+      # left_join: comments in assoc(posts, :comments),
+      # preload: [posts: {posts, comments: comments}]
+    end
 
-  def strip_role_users(equipments) do
-    Enum.map(equipments, fn u ->
-      #what I want back is a new list of roles
-      new_roles = Enum.map(u.user_roles, fn r ->
-        %PharNote.Role{ r | users: []}
-      end)
-      %PharNote.User{u | user_roles: new_roles}
-    end)
-  end
 
-# data = PharNote.Equipment \
-#  |> PharNote.Equipment.with_precision \
-#  |> PharNote.Equipment.sorted \
-#  |> Repo.all
 
 end

@@ -3,10 +3,11 @@ defmodule PharNote.Repo.Migrations.AddLocationsFields do
 
   def change do
     alter table(:locations) do
-      add :name, :string
-      add :description, :string
+      add :location_name, :string
+      add :location_desc, :string
+      add :level, :integer
 
-      add :parent_location,   references(:locations), null: true  #assuming that this is allowed to be null.  Is this the best place for this?
+      add :parent_location_id,   references(:locations), null: true  #assuming that this is allowed to be null.  Is this the best place for this?
 
     end
   end

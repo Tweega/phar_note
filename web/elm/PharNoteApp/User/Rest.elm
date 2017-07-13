@@ -25,7 +25,7 @@ decoder =
         |> Json.Decode.Pipeline.required "last_name" Json.Decode.string
         |> Json.Decode.Pipeline.required "email" Json.Decode.string
         |> Json.Decode.Pipeline.required "photo_url" Json.Decode.string
-        |> Json.Decode.Pipeline.required "user_roles" Role.listDecoder
+        |> Json.Decode.Pipeline.required "roles" Role.listDecoder
 
 
 urlUsers : String
@@ -57,7 +57,7 @@ payload user =
         , ( "last_name", Json.Encode.string user.last_name )
         , ( "email", Json.Encode.string user.email )
         , ( "photo_url", Json.Encode.string user.photo_url )
-        , ( "user_roles", Json.Encode.string user.roles )
+        , ( "roles", Json.Encode.string user.roles )
         ]
 
 

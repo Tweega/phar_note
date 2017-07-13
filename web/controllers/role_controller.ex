@@ -29,7 +29,7 @@ defmodule PharNote.RoleController do
     Enum.map(roles, fn r ->
       #what I want back is a new list of users
       new_users = Enum.map(r.users, fn u ->
-        %PharNote.User{ u | user_roles: nil}
+        %PharNote.User{ u | roles: nil}
       end)
       %PharNote.Role{r | users: new_users}
     end)

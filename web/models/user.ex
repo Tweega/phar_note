@@ -16,8 +16,8 @@ defmodule PharNote.User do
     field :photo_url,     :string
 
     #if we want timestamps on user_role_user then we need a model for UserRole
-    many_to_many :user_roles, PharNote.Role,
-      [ join_through: "user_roles_user",
+    many_to_many :roles, PharNote.Role,
+      [ join_through: "user_roles",
         on_replace: :delete,
         on_delete: :delete_all
       ]
@@ -41,9 +41,9 @@ defmodule PharNote.User do
 
   def changeset_update(user, params \\ :empty) do
       user
-        |> Repo.preload(:user_roles)
-        |> cast(params, [:first_name, :last_name, :email, :photo_url, :user_roles])
-        |> cast_assoc(:user_roles)
+        |> Repo.preload(:roles)
+        |> cast(params, [:first_name, :last_name, :email, :photo_url, :roles])
+        |> cast_assoc(:roles)
         |> unique_constraint(:email)
   end
 
@@ -61,7 +61,7 @@ defmodule PharNote.User do
 
   def with_roles(query) do
     from u in query,
-    preload: [:user_roles]
+    preload: [:roles]
   end
 
   def with_roles_flat(query) do
@@ -71,7 +71,7 @@ defmodule PharNote.User do
 #     {"Hermione", "Spell Learner"}, {"Hermione", "Prefect"}]
 
     from u in query,
-      inner_join: r in assoc(u, :user_roles),
+      inner_join: r in assoc(u, :roles),
       select: {u.first_name, u.last_name, r.role_name}
   end
 

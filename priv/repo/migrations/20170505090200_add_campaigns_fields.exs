@@ -10,10 +10,9 @@ defmodule PharNote.Repo.Migrations.AddCampaignsFields do
       add :actual_start, :utc_datetime
       add :actual_end, :utc_datetime
 
-      add :product_id,   references(:products), null: false
+      add :product_strength_id,   references(:product_strengths), null: false
       add :location_id,   references(:locations), null: false  #what if campaign may take place in more than one location?  Then build another super-campaign container
-      add :parent_location_id,   references(:locations), null: true  #assuming that this is allowed to be null.  Is this the best place for this?
-
+      #add :current_state_id, references(:process_state)
     end
   end
 end

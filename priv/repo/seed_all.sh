@@ -7,3 +7,4 @@ mix run priv/repo/user_role_seeds.exs
 mix run priv/repo/equipment_classes_seeds.exs
 mix run priv/repo/equipment_precision_seeds.exs
 mix run priv/repo/equipment_seeds.exs
+mix run priv/repo/location_seeds.exs

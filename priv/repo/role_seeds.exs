@@ -14,7 +14,7 @@ alias PharNote.Repo
 alias PharNote.Role
 
 
-Repo.delete_all("user_roles_user")
+Repo.delete_all("user_roles")
 Repo.delete_all(Role)
 
 
