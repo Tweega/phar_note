@@ -9,7 +9,7 @@ defmodule PharNote.User do
   alias PharNote.Repo #this is essentially an indirect load of Ecto.Repo
 
 
-  schema "users" do
+  schema "user" do
     field :first_name,    :string
     field :last_name,     :string
     field :email,         :string
@@ -17,7 +17,7 @@ defmodule PharNote.User do
 
     #if we want timestamps on user_role_user then we need a model for UserRole
     many_to_many :roles, PharNote.Role,
-      [ join_through: "user_roles",
+      [ join_through: "user_role",
         on_replace: :delete,
         on_delete: :delete_all
       ]

@@ -9,8 +9,8 @@ defmodule PharNote.Repo.Migrations.AddRequirementFulfilmentFields do
   #if we have a history table we might have the current implementer of role in the role table.
   def change do
     alter table(:requirement_fulfilment) do
-      add :campaign_id,         references(:campaigns)
-      add :equipment_role_id,   references(:equipment_roles)
+      add :requirement_id,         references(:equipment_requirements)
+      add :equipment_id,   references(:equipment)
       add :start_date, :utc_datetime
       add :end_date, :utc_datetime
     end

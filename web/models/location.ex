@@ -9,7 +9,7 @@ defmodule PharNote.Location do
   alias PharNote.Repo #this is essentially an indirect load of Ecto.Repo
 
 
-  schema "locations" do
+  schema "location" do
 
     field :location_name, :string
     field :location_desc, :string
@@ -50,13 +50,27 @@ defmodule PharNote.Location do
     order_by: [asc: u.location_name]
   end
 
-  def with_users(query) do
-    from u in query,
-    preload: [:users]
-  end
-
   def locations(query) do
     from u in query,
       select: map(u, [:id, :location_name, :location_desc])
   end
+
+  def test_join(query) do
+
+      from loc in query,
+            left_join: p in PharNote.Location, on: [id: loc.parent_location_id],
+            select: %{ location_name: loc.location_name, location_desc: loc.location_desc, parent_location: p.location_name }
+
+  end
+
+  def other_style(query) do
+      #not sure how to do an explicit join in this style
+    #   query
+    #     |> join(:left, [c], p in PharNote.Location, on: [id: loc.parent_location_id],
+    #     |> where([_, p], p.id == 1)
+    #     |> select([c, _], c)
+    #     |> MyApp.Repo.all
+  end
+
+
 end

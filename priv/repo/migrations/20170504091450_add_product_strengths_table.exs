@@ -2,7 +2,7 @@ defmodule PharNote.Repo.Migrations.AddProductStrengthsTable do
   use Ecto.Migration
 
   def change do
-    create table(:product_strengths) do
+    create table(:product_strength) do
       timestamps()
     end
   end

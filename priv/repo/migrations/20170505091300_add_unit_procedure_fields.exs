@@ -1,4 +1,4 @@
-defmodule PharNote.Repo.Migrations.AddProcessesTable do
+defmodule PharNote.Repo.Migrations.AddUnitProcedureFields do
   use Ecto.Migration
 
   # this is a flat view of all processes - which are effectively attributes.
@@ -6,8 +6,10 @@ defmodule PharNote.Repo.Migrations.AddProcessesTable do
   # but which in a bpm would be unknown
 
   def change do
-    create table(:processes) do
-      timestamps()
+    alter table(:unit_procedure) do
+      add :process_name, :string
+      add :process_desc, :string
+      #name, desc, context
     end
   end
 end

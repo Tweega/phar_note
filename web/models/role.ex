@@ -9,12 +9,12 @@ defmodule PharNote.Role do
   alias PharNote.Repo #this is essentially an indirect load of Ecto.Repo
 
 
-  schema "roles" do
+  schema "role" do
     field :role_name,    :string
     field :role_desc,    :string
 
     many_to_many :users, PharNote.User,
-      [ join_through: "user_roles",
+      [ join_through: "user_role",
         on_replace: :delete,
         on_delete: :delete_all
       ]

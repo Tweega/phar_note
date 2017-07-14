@@ -13,8 +13,8 @@ defmodule PharNote.Repo.Migrations.AddEquipmentRequirementsFields do
   def change do
     alter table(:equipment_requirements) do
       add :campaign_id,    references(:campaigns)
-      add :equipment_precision_id,    references(:equipment_precision)  
-      add :requirement_fulfilment_id,    references(:requirement_fulfilment)  #this is the equipment that currently fulfils the requirement.
+      add :equipment_precision_id,    references(:equipment_precision)
+      add :current_fulfilment_id,    references(:requirement_fulfilment)
     end
   end
 end

@@ -21,8 +21,7 @@ Repo.delete_all(Location)
 # comment = Ecto.Changeset.change(%Comment{}, body: "Excellent!")
 # post_with_comments = Ecto.Changeset.put_assoc(post, :comments, [comment])
 # Repo.insert!(post_with_comments)
-multiply = fn (x,y) -> x + y end
-x = multiply.(2,3)
+
 add_room = fn (room_struct, area) ->
     r = Repo.insert! (room_struct)  |> Repo.preload(:parent_location)
     cs = r

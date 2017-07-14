@@ -18,7 +18,7 @@ alias PharNote.Repo
 import Ecto.Query, only: [where: 3, or_where: 3]
 
 
-Repo.delete_all("user_roles")
+Repo.delete_all("user_role")
 
 # Relationships
 r = Repo.get_by(Role, role_name: "Spell Learner") |> Repo.preload(:users)

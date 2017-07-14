@@ -9,7 +9,7 @@ defmodule PharNote.ProductStrength do
   alias PharNote.Repo #this is essentially an indirect load of Ecto.Repo
 
 
-  schema "product_strengths" do
+  schema "product_strength" do
 
     field :strength, :string
 
@@ -19,33 +19,10 @@ defmodule PharNote.ProductStrength do
   end
 
 
-  @doc """
-  Builds a changeset based on the `struct` and `params`.
-  """
-  def changeset(model, params \\ :empty) do
-    model
-      |> cast(params, [:product_name, :product_desc])
-      |> unique_constraint(:product_name)
-  end
-
-  def changeset_update( product, params \\ :empty) do
-       product
-        |> Repo.preload(:users)
-        |> cast(params, [:product_name, :product_desc])
-        |> cast_assoc(:users)
-  end
-
-  def changeset_new( product, params \\ :empty) do
-    #assuming here that new  product will not have any products, which is probably not going to be the case
-     product
-        |> cast(params, [:product_name, :product_desc])
-        |> unique_constraint(:product_name)
-  end
-
 
   def sorted(query) do
     from u in query,
-    order_by: [asc: u.product_name]
+    order_by: [asc: u.strength]
   end
 
   def with_users(query) do
@@ -53,8 +30,8 @@ defmodule PharNote.ProductStrength do
     preload: [:users]
   end
 
-  def products(query) do
+  def product_strength(query) do
     from u in query,
-      select: map(u, [:id, :product_name, :product_desc])
+      select: map(u, [:id, :strength])
   end
 end

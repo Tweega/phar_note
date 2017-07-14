@@ -11,16 +11,16 @@
 # and so on) as they will fail if something goes wrong.
 
 alias PharNote.Repo
-alias PharNote.Location
+alias PharNote.ProductStrength
 alias Ecto.Changeset
 
 
-Repo.delete_all(Location)
+Repo.delete_all(ProductStrength)
 
 add_strength = fn (prod_name, strength) ->
     product = Repo.get_by!(PharNote.Product, product_name: prod_name)
 
-    ps = Repo.insert! (%PharNote.ProductStrength{strength: strength} )  |> Repo.preload(:product)
+    ps = Repo.insert! (%ProductStrength{strength: strength} )  |> Repo.preload(:product)
     cs = ps
         |> Changeset.change
         |> Changeset.put_assoc(:product, product)
