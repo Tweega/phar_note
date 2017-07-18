@@ -63,7 +63,7 @@ defmodule PharNote.Router do
 
     resources "/location", LocationController, only: [:index]
     resources "/product", ProductController, only: [:index]
-    resources "/product_strength", ProductStrengthController, only: [:index]
+    resources "/productstrength", ProductStrengthController, only: [:index]
 
     #test
     get "/test", TestController, :index

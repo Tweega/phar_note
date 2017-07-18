@@ -19,6 +19,21 @@ defmodule PharNote.ProductStrength do
   end
 
 
+    def product_strength(query) do
+
+        from ps in query,
+
+              select: %{ strength: ps.strength, id: ps.id }
+    end
+
+    def test_map(query) do
+        from(prod_strength in query, preload: [:product],
+             select: map(prod_strength, [:strength, :product_id, product: [:id, :product_name]]))
+
+
+    #          from(eq in query, preload: [{:equipment_precision, :equipment_classes}],
+    #               select: map(eq, [:equipment_precision_id, :name, :code, equipment_precision: [:id, :precision, :equipment_classes_id, equipment_classes: [:id, :name]]]))
+     end
 
   def sorted(query) do
     from u in query,

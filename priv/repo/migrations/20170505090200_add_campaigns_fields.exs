@@ -2,7 +2,7 @@ defmodule PharNote.Repo.Migrations.AddCampaignsFields do
   use Ecto.Migration
 
   def change do
-    alter table(:campaigns) do
+    alter table(:campaign) do
       add :campaign_name, :string
       add :campaign_desc, :string
       add :order_number, :string

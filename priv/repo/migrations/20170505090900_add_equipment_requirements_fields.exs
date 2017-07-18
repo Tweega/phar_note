@@ -11,8 +11,8 @@ defmodule PharNote.Repo.Migrations.AddEquipmentRequirementsFields do
   #we need then to add a history table for this.
 
   def change do
-    alter table(:equipment_requirements) do
-      add :campaign_id,    references(:campaigns)
+    alter table(:equipment_requirement) do
+      add :campaign_id,    references(:campaign)
       add :equipment_precision_id,    references(:equipment_precision)
       add :current_fulfilment_id,    references(:requirement_fulfilment)
     end

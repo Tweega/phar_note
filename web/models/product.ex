@@ -46,8 +46,12 @@ defmodule PharNote.Product do
 
   def test_map(query) do
       from(prod in query, preload: [:product_strength],
-           select: map(prod, [:product_name, :id, id: [:product_id, :strength]]))
-  end
+           select: map(prod, [:product_name, :id, product_strength: [:product_id, :strength]]))
+
+
+  #          from(eq in query, preload: [{:equipment_precision, :equipment_classes}],
+  #               select: map(eq, [:equipment_precision_id, :name, :code, equipment_precision: [:id, :precision, :equipment_classes_id, equipment_classes: [:id, :name]]]))
+   end
   @doc """
   Builds a changeset based on the `struct` and `params`.
   """

@@ -10,7 +10,7 @@ defmodule PharNote.ProductController do
 
   def index_data() do
     data = PharNote.Product
-     |> PharNote.Product.test_preload_join
+     |> PharNote.Product.test_map
      |> Repo.all
 
   #  strip_equip(data)

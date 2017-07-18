@@ -7,12 +7,12 @@ defmodule PharNote.Repo.Migrations.AddEquipmentRequirementsTable do
   #this could be extended to force a selection from a list of equipment marked as being of this type.
   #being more flexibile allows for a looser description when setting the requirements.
   #could go either way.
-  
+
 
   #we need then to add a history table for this.
 
   def change do
-    create table(:equipment_requirements) do
+    create table(:equipment_requirement) do
       timestamps()
     end
   end

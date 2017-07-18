@@ -10,7 +10,7 @@ defmodule PharNote.ProductStrengthController do
 
   def index_data() do
     data = PharNote.ProductStrength
-     |> PharNote.ProductStrength.sorted
+     |> PharNote.ProductStrength.test_map
      |> Repo.all
 
   #  strip_equip(data)

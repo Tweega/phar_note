@@ -29,6 +29,13 @@ poly_location = Repo.get_by(Location, location_name: "Blue room 1")
 #in syncade a class also represents a collection of attributes//processes
 Repo.insert! %Campaign{ campaign_name: "Polyjuice campaign 1", campaign_desc: "First campaign to make polyjuice", order_number: "OrderPoly123", planned_start: poly_planned_start, planned_end: poly_planned_end, product_id: poly_product.id, location_id: poly_location.id}
 
+love_product = Repo.get_by(Product, product_name: "LoveAnother")
+love_location = Repo.get_by(Location, location_name: "Red room 1")
+{:ok, love_planned_start, _offset} = DateTime.from_iso8601("2017-07-22T13:50:07Z")
+{:ok, love_planned_end, _offset} = DateTime.from_iso8601("2017-08-01T12:50:07Z")
+
+Repo.insert! %Campaign{ campaign_name: "LoveAnother campaign 1", campaign_desc: "First campaign to make LoveAnother", order_number: "LoveAnother123", planned_start: love_planned_start, planned_end: love_planned_end, product_id: love_product.id, location_id: love_location.id}
+
 #IO.inspect(poly_planned_start)
 
 ##Time stuff

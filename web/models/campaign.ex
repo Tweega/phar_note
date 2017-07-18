@@ -9,7 +9,7 @@ defmodule PharNote.Campaign do
   alias PharNote.Repo #this is essentially an indirect load of Ecto.Repo
 
 
-  schema "campaigns" do
+  schema "campaign" do
     field :campaign_name,    :string
     field :campaign_desc,    :string
     field :order_number,    :string
@@ -21,7 +21,7 @@ defmodule PharNote.Campaign do
 
     belongs_to :product, PharNote.Product
     belongs_to :location, PharNote.Location
-    belongs_to :current_state, PharNote.ProcessState
+    #belongs_to :current_state, PharNote.ProcessState
 
     timestamps()
 

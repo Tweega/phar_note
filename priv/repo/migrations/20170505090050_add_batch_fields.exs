@@ -3,7 +3,7 @@ defmodule PharNote.Repo.Migrations.AddBatchFields do
 
   def change do
     alter table(:batch) do
-        add :campaign_id,    references(:campaigns)
+        add :campaign_id,    references(:campaign)
 
         #? add :order_number,    string
         add :batch_number,    :string
