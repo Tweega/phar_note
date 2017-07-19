@@ -15,6 +15,8 @@ defmodule PharNote.EquipmentPrecision do
     has_one :equipment, PharNote.Equipment
     belongs_to :equipment_classes, PharNote.EquipmentClasses
 
+    has_many :equipment_requirement, PharNote.EquipmentRequirement
+
     timestamps()
   end
 

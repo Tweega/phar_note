@@ -21,6 +21,9 @@ defmodule PharNote.Campaign do
 
     belongs_to :product, PharNote.Product
     belongs_to :location, PharNote.Location
+
+    has_many :equipment_requirement, PharNote.EquipmentRequirement
+
     #belongs_to :current_state, PharNote.ProcessState
 
     timestamps()
