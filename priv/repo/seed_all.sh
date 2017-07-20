@@ -12,3 +12,4 @@ mix run priv/repo/product_seeds.exs
 mix run priv/repo/product_strength_seeds.exs
 mix run priv/repo/campaign_seeds.exs
 mix run priv/repo/equipment_requirement_seeds.exs
+mix run priv/repo/requirement_fulfilment_seeds.exs

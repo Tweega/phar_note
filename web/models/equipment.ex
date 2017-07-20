@@ -17,7 +17,7 @@ defmodule PharNote.Equipment do
     #belongs_to :equipment_classes, PharNote.EquipmentClasses - through EquipmentPrecesion
     belongs_to :equipment_precision, PharNote.EquipmentPrecision
 
-    has_many :fulfilment, PharNote.EquipmentFulfilment
+    has_many :fulfilment, PharNote.RequirementFulfilment
 
     timestamps()
   end

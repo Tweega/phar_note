@@ -11,7 +11,7 @@ defmodule PharNote.RequirementFulfilment do
 
   schema "requirement_fulfilment" do
 
-    belongs_to :equipment_requirement, PharNote.EquipmentRequirement
+    belongs_to :requirement, PharNote.EquipmentRequirement
     belongs_to :equipment, PharNote.Equipment
 
     timestamps()
