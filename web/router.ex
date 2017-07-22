@@ -58,12 +58,14 @@ defmodule PharNote.Router do
     put "/equipmentprecision/:id", UserController, :update
     delete "/equipmentprecision/:id", UserController, :delete
 
-
-
-
     resources "/location", LocationController, only: [:index]
     resources "/product", ProductController, only: [:index]
     resources "/productstrength", ProductStrengthController, only: [:index]
+
+    resources "/campaign", CampaignController, only: [:index]
+    #resources "/requirement", RequirementController, only: [:index]
+    #resources "/fulfilment", FulfilmentController, only: [:index]
+
 
     #test
     get "/test", TestController, :index

@@ -45,10 +45,14 @@ def requirements_for_campaign(campaign_name) do
     #also this might be a case for not preloading furhter down the line as we haave already preloaded here
     #don't know if this happens automatically or not.
 end
+
+
+
 def campaign_requirementzs(query) do
     from r in query,
          select: map(r, [:id, :campaign_id,
-                 :equipment_precision_id, :current_fulfilment_id,
+                 :equipment_precision_id,
+                 :current_fulfilment_id,
                  campaign: [:id, :campaign_name],
                  equipment_precision: [:id, :precision, :equipment_classes_id, equipment_classes: [:id, :name]],
                 current_fulfilment: [:id, :equipment_id, equipment: [:id, :name]]
@@ -80,6 +84,7 @@ end
           #         preload: [:provider, form: {f, sections: {s, questions: q}}]
 
   end
+
 
   def test_map(query) do
       from(eq in query, preload: [{:equipment_precision, :equipment_classes}],
