@@ -1,6 +1,7 @@
 module PharNoteApp.Equipment.Msg exposing (..)
 
 import PharNoteApp.Equipment.Model as Equipment
+import PharNoteApp.Equipment.BaseModel as EquipmentBase
 
 
 --import PharNoteApp.Equipment.Model exposing (FilterAction(..))
@@ -16,17 +17,15 @@ type Msg
     | DeleteEquipment
     | NewEquipment
     | CancelNewEquipment
-    | ProcessEquipmentGet (Result Http.Error (List Equipment.EquipmentWithRoles))
-    | ProcessEquipmentPost (Result Http.Error Equipment.EquipmentWithRoles)
-    | ProcessEquipmentDelete (Result Http.Error Equipment.EquipmentWithRoles)
+    | ProcessEquipmentGet (Result Http.Error (List EquipmentBase.Equipment))
+    | ProcessEquipmentPost (Result Http.Error EquipmentBase.Equipment)
+    | ProcessEquipmentDelete (Result Http.Error EquipmentBase.Equipment)
     | ProcessRefDataGet (Result Http.Error (List Role.Role))
     | SetFirstName String
     | SetLastName String
-    | SetEmail String
-    | SetPhotoUrl String
     | ToggleRole Int
-    | EquipmentPost Equipment.EquipmentWithRoleSet
-    | EquipmentPut Equipment.EquipmentWithRoleSet
+    | EquipmentPost EquipmentBase.Equipment
+    | EquipmentPut EquipmentBase.Equipment
     | Reorder
     | KeyX Int
     | PaginateEquipment Int
@@ -35,7 +34,7 @@ type Msg
     | SetFilterFirstName String
     | SetFilterLastName String
     | ToggleFilterRole Int
-    | ApplyEquipmentFilter Equipment.EquipmentWithRoleSet
+    | ApplyEquipmentFilter EquipmentBase.Equipment
     | ResetEquipmentFilter
     | ClearEquipmentFilter
     | CancelEquipmentFilter

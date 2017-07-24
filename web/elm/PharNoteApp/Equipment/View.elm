@@ -3,7 +3,7 @@ module PharNoteApp.Equipment.View exposing (view, alwaysFindEquipment, maybeFind
 import PharNoteApp.Equipment.Rest as Rest
 import PharNoteApp.Equipment.Model as Equipment
 import PharNoteApp.Equipment.BaseModel as EquipmentBase
-import PharNoteApp.Equipment.Model exposing (FormAction(..), EquipmentTab(..), RefDataStatus(..), EquipmentType(..))
+import PharNoteApp.Equipment.Model exposing (FormAction(..), EquipmentTab(..), RefDataStatus(..))
 import PharNoteApp.Equipment.Msg as EquipmentMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -33,30 +33,33 @@ import Dict exposing (Dict)
 view : Equipment.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
-        userTableContents =
-            --userTable model.filteredEquipments model.selectedEquipmentId model.order model.startDisplayIndex model.endDisplayIndex
+        equipTableContents =
+            --equipTable model.filteredEquipment model.selectedEquipmentId model.order model.startDisplayIndex model.endDisplayIndex
             tableCard model mdlStore
 
-        user =
+        equip =
             case model.formAction of
                 Edit ->
-                    WithSet model.scratchEquipment
+                    model.scratchEquipment
 
                 Create ->
-                    WithSet model.scratchEquipment
+                    model.scratchEquipment
 
                 _ ->
-                    WithRoles (alwaysFindEquipment model.selectedEquipmentIndex model.filteredEquipments)
+                    (alwaysFindEquipment model.selectedEquipmentIndex model.filteredEquipment)
 
         cards =
             case model.selectedTab of
                 Details ->
-                    case user of
-                        WithSet userWithRoleSet ->
-                            (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
+                    case model.formAction of
+                        Edit ->
+                            (editCards equip model.refDataStatus model.formAction mdlStore)
 
-                        WithRoles userWithRoles ->
-                            (viewCards userWithRoles model.refDataStatus model.formAction mdlStore)
+                        Create ->
+                            (editCards equip model.refDataStatus model.formAction mdlStore)
+
+                        _ ->
+                            (viewCards equip model.refDataStatus model.formAction mdlStore)
 
                 Filter ->
                     (filterCards model.filterScratchEquipment model.refDataStatus mdlStore)
@@ -70,7 +73,7 @@ view model mdlStore =
                     ]
                 ]
                 [ cell [ Grid.size All 5 ]
-                    [ userTableContents
+                    [ equipTableContents
                     , pager model
                     ]
                 , cell
@@ -82,27 +85,27 @@ view model mdlStore =
             ]
 
 
-viewCards : Equipment.EquipmentWithRoles -> Equipment.RefDataStatus -> Equipment.FormAction -> Material.Model -> List (Html AppMsg.Msg)
-viewCards user refDataStatus action mdlStore =
-    [ userCard user refDataStatus action mdlStore
+viewCards : EquipmentBase.Equipment -> Equipment.RefDataStatus -> Equipment.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+viewCards equip refDataStatus action mdlStore =
+    [ equipCard equip refDataStatus action mdlStore
     , Options.div
         [ Grid.size All 1
         , css "height" "32px"
         ]
-        []
+        [ text "what is going on?" ]
 
-    --, roleCard user.roles mdlStore
+    --, roleCard equip.roles mdlStore
     ]
 
 
-editCards : Equipment.EquipmentWithRoleSet -> Equipment.RefDataStatus -> Equipment.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+editCards : EquipmentBase.Equipment -> Equipment.RefDataStatus -> Equipment.FormAction -> Material.Model -> List (Html AppMsg.Msg)
 editCards scratchEquipment refDataStatus action mdlStore =
     --check that ref data is loaded.
     let
         html =
             case refDataStatus of
                 Loaded refData ->
-                    [ userEditCard scratchEquipment refData action mdlStore
+                    [ equipEditCard scratchEquipment refData action mdlStore
                     , Options.div
                         [ Grid.size All 1
                         , css "height" "32px"
@@ -118,23 +121,23 @@ editCards scratchEquipment refDataStatus action mdlStore =
         html
 
 
-maybeFindEquipment : Maybe Int -> Array Equipment.EquipmentWithRoles -> Maybe Equipment.EquipmentWithRoles
-maybeFindEquipment maybeIndex users =
+maybeFindEquipment : Maybe Int -> Array EquipmentBase.Equipment -> Maybe EquipmentBase.Equipment
+maybeFindEquipment maybeIndex equips =
     case maybeIndex of
         Just idx ->
-            Array.get idx users
+            Array.get idx equips
 
         _ ->
             Nothing
 
 
-alwaysFindEquipment : Maybe Int -> Array Equipment.EquipmentWithRoles -> Equipment.EquipmentWithRoles
-alwaysFindEquipment maybeIndex users =
+alwaysFindEquipment : Maybe Int -> Array EquipmentBase.Equipment -> EquipmentBase.Equipment
+alwaysFindEquipment maybeIndex equips =
     let
         maybeEquipment =
             case maybeIndex of
                 Just idx ->
-                    Array.get idx users
+                    Array.get idx equips
 
                 _ ->
                     Nothing
@@ -144,15 +147,15 @@ alwaysFindEquipment maybeIndex users =
                 usr
 
             Nothing ->
-                Equipment.emptyEquipmentWithRoles
+                EquipmentBase.emptyEquipment
 
 
-fieldStringValue : Maybe Equipment.EquipmentWithRoles -> Equipment.FormAction -> (Equipment.EquipmentWithRoles -> String) -> String
-fieldStringValue user formAction extractor =
-    case user of
-        Just user ->
+fieldStringValue : Maybe EquipmentBase.Equipment -> Equipment.FormAction -> (EquipmentBase.Equipment -> String) -> String
+fieldStringValue equip formAction extractor =
+    case equip of
+        Just equip ->
             if formAction == Edit then
-                extractor user
+                extractor equip
             else
                 ""
 
@@ -160,12 +163,12 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe Equipment.EquipmentWithRoles -> Equipment.FormAction -> (Equipment.EquipmentWithRoles -> Int) -> String
-fieldIntValue user formAction extractor =
-    case user of
-        Just user ->
+fieldIntValue : Maybe EquipmentBase.Equipment -> Equipment.FormAction -> (EquipmentBase.Equipment -> Int) -> String
+fieldIntValue equip formAction extractor =
+    case equip of
+        Just equip ->
             if formAction == Edit then
-                extractor user |> toString
+                extractor equip |> toString
             else
                 ""
 
@@ -173,8 +176,8 @@ fieldIntValue user formAction extractor =
             ""
 
 
-userDetails : Equipment.EquipmentWithRoles -> Html AppMsg.Msg
-userDetails user =
+equipDetails : EquipmentBase.Equipment -> Html AppMsg.Msg
+equipDetails equip =
     Options.div
         [ css "display" "flex"
         , css "align-items" "flex-start"
@@ -182,26 +185,16 @@ userDetails user =
         ]
         [ Options.div []
             (List.map
-                userInfo
-                [ ( "First Name:", user.first_name )
-                , ( "Last Name", user.last_name )
-                , ( "Email", user.email )
-                , ( "Photo Url", user.photo_url )
+                equipInfo
+                [ ( "First Name:", equip.equipment_name )
+                , ( "Last Name", equip.equipment_code )
                 ]
             )
-        , Options.div []
-            [ Options.img
-                [ Options.attribute <| Html.Attributes.src user.photo_url
-                , css "height" "96px"
-                , css "width" "96px"
-                ]
-                []
-            ]
         ]
 
 
-userInfo : ( String, String ) -> Html AppMsg.Msg
-userInfo ( fieldName, fieldValue ) =
+equipInfo : ( String, String ) -> Html AppMsg.Msg
+equipInfo ( fieldName, fieldValue ) =
     Options.div
         [ css "width" "100%"
         , css "float" "left"
@@ -222,37 +215,29 @@ userInfo ( fieldName, fieldValue ) =
         ]
 
 
-userEditItem : ( String, String, String -> AppMsg.Msg ) -> Html AppMsg.Msg
-userEditItem ( fieldName, fieldValue, userMsg ) =
+equipEditItem : ( String, String, String -> AppMsg.Msg ) -> Html AppMsg.Msg
+equipEditItem ( fieldName, fieldValue, equipMsg ) =
     div [ class "form-group" ]
         [ label [] [ text fieldName ]
         , input
             [ value fieldValue
-            , onInput userMsg
+            , onInput equipMsg
             , class "form-control"
             ]
             []
         ]
 
 
-userForm : Equipment.EquipmentWithRoleSet -> Equipment.RefData -> Equipment.FormAction -> Material.Model -> Html AppMsg.Msg
-userForm user refData action mdlStore =
+equipForm : EquipmentBase.Equipment -> Equipment.RefData -> Equipment.FormAction -> Material.Model -> Html AppMsg.Msg
+equipForm equip refData action mdlStore =
     div []
         [ div [ class "form-group" ]
-            [ label [] [ text "First Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipment (EquipmentMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
+            [ label [] [ text "Equip Name" ]
+            , input [ onInput (\s -> AppMsg.MsgForEquipment (EquipmentMsg.SetFirstName s)), value equip.equipment_name, class "form-control" ] []
             ]
         , div [ class "form-group" ]
-            [ label [] [ text "Last Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipment (EquipmentMsg.SetLastName s)), value user.last_name, class "form-control" ] []
-            ]
-        , div [ class "form-group" ]
-            [ label [] [ text "Email" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipment (EquipmentMsg.SetEmail s)), value user.email, class "form-control" ] []
-            ]
-        , div [ class "form-group" ]
-            [ label [] [ text "Photo URL" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipment (EquipmentMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
+            [ label [] [ text "Equip Code" ]
+            , input [ onInput (\s -> AppMsg.MsgForEquipment (EquipmentMsg.SetLastName s)), value equip.equipment_name, class "form-control" ] []
             ]
         , rolesHeading
         , Options.styled Html.ul
@@ -260,14 +245,15 @@ userForm user refData action mdlStore =
             , css "margin" "0"
             , css "padding" "0"
             ]
-            (roleOptions user.roles refData mdlStore)
+            []
 
+        --(roleOptions equip.roles refData mdlStore)
         --, button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
         ]
 
 
-userTable : Array Equipment.EquipmentWithRoles -> Maybe Int -> Maybe Table.Order -> Equipment.FormAction -> Int -> Int -> Html AppMsg.Msg
-userTable users selectedEquipmentId order action startDisplayIndex endDisplayIndex =
+equipTable : Array EquipmentBase.Equipment -> Maybe Int -> Maybe Table.Order -> Equipment.FormAction -> Int -> Int -> Html AppMsg.Msg
+equipTable equips selectedEquipmentId order action startDisplayIndex endDisplayIndex =
     let
         divAt =
             case action of
@@ -300,8 +286,8 @@ userTable users selectedEquipmentId order action startDisplayIndex endDisplayInd
                 , Options.css "padding" "0px"
                 , Options.css "width" "100%"
                 ]
-                [ userTableHeader order
-                , tbody [] (userRows users action selectedEquipmentId startDisplayIndex endDisplayIndex)
+                [ equipTableHeader order
+                , tbody [] (equipRows equips action selectedEquipmentId startDisplayIndex endDisplayIndex)
                 ]
             ]
 
@@ -317,8 +303,11 @@ tableCard model mdlStore =
                 Filter ->
                     ( (AppMsg.MsgForEquipment (EquipmentMsg.SelectTab Details)), "people", "Close filter form" )
 
-        userCount =
-            Array.length model.filteredEquipments
+        equipCount =
+            Array.length model.filteredEquipment
+
+        c =
+            Debug.log "eq count:" equipCount
 
         actions =
             case model.refDataStatus of
@@ -344,14 +333,14 @@ tableCard model mdlStore =
                         , css "margin-right" "15px"
                         , css "margin-top" "5px"
                         ]
-                        [ text ("(" ++ toString userCount ++ " users)") ]
+                        [ text ("(" ++ toString equipCount ++ " equips)") ]
                     ]
 
                 _ ->
                     []
 
         textStuff =
-            userTable model.filteredEquipments model.selectedEquipmentId model.order model.formAction model.startDisplayIndex model.endDisplayIndex
+            equipTable model.filteredEquipment model.selectedEquipmentId model.order model.formAction model.startDisplayIndex model.endDisplayIndex
     in
         Card.view
             [ css "width" "100%"
@@ -374,7 +363,7 @@ tableCard model mdlStore =
                     -- Restore default padding inside scrim
                     , css "width" "100%"
                     ]
-                    [ text "Equipments" ]
+                    [ text "Equipment" ]
                 ]
             , Card.text
                 [ css "height" "400px"
@@ -393,8 +382,8 @@ tableCard model mdlStore =
             ]
 
 
-userTableHeader : Maybe Table.Order -> Html AppMsg.Msg
-userTableHeader order =
+equipTableHeader : Maybe Table.Order -> Html AppMsg.Msg
+equipTableHeader order =
     Table.thead []
         [ Table.tr []
             [ Table.th
@@ -413,10 +402,10 @@ userTableHeader order =
         ]
 
 
-userRows : Array Equipment.EquipmentWithRoles -> Equipment.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
-userRows users action selectedEquipmentId startDisplayIndex endDisplayIndex =
+equipRows : Array EquipmentBase.Equipment -> Equipment.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
+equipRows equips action selectedEquipmentId startDisplayIndex endDisplayIndex =
     let
-        userId =
+        equipId =
             case selectedEquipmentId of
                 Just id ->
                     id
@@ -424,10 +413,10 @@ userRows users action selectedEquipmentId startDisplayIndex endDisplayIndex =
                 Nothing ->
                     -1
     in
-        users
+        equips
             |> Array.slice startDisplayIndex (endDisplayIndex + 1)
             |> Array.toIndexedList
-            |> List.map (userRow action userId)
+            |> List.map (equipRow action equipId)
 
 
 
@@ -435,13 +424,13 @@ userRows users action selectedEquipmentId startDisplayIndex endDisplayIndex =
 --look at using array.fold(l/r)
 
 
-userRow : Equipment.FormAction -> Int -> ( Int, Equipment.EquipmentWithRoles ) -> Html AppMsg.Msg
-userRow action userId ( idx, user ) =
+equipRow : Equipment.FormAction -> Int -> ( Int, EquipmentBase.Equipment ) -> Html AppMsg.Msg
+equipRow action equipId ( idx, equip ) =
     let
         f allowSelect =
             []
                 |> (\a ->
-                        if userId == user.id then
+                        if equipId == equip.id then
                             Options.css "background-color" "green" :: a
                         else
                             a
@@ -471,10 +460,8 @@ userRow action userId ( idx, user ) =
                     []
     in
         Table.tr row_style
-            [ Table.td [] [ text user.first_name ]
-            , Table.td [] [ text user.last_name ]
-            , Table.td [] [ text user.email ]
-            , Table.td [ css "width" "100%" ] [ text user.photo_url ]
+            [ Table.td [] [ text equip.equipment_name ]
+            , Table.td [] [ text equip.equipment_code ]
             ]
 
 
@@ -574,8 +561,8 @@ optionsCard model mdlStore =
             ]
 
 
-userCard : Equipment.EquipmentWithRoles -> Equipment.RefDataStatus -> Equipment.FormAction -> Material.Model -> Html AppMsg.Msg
-userCard user refData action mdlStore =
+equipCard : EquipmentBase.Equipment -> Equipment.RefDataStatus -> Equipment.FormAction -> Material.Model -> Html AppMsg.Msg
+equipCard equip refData action mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -622,7 +609,7 @@ userCard user refData action mdlStore =
                                 ]
                                 [ text "Do it!" ]
                             ]
-                        , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this user?" ]
+                        , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this equip?" ]
                         ]
                     ]
 
@@ -662,14 +649,8 @@ userCard user refData action mdlStore =
                             []
 
         textStuff =
-            if List.length user.roles > 0 then
-                [ userDetails user
-                , rolesHeading
-                , roleDetails user.roles
-                ]
-            else
-                [ userDetails user
-                ]
+            [ equipDetails equip
+            ]
     in
         Card.view
             [ css "width" "100%"
@@ -825,8 +806,8 @@ roleInfo i role =
         ]
 
 
-userEditCard : Equipment.EquipmentWithRoleSet -> Equipment.RefData -> Equipment.FormAction -> Material.Model -> Html AppMsg.Msg
-userEditCard scratchEquipment refData action mdlStore =
+equipEditCard : EquipmentBase.Equipment -> Equipment.RefData -> Equipment.FormAction -> Material.Model -> Html AppMsg.Msg
+equipEditCard scratchEquipment refData action mdlStore =
     let
         buttonText =
             if action == Edit then
@@ -881,7 +862,7 @@ userEditCard scratchEquipment refData action mdlStore =
                     [ text "Details" ]
                 ]
             , Card.text [ white ]
-                [ userForm scratchEquipment refData action mdlStore
+                [ equipForm scratchEquipment refData action mdlStore
                 ]
             , Card.actions
                 [ Card.border ]
@@ -947,38 +928,40 @@ roleFilterOption role index value mdlStore =
 
 roleOptions : Set Int -> Equipment.RefData -> Material.Model -> List (Html AppMsg.Msg)
 roleOptions roleSet refData mdlStore =
-    --may want to sort the list
-    let
-        roles =
-            Dict.toList refData.roles
-    in
-        List.map
-            (\( index, role ) ->
-                let
-                    value =
-                        Set.member role.id roleSet
-                in
-                    roleOption role index value mdlStore
-            )
-            roles
+    -- --may want to sort the list
+    -- let
+    --     roles =
+    --         Dict.toList refData.roles
+    -- in
+    --     List.map
+    --         (\( index, role ) ->
+    --             let
+    --                 value =
+    --                     Set.member role.id roleSet
+    --             in
+    --                 roleOption role index value mdlStore
+    --         )
+    --         roles
+    []
 
 
 roleFilterOptions : Set Int -> Equipment.RefData -> Material.Model -> List (Html AppMsg.Msg)
 roleFilterOptions roleSet refData mdlStore =
-    --may want to sort the list
-    let
-        roles =
-            Dict.toList refData.roles
-    in
-        List.map
-            (\( index, role ) ->
-                let
-                    value =
-                        Set.member role.id roleSet
-                in
-                    roleFilterOption role index value mdlStore
-            )
-            roles
+    -- --may want to sort the list
+    -- let
+    --     roles =
+    --         Dict.toList refData.roles
+    -- in
+    --     List.map
+    --         (\( index, role ) ->
+    --             let
+    --                 value =
+    --                     Set.member role.id roleSet
+    --             in
+    --                 roleFilterOption role index value mdlStore
+    --         )
+    --         roles
+    []
 
 
 roleEditCard : Set Int -> Equipment.RefData -> Material.Model -> Html AppMsg.Msg
@@ -1017,7 +1000,7 @@ pager : Equipment.Model -> Html AppMsg.Msg
 pager model =
     let
         pageCount =
-            floor (toFloat (Array.length model.filteredEquipments) / toFloat model.pageSize)
+            floor (toFloat (Array.length model.filteredEquipment) / toFloat model.pageSize)
 
         pageList =
             List.range 0 pageCount
@@ -1080,19 +1063,19 @@ slider model =
     p [ style [ ( "width", "300px" ) ] ]
         [ Slider.view
             [ Slider.onChange (\value -> AppMsg.MsgForEquipment (EquipmentMsg.EquipmentSlider value))
-            , Slider.value model.userSliderValue
+            , Slider.value model.equipmentSliderValue
             ]
         ]
 
 
-filterCards : Equipment.EquipmentWithRoleSet -> Equipment.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
+filterCards : EquipmentBase.Equipment -> Equipment.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
 filterCards scratchEquipment refDataStatus mdlStore =
     --check that ref data is loaded.
     let
         html =
             case refDataStatus of
                 Loaded refData ->
-                    [ userFilterCard scratchEquipment refData mdlStore ]
+                    [ equipFilterCard scratchEquipment refData mdlStore ]
 
                 _ ->
                     [ text "no ref data" ]
@@ -1100,8 +1083,8 @@ filterCards scratchEquipment refDataStatus mdlStore =
         html
 
 
-userFilterCard : Equipment.EquipmentWithRoleSet -> Equipment.RefData -> Material.Model -> Html AppMsg.Msg
-userFilterCard filterEquipment refData mdlStore =
+equipFilterCard : EquipmentBase.Equipment -> Equipment.RefData -> Material.Model -> Html AppMsg.Msg
+equipFilterCard filterEquipment refData mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -1179,7 +1162,7 @@ userFilterCard filterEquipment refData mdlStore =
                             [ 3, 21 ]
                             mdlStore
                             []
-                            [ text "Revert to original user list" ]
+                            [ text "Revert to original equip list" ]
                         ]
                    ]
 
@@ -1216,9 +1199,9 @@ userFilterCard filterEquipment refData mdlStore =
                     ]
                     [ Options.div []
                         (List.map
-                            userEditItem
-                            [ ( "First Name:", filterEquipment.first_name, (\f -> AppMsg.MsgForEquipment (EquipmentMsg.SetFilterFirstName f)) )
-                            , ( "Last Name", filterEquipment.last_name, (\f -> AppMsg.MsgForEquipment (EquipmentMsg.SetFilterLastName f)) )
+                            equipEditItem
+                            [ ( "Equip Name:", filterEquipment.equipment_name, (\f -> AppMsg.MsgForEquipment (EquipmentMsg.SetFilterFirstName f)) )
+                            , ( "Equip Code", filterEquipment.equipment_code, (\f -> AppMsg.MsgForEquipment (EquipmentMsg.SetFilterLastName f)) )
                             ]
                         )
                     , Options.div []
@@ -1227,7 +1210,9 @@ userFilterCard filterEquipment refData mdlStore =
                             , css "margin" "0"
                             , css "padding" "0"
                             ]
-                            (roleFilterOptions filterEquipment.roles refData mdlStore)
+                            []
+
+                        --(roleFilterOptions filterEquipment.roles refData mdlStore)
                         ]
                     ]
                 ]

@@ -56,8 +56,10 @@ def test_preload_join(query) do
     from eq in query,
         join: p in assoc(eq, :equipment_precision),
         join: ec in assoc(p, :equipment_classes),
-        preload: [equipment_precision: {p, equipment_classes: ec}]
-        #select: map(eq, [:equipment_precision_id, :name, :code, equipment_precision: [:id, :precision, :equipment_classes_id, equipment_classes: [:id, :name]]])
+        preload: [equipment_precision: {p, equipment_classes: ec}],
+        select: map(eq, [:equipment_precision_id, :name, :code, equipment_precision: [:id, :precision, :equipment_classes_id, equipment_classes: [:id, :name]]])
+
+
         #select: %{ equipment_name: eq.name, equipment_code: eq.code, precision: p.precision, class: ec.name }
         #select: %{ equipment_name: eq.name, p: p.precision, c: ec.name}
         #
@@ -75,7 +77,7 @@ end
               join: p in PharNote.EquipmentPrecision, on: [id: eq.equipment_precision_id],
               join: c in PharNote.EquipmentClasses, on: [id: p.equipment_classes_id],
              # select: %{ equipment: %{ equip: map(eq, [:name, :code]), precision: map(p, [:id, :precision]), class: map(c, [:name])}}
-              select: %{ equipment_name: eq.name, equipment_code: eq.code, precision: p.precision, class: c.name }
+              select: %{ equipment_id: eq.id, equipment_name: eq.name, equipment_code: eq.code, precision_id: p.id, precision: p.precision, class_id: c.id, class_name: c.name }
 
               #select: {struct(eq, [:equipment_precision_id, :name]), map(p, [:id, :precision])}
 

@@ -20,13 +20,13 @@ update msg model =
         NoOp ->
             model ! []
 
-        SelectTab userTab ->
-            { model | selectedTab = userTab } ! []
+        SelectTab equipmentTab ->
+            { model | selectedTab = equipmentTab } ! []
 
         KeyX key ->
             let
-                userCount =
-                    Array.length (model.filteredEquipments)
+                equipmentCount =
+                    Array.length (model.filteredEquipment)
 
                 currentIdx =
                     case model.selectedEquipmentIndex of
@@ -39,12 +39,12 @@ update msg model =
                 idx =
                     if key == 38 && currentIdx > 0 then
                         currentIdx - 1
-                    else if key == 40 && currentIdx < userCount - 1 then
+                    else if key == 40 && currentIdx < equipmentCount - 1 then
                         currentIdx + 1
                     else
                         currentIdx
 
-                --if selected user is off the beginning of screen then start window from index
+                --if selected equipment is off the beginning of screen then start window from index
                 startIndex =
                     if idx < model.startDisplayIndex then
                         idx
@@ -56,11 +56,11 @@ update msg model =
                 endIndex =
                     startIndex + model.pageSize - 1
 
-                user =
-                    View.maybeFindEquipment (Just idx) model.filteredEquipments
+                equipment =
+                    View.maybeFindEquipment (Just idx) model.filteredEquipment
 
                 newModel =
-                    case user of
+                    case equipment of
                         Just u ->
                             { model
                                 | selectedEquipmentId = Just u.id
@@ -72,7 +72,7 @@ update msg model =
                         _ ->
                             model
 
-                --populateScratchEquipmentData user (Just idx) model model.formAction
+                --populateScratchEquipmentData equipment (Just idx) model model.formAction
             in
                 newModel ! []
 
@@ -81,11 +81,11 @@ update msg model =
                 index =
                     model.startDisplayIndex + idx
 
-                user =
-                    View.maybeFindEquipment (Just index) model.filteredEquipments
+                equipment =
+                    View.maybeFindEquipment (Just index) model.filteredEquipment
 
                 newModel =
-                    case user of
+                    case equipment of
                         Just u ->
                             { model
                                 | selectedEquipmentId = Just u.id
@@ -95,7 +95,7 @@ update msg model =
                         _ ->
                             model
 
-                --populateScratchEquipmentData user (Just idx) model model.formAction
+                --populateScratchEquipmentData equipment (Just idx) model model.formAction
             in
                 newModel
                     ! []
@@ -108,22 +108,22 @@ update msg model =
                 sort =
                     case sortOrder of
                         Just Table.Ascending ->
-                            List.sortBy sort_by_last_first
+                            List.sortBy sort_by_equipment_name
 
                         Just Table.Descending ->
-                            List.sortWith (\x y -> reverse (sort_by_last_first x) (sort_by_last_first y))
+                            List.sortWith (\x y -> reverse (sort_by_equipment_name x) (sort_by_equipment_name y))
 
                         Nothing ->
                             identity
 
-                sortedEquipments =
-                    sort (Array.toList model.filteredEquipments) |> Array.fromList
+                sortedEquipment =
+                    sort (Array.toList model.filteredEquipment) |> Array.fromList
 
                 nextEquipment =
-                    View.alwaysFindEquipment model.selectedEquipmentIndex sortedEquipments
+                    View.alwaysFindEquipment model.selectedEquipmentIndex sortedEquipment
             in
-                --the user index and id will nno longer match up now.  Either need to find current user, or keep selector on same page/offset
-                { model | order = sortOrder, filteredEquipments = sortedEquipments, selectedEquipmentId = Just nextEquipment.id } ! []
+                --the equipment index and id will nno longer match up now.  Either need to find current equipment, or keep selector on same page/offset
+                { model | order = sortOrder, filteredEquipment = sortedEquipment, selectedEquipmentId = Just nextEquipment.id } ! []
 
         CancelDeleteEquipment ->
             { model | formAction = Equipment.None } ! []
@@ -134,7 +134,7 @@ update msg model =
                     model.selectedEquipmentIndex
 
                 usr =
-                    View.maybeFindEquipment idx model.filteredEquipments
+                    View.maybeFindEquipment idx model.filteredEquipment
             in
                 { model | formAction = Equipment.ConfirmDelete } ! []
 
@@ -144,13 +144,13 @@ update msg model =
                     model.selectedEquipmentIndex
 
                 usr =
-                    View.maybeFindEquipment idx model.filteredEquipments
+                    View.maybeFindEquipment idx model.filteredEquipment
             in
                 case usr of
                     Nothing ->
                         model ! []
 
-                    Just user ->
+                    Just equipment ->
                         --we need to identify a record to be current after successful delete
                         let
                             --this would be a case of using one of those Maybe.andThen things as if idx was Nothing we would not get here.
@@ -163,9 +163,9 @@ update msg model =
                                         0
 
                             ( maybeNextEquipment, nextIndex ) =
-                                case View.maybeFindEquipment (Just (i + 1)) model.filteredEquipments of
+                                case View.maybeFindEquipment (Just (i + 1)) model.filteredEquipment of
                                     Nothing ->
-                                        case View.maybeFindEquipment (Just (i - 1)) model.filteredEquipments of
+                                        case View.maybeFindEquipment (Just (i - 1)) model.filteredEquipment of
                                             Nothing ->
                                                 ( Nothing, -1 )
 
@@ -180,29 +180,30 @@ update msg model =
                                     Nothing ->
                                         { model
                                             | formAction = Equipment.Delete
-                                            , selectedEquipmentId = Just user.id
+                                            , selectedEquipmentId = Just equipment.id
                                         }
 
                                     Just nextEquipment ->
                                         { model
                                             | formAction = Equipment.Delete
-                                            , selectedEquipmentId = Just user.id
+                                            , selectedEquipmentId = Just equipment.id
                                             , previousSelectedEquipmentId = Just nextEquipment.id
                                             , previousSelectedEquipmentIndex = Just nextIndex
                                         }
                         in
-                            newModel ! [ Rest.delete user ]
+                            --newModel ! [ Rest.delete equipment ]
+                            newModel ! []
 
         EditEquipment ->
             let
                 idx =
                     model.selectedEquipmentIndex
 
-                user =
-                    View.maybeFindEquipment idx model.filteredEquipments
+                equipment =
+                    View.maybeFindEquipment idx model.filteredEquipment
 
                 newModel =
-                    populateScratchEquipmentData user idx model Equipment.Edit
+                    populateScratchEquipmentData equipment idx model Equipment.Edit
             in
                 newModel
                     ! []
@@ -210,7 +211,7 @@ update msg model =
         NewEquipment ->
             { model
                 | formAction = Equipment.Create
-                , scratchEquipment = Equipment.emptyEquipmentWithRoleSet
+                , scratchEquipment = EquipmentBase.emptyEquipment
                 , selectedEquipmentId = Nothing
                 , selectedEquipmentIndex = Nothing
                 , previousSelectedEquipmentIndex = model.selectedEquipmentIndex
@@ -237,15 +238,15 @@ update msg model =
                 newModel ! []
 
         ProcessRefDataGet (Ok roles) ->
-            let
-                roleDict =
-                    List.map (\role -> ( role.id, role )) roles
-                        |> Dict.fromList
-            in
-                { model
-                    | refDataStatus = Loaded (Equipment.RefData roleDict)
-                }
-                    ! []
+            -- let
+            --     roleDict =
+            --         List.map (\role -> ( role.id, role )) roles
+            --             |> Dict.fromList
+            -- in
+            --     { model
+            --         | refDataStatus = Loaded (Equipment.RefData roleDict)
+            --     }
+            model ! []
 
         ProcessRefDataGet (Err error) ->
             let
@@ -257,23 +258,30 @@ update msg model =
                 }
                     ! []
 
-        ProcessEquipmentGet (Ok users) ->
+        ProcessEquipmentGet (Ok equipment) ->
             let
-                userArray =
-                    Array.fromList (users)
+                equipmentArray =
+                    Array.fromList (equipment)
+
+                c =
+                    Debug.log "ProcessEquipmentGet eq count:" Array.length equipmentArray
 
                 newModel =
-                    filteredModel { model | users = userArray }
+                    filteredModel { model | equipment = equipmentArray }
             in
                 newModel ! []
 
         ProcessEquipmentGet (Err error) ->
-            { model
-                | errors = Just error
-            }
-                ! []
+            let
+                c =
+                    Debug.log "ProcessEquipmentGet error:" error
+            in
+                { model
+                    | errors = Just error
+                }
+                    ! []
 
-        ProcessEquipmentPost (Ok user) ->
+        ProcessEquipmentPost (Ok equipment) ->
             { model | formAction = Equipment.None } ! [ Rest.get ]
 
         ProcessEquipmentPost (Err error) ->
@@ -282,8 +290,8 @@ update msg model =
             }
                 ! []
 
-        ProcessEquipmentDelete (Ok user) ->
-            -- need to set current user to previousSelectedEquipmentId
+        ProcessEquipmentDelete (Ok equipment) ->
+            -- need to set current equipment to previousSelectedEquipmentId
             { model
                 | formAction = Equipment.None
                 , selectedEquipmentId = model.previousSelectedEquipmentId
@@ -297,97 +305,58 @@ update msg model =
             }
                 ! []
 
-        EquipmentPost user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            Equipment.scratchToEquipmentWithRoles model.scratchEquipment refData
-                    in
-                        model ! [ Rest.post userWithRoles ]
+        EquipmentPost equipment ->
+            model ! []
 
-                _ ->
-                    --need to provide a message here.
-                    model ! []
-
-        EquipmentPut user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            Equipment.scratchToEquipmentWithRoles model.scratchEquipment refData
-                    in
-                        model ! [ Rest.put userWithRoles ]
-
-                _ ->
-                    --need to provide a message here.
-                    model ! []
+        EquipmentPut equipment ->
+            model ! []
 
         SetFirstName value ->
             let
-                user =
+                equipment =
                     model.scratchEquipment
 
-                new_user =
-                    { user | first_name = value }
+                new_equipment =
+                    { equipment | equipment_name = value }
             in
-                { model | scratchEquipment = new_user } ! []
+                { model | scratchEquipment = new_equipment } ! []
 
         SetLastName value ->
             let
-                user =
+                equipment =
                     model.scratchEquipment
 
-                new_user =
-                    { user | last_name = value }
+                new_equipment =
+                    { equipment | equipment_code = value }
             in
-                { model | scratchEquipment = new_user } ! []
-
-        SetEmail value ->
-            let
-                user =
-                    model.scratchEquipment
-
-                new_user =
-                    { user | email = value }
-            in
-                { model | scratchEquipment = new_user } ! []
-
-        SetPhotoUrl value ->
-            let
-                user =
-                    model.scratchEquipment
-
-                new_user =
-                    { user | photo_url = value }
-            in
-                { model | scratchEquipment = new_user } ! []
+                { model | scratchEquipment = new_equipment } ! []
 
         ToggleRole roleID ->
-            let
-                user =
-                    model.scratchEquipment
-
-                roleSet =
-                    user.roles
-
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
-
-                        False ->
-                            Set.insert roleID roleSet
-
-                newEquipment =
-                    { user | roles = newRoleSet }
-            in
-                { model | scratchEquipment = newEquipment } ! []
+            -- let
+            --     equipment =
+            --         model.scratchEquipment
+            --
+            --     roleSet =
+            --         equipment.roles
+            --
+            --     newRoleSet =
+            --         case Set.member roleID roleSet of
+            --             True ->
+            --                 Set.remove roleID roleSet
+            --
+            --             False ->
+            --                 Set.insert roleID roleSet
+            --
+            --     newEquipment =
+            --         { equipment | roles = newRoleSet }
+            -- in
+            --     { model | scratchEquipment = newEquipment } ! []
+            model ! []
 
         EquipmentSlider valuePC ->
             let
                 len =
-                    Array.length model.filteredEquipments
+                    Array.length model.filteredEquipment
 
                 reducedLen =
                     len - model.pageSize
@@ -401,7 +370,7 @@ update msg model =
                 { model
                     | startDisplayIndex = start
                     , endDisplayIndex = end
-                    , userSliderValue = valuePC
+                    , equipmentSliderValue = valuePC
                 }
                     ! []
 
@@ -419,12 +388,12 @@ update msg model =
                 s =
                     page * model.pageSize
 
-                userCount =
-                    Array.length model.filteredEquipments
+                equipmentCount =
+                    Array.length model.filteredEquipment
 
                 start =
-                    if userCount - s < model.pageSize then
-                        userCount - model.pageSize
+                    if equipmentCount - s < model.pageSize then
+                        equipmentCount - model.pageSize
                     else
                         s
 
@@ -435,7 +404,7 @@ update msg model =
                     start + offset
 
                 nextEquipment =
-                    View.alwaysFindEquipment (Just nextIdx) model.filteredEquipments
+                    View.alwaysFindEquipment (Just nextIdx) model.filteredEquipment
             in
                 { model
                     | startDisplayIndex = start
@@ -453,7 +422,7 @@ update msg model =
                 (filteredModel fm) ! []
 
         ResetEquipmentFilter ->
-            { model | filterScratchEquipment = Equipment.emptyEquipmentWithRoleSet } ! []
+            { model | filterScratchEquipment = EquipmentBase.emptyEquipment } ! []
 
         CancelEquipmentFilter ->
             { model | selectedTab = Details } ! []
@@ -463,7 +432,7 @@ update msg model =
                 fm =
                     { model
                         | filterState = NoFilter
-                        , filterScratchEquipment = Equipment.emptyEquipmentWithRoleSet
+                        , filterScratchEquipment = EquipmentBase.emptyEquipment
                         , selectedEquipmentIndex = Nothing
                     }
             in
@@ -471,44 +440,45 @@ update msg model =
 
         SetFilterFirstName value ->
             let
-                user =
+                equipment =
                     model.filterScratchEquipment
 
-                new_user =
-                    { user | first_name = value }
+                new_equipment =
+                    { equipment | equipment_name = value }
             in
-                { model | filterScratchEquipment = new_user } ! []
+                { model | filterScratchEquipment = new_equipment } ! []
 
         SetFilterLastName value ->
             let
-                user =
+                equipment =
                     model.filterScratchEquipment
 
-                new_user =
-                    { user | last_name = value }
+                new_equipment =
+                    { equipment | equipment_code = value }
             in
-                { model | filterScratchEquipment = new_user } ! []
+                { model | filterScratchEquipment = new_equipment } ! []
 
         ToggleFilterRole roleID ->
-            let
-                user =
-                    model.filterScratchEquipment
-
-                roleSet =
-                    user.roles
-
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
-
-                        False ->
-                            Set.insert roleID roleSet
-
-                newEquipment =
-                    { user | roles = newRoleSet }
-            in
-                { model | filterScratchEquipment = newEquipment } ! []
+            -- let
+            --     equipment =
+            --         model.filterScratchEquipment
+            --
+            --     roleSet =
+            --         equipment.roles
+            --
+            --     newRoleSet =
+            --         case Set.member roleID roleSet of
+            --             True ->
+            --                 Set.remove roleID roleSet
+            --
+            --             False ->
+            --                 Set.insert roleID roleSet
+            --
+            --     newEquipment =
+            --         { equipment | roles = newRoleSet }
+            -- in
+            --     { model | filterScratchEquipment = newEquipment } ! []
+            model ! []
 
 
 
@@ -529,13 +499,13 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateScratchEquipmentData : Maybe Equipment.EquipmentWithRoles -> Maybe Int -> Equipment.Model -> Equipment.FormAction -> Equipment.Model
+populateScratchEquipmentData : Maybe EquipmentBase.Equipment -> Maybe Int -> Equipment.Model -> Equipment.FormAction -> Equipment.Model
 populateScratchEquipmentData maybeEquipment maybeEquipmentIndex model action =
     case maybeEquipment of
         Nothing ->
             --could we realistically arrive here?
             { model
-                | scratchEquipment = Equipment.emptyEquipmentWithRoleSet
+                | scratchEquipment = EquipmentBase.emptyEquipment
                 , formAction = action
                 , selectedEquipmentId = Nothing
                 , selectedEquipmentIndex = Nothing
@@ -543,22 +513,17 @@ populateScratchEquipmentData maybeEquipment maybeEquipmentIndex model action =
 
         Just u ->
             --if we only have role ids, not the whole role record, then we won't need the first map function
-            let
-                roleSet =
-                    List.map (\r -> r.id) u.roles
-                        |> Set.fromList
-            in
-                { model
-                    | scratchEquipment = Equipment.EquipmentWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
-                    , formAction = action
-                    , selectedEquipmentId = Just u.id
-                    , selectedEquipmentIndex = maybeEquipmentIndex
-                }
+            { model
+                | scratchEquipment = EquipmentBase.Equipment u.id u.equipment_name u.equipment_code u.class_id u.class_name u.precision_id u.precision
+                , formAction = action
+                , selectedEquipmentId = Just u.id
+                , selectedEquipmentIndex = maybeEquipmentIndex
+            }
 
 
-sort_by_last_first : Equipment.EquipmentWithRoles -> String
-sort_by_last_first u =
-    u.last_name ++ u.first_name
+sort_by_equipment_name : EquipmentBase.Equipment -> String
+sort_by_equipment_name u =
+    u.equipment_name
 
 
 reverse : comparable -> comparable -> Order
@@ -574,67 +539,67 @@ reverse x y =
             EQ
 
 
-applyFilter : Equipment.EquipmentWithRoleSet -> Array Equipment.EquipmentWithRoles -> Array Equipment.EquipmentWithRoles
-applyFilter filterEquipment userArray =
-    Array.filter
-        (\userWithRole ->
-            let
-                userRoleSet =
-                    List.map (\r -> r.id) userWithRole.roles
-                        |> Set.fromList
-            in
-                Set.size (Set.intersect filterEquipment.roles userRoleSet) > 0
-        )
-        userArray
+applyFilter : EquipmentBase.Equipment -> Array EquipmentBase.Equipment -> Array EquipmentBase.Equipment
+applyFilter filterEquipment equipmentArray =
+    -- Array.filter
+    --     (\equipmentWithRole ->
+    --         let
+    --             equipmentRoleSet =
+    --                 List.map (\r -> r.id) equipmentWithRole.roles
+    --                     |> Set.fromList
+    --         in
+    --             Set.size (Set.intersect filterEquipment.roles equipmentRoleSet) > 0
+    --     )
+    equipmentArray
 
 
 filteredModel : Equipment.Model -> Equipment.Model
 filteredModel model =
     let
-        filteredEquipments =
+        filteredEquipment =
             case model.filterState of
                 Applied ->
-                    applyFilter model.filterScratchEquipment model.users
+                    applyFilter model.filterScratchEquipment model.equipment
 
                 _ ->
-                    model.users
+                    model.equipment
 
-        userCount =
-            Array.length filteredEquipments
+        equipmentCount =
+            Array.length filteredEquipment
 
         ( selectedEquipmentId, selectedEquipmentIndex, firstIndex, lastIndex ) =
             case model.selectedEquipmentIndex of
                 Nothing ->
                     let
                         firstEquipment =
-                            Array.get 0 filteredEquipments
+                            Array.get 0 filteredEquipment
 
                         firstIdx =
                             0
 
                         lastIdx =
-                            if userCount > model.pageSize then
+                            if equipmentCount > model.pageSize then
                                 model.pageSize - 1
                             else
-                                userCount - 1
+                                equipmentCount - 1
                     in
                         case firstEquipment of
                             Nothing ->
                                 ( Nothing, Nothing, -1, -1 )
 
-                            Just user ->
-                                ( Just user.id, Just 0, firstIdx, lastIdx )
+                            Just equipment ->
+                                ( Just equipment.id, Just 0, firstIdx, lastIdx )
 
                 _ ->
                     ( model.selectedEquipmentId, model.selectedEquipmentIndex, model.startDisplayIndex, model.endDisplayIndex )
 
-        --if we have done an edit then the selected user and index will stay the same
+        --if we have done an edit then the selected equipment and index will stay the same
     in
         { model
             | selectedEquipmentId = selectedEquipmentId
             , selectedEquipmentIndex = selectedEquipmentIndex
             , startDisplayIndex = firstIndex
             , endDisplayIndex = lastIndex
-            , filteredEquipments = filteredEquipments
+            , filteredEquipment = filteredEquipment
             , errors = Nothing
         }

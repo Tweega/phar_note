@@ -6,6 +6,8 @@ import PharNoteApp.User.Update as User
 import PharNoteApp.User.Rest as UserData
 import PharNoteApp.Role.Update as Role
 import PharNoteApp.Role.Rest as RoleData
+import PharNoteApp.Equipment.Update as Equipment
+import PharNoteApp.Equipment.Rest as EquipmentData
 import PharNoteApp.Chart.Update as Chart
 import PharNoteApp.Route as Route
 import Material
@@ -61,7 +63,15 @@ update msg model =
             model ! []
 
         MsgForEquipment equipMsg ->
-            model ! []
+            let
+                ( equip_data, cmd ) =
+                    Equipment.update equipMsg model.equipmentData
+            in
+                ( { model
+                    | equipmentData = equip_data
+                  }
+                , cmd
+                )
 
         MsgForEquipmentClass equipClassMsg ->
             model ! []
@@ -99,6 +109,14 @@ urlUpdate model route =
 
                 Just Route.Roles ->
                     [ RoleData.get ]
+
+                Just Route.Equipment ->
+                    case model.equipmentData.selectedEquipmentId of
+                        Nothing ->
+                            [ EquipmentData.get ]
+
+                        Just something ->
+                            []
 
                 _ ->
                     []
