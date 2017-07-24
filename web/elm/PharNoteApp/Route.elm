@@ -9,6 +9,8 @@ type Route
     | Users
     | Roles
     | Campaigns
+    | Equipment
+    | EquipmentClass
 
 
 type alias RouteModel =
@@ -22,6 +24,8 @@ pathParser =
         , map Users (s "users")
         , map Roles (s "roles")
         , map Campaigns (s "campaigns")
+        , map Equipment (s "equipment")
+        , map EquipmentClass (s "equipmentclass")
         ]
 
 
@@ -50,6 +54,12 @@ urlFor loc =
         Campaigns ->
             "/campaigns"
 
+        Equipment ->
+            "/equipment"
+
+        EquipmentClass ->
+            "/equipmentclass"
+
 
 locFor : Navigation.Location -> Maybe Route
 locFor path =
@@ -76,6 +86,12 @@ routeDetails maybeRoute =
 
         Just Campaigns ->
             RouteDetails "Campaign Administration" "Add, Edit  campaigns"
+
+        Just Equipment ->
+            RouteDetails "Equipment Administration" "Add, Edit, Delete  equipment"
+
+        Just EquipmentClass ->
+            RouteDetails "Equipment Class Administration" "Add, Edit, Delete  equipment classes"
 
         _ ->
             RouteDetails "" ""

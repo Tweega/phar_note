@@ -10,6 +10,8 @@ import PharNoteApp.Model exposing (Model)
 import PharNoteApp.User.View as UserView
 import PharNoteApp.Role.View as RoleView
 import PharNoteApp.Campaign.View as CampaignView
+import PharNoteApp.Equipment.View as EquipmentView
+import PharNoteApp.EquipmentClass.View as EquipmentClassView
 import PharNoteApp.Chart.View as ChartView
 import PharNoteApp.Route exposing (..)
 import Html exposing (Html, text, div, span, form)
@@ -96,9 +98,9 @@ menuItems =
     [ { text = "Dashboard", iconName = "dashboard", route = Just Chart }
     , { text = "Users", iconName = "group", route = Just Users }
     , { text = "Roles", iconName = "alarm", route = Just Roles }
+    , { text = "Equipment", iconName = "list", route = Just Equipment }
+    , { text = "Equip Class", iconName = "list", route = Just EquipmentClass }
     , { text = "Campaigns", iconName = "list", route = Just Campaigns }
-    , { text = "Organizations", iconName = "store", route = Nothing }
-    , { text = "Project", iconName = "view_list", route = Nothing }
     ]
 
 
@@ -222,6 +224,12 @@ viewBody model =
 
         Just Campaigns ->
             CampaignView.view model.campaignData model.mdl
+
+        Just Equipment ->
+            EquipmentView.view model.equipmentData model.mdl
+
+        Just EquipmentClass ->
+            EquipmentClassView.view model.equipmentClassData model.mdl
 
         Nothing ->
             text "404"

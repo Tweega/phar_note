@@ -60,6 +60,12 @@ update msg model =
         MsgForCampaign campaignMsg ->
             model ! []
 
+        MsgForEquipment equipMsg ->
+            model ! []
+
+        MsgForEquipmentClass equipClassMsg ->
+            model ! []
+
         MsgForChart chartMsg ->
             let
                 ( chart_data, cmd ) =
