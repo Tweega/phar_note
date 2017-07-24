@@ -5,6 +5,7 @@ import PharNoteApp.User.Model as UserModel
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.User.Init as UserInit
 import PharNoteApp.Role.Init as RoleInit
+import PharNoteApp.Campaign.Init as CampaignInit
 import PharNoteApp.Chart.Init as ChartInit
 import PharNoteApp.Route as Route
 import Material
@@ -26,6 +27,7 @@ init location =
         , history = Route.init maybeRoute
         , userData = userData
         , roleData = RoleInit.initialModel
+        , campaignData = CampaignInit.initialModel
         , chartData = ChartInit.initialModel
         , activeUser = ""
         , activeRoute = maybeRoute

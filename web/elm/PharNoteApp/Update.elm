@@ -57,6 +57,9 @@ update msg model =
                 , cmd
                 )
 
+        MsgForCampaign campaignMsg ->
+            model ! []
+
         MsgForChart chartMsg ->
             let
                 ( chart_data, cmd ) =

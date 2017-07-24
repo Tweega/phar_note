@@ -8,6 +8,7 @@ type Route
     = Chart
     | Users
     | Roles
+    | Campaigns
 
 
 type alias RouteModel =
@@ -20,6 +21,7 @@ pathParser =
         [ map Chart top
         , map Users (s "users")
         , map Roles (s "roles")
+        , map Campaigns (s "campaigns")
         ]
 
 
@@ -45,6 +47,9 @@ urlFor loc =
         Roles ->
             "/roles"
 
+        Campaigns ->
+            "/campaigns"
+
 
 locFor : Navigation.Location -> Maybe Route
 locFor path =
@@ -68,6 +73,9 @@ routeDetails maybeRoute =
 
         Just Roles ->
             RouteDetails "Role Administration" "Add, Edit Delete roles"
+
+        Just Campaigns ->
+            RouteDetails "Campaign Administration" "Add, Edit  campaigns"
 
         _ ->
             RouteDetails "" ""

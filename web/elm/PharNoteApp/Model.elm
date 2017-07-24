@@ -2,6 +2,7 @@ module PharNoteApp.Model exposing (..)
 
 import PharNoteApp.User.Model as User
 import PharNoteApp.Role.Model as Role
+import PharNoteApp.Campaign.Model as Campaign
 import PharNoteApp.Chart.Model as Chart
 import Material
 import PharNoteApp.Route exposing (Route)
@@ -15,6 +16,7 @@ type alias Model =
     , history : List (Maybe Route)
     , userData : User.Model
     , roleData : Role.Model
+    , campaignData : Campaign.Model
     , chartData : Chart.Model
     , activeUser : String --this should be a whole data structure?
     , activeRoute : Maybe Route

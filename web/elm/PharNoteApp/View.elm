@@ -9,6 +9,7 @@ import PharNoteApp.Chart.Charts as Charts
 import PharNoteApp.Model exposing (Model)
 import PharNoteApp.User.View as UserView
 import PharNoteApp.Role.View as RoleView
+import PharNoteApp.Campaign.View as CampaignView
 import PharNoteApp.Chart.View as ChartView
 import PharNoteApp.Route exposing (..)
 import Html exposing (Html, text, div, span, form)
@@ -95,7 +96,7 @@ menuItems =
     [ { text = "Dashboard", iconName = "dashboard", route = Just Chart }
     , { text = "Users", iconName = "group", route = Just Users }
     , { text = "Roles", iconName = "alarm", route = Just Roles }
-    , { text = "Reports", iconName = "list", route = Nothing }
+    , { text = "Campaigns", iconName = "list", route = Just Campaigns }
     , { text = "Organizations", iconName = "store", route = Nothing }
     , { text = "Project", iconName = "view_list", route = Nothing }
     ]
@@ -218,6 +219,9 @@ viewBody model =
 
         Just Roles ->
             RoleView.view model.roleData
+
+        Just Campaigns ->
+            CampaignView.view model.campaignData model.mdl
 
         Nothing ->
             text "404"
