@@ -20,6 +20,9 @@ init location =
         ( userData, userCmd ) =
             UserInit.init
 
+        ( equipData, equipCmd ) =
+            EquipmentInit.init
+
         --  ( chartData, chartCmd ) =
         --      ChartInit.init
         maybeRoute =
@@ -30,14 +33,14 @@ init location =
         , userData = userData
         , roleData = RoleInit.initialModel
         , campaignData = CampaignInit.initialModel
-        , equipmentData = EquipmentInit.initialModel
+        , equipmentData = equipData
         , equipmentClassData = EquipmentClassInit.initialModel
         , chartData = ChartInit.initialModel
         , activeUser = ""
         , activeRoute = maybeRoute
         }
             -- , Material.init AppMsg.Mdl
-            ! [ Material.init AppMsg.Mdl, userCmd ]
+            ! [ Material.init AppMsg.Mdl, userCmd, equipCmd ]
 
 
 

@@ -39,6 +39,7 @@ defmodule PharNote.Router do
 
     #Equipment
     get "/equipment", EquipmentController, :index
+    get "/equipment/refdata", EquipmentController, :ref_data
     get "/equipment/:id", UserController, :show
     post "/equipment", UserController, :create
     put "/equipment/:id", UserController, :update

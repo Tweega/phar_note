@@ -9,7 +9,7 @@ defmodule PharNote.EquipmentController do
   end
 
   def index_data() do
-    data = PharNote.Equipment
+    PharNote.Equipment
      |> PharNote.Equipment.test_join
      |> Repo.all
 
@@ -18,6 +18,13 @@ defmodule PharNote.EquipmentController do
 
   end
 
+  def ref_data(conn, _params) do
+    data = PharNote.EquipmentClasses.class_precision(PharNote.EquipmentClasses)
+        |> Repo.all()
+    json conn, data
+
+    #get data from precision.h
+  end
 
   def strip_equip(equipment) do
     # Enum.map(equipment, fn u ->

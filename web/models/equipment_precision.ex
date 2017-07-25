@@ -31,8 +31,9 @@ defmodule PharNote.EquipmentPrecision do
 
   def precision(query) do
       from p in query,
-            join: c in PharNote.EquipmentClasses, on: [id: p.equipment_classes_id],
-            select: %{ precision: p.precision, class: c.name },
+            join: c in assoc(p, :equipment_classes),
+            #join: c in PharNote.EquipmentClasses, on: [id: p.equipment_classes_id],
+            select: %{ precision_id: p.id, precision: p.precision, class_d: c.id, class: c.name },
             order_by: [asc: c.name, asc: p.precision]
   end
 

@@ -39,4 +39,15 @@ defmodule PharNote.EquipmentClasses do
     order_by: [asc: ec.name]
   end
 
+
+  def class_precision(query) do
+
+      from ec in query,
+            join: ep in assoc(ec, :equipment_precision),
+            preload: [:equipment_precision],
+            select: map(ec, [:id, :name, :description, equipment_precision: [:id, :precision]]),
+            order_by: [asc: ec.name, asc: ep.precision]
+ end
+
+
 end
