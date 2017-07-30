@@ -237,16 +237,11 @@ update msg model =
             in
                 newModel ! []
 
-        ProcessRefDataGet (Ok roles) ->
-            -- let
-            --     roleDict =
-            --         List.map (\role -> ( role.id, role )) roles
-            --             |> Dict.fromList
-            -- in
-            --     { model
-            --         | refDataStatus = Loaded (Equipment.RefData roleDict)
-            --     }
-            model ! []
+        ProcessRefDataGet (Ok class_precisions) ->
+            { model
+                | refDataStatus = Loaded (Equipment.RefData class_precisions)
+            }
+                ! []
 
         ProcessRefDataGet (Err error) ->
             let

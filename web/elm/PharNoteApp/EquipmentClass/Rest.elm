@@ -12,25 +12,48 @@ import Json.Encode
 import Json.Decode.Pipeline
 
 
-listDecoder : Json.Decode.Decoder (List EquipmentClass.EquipmentClassWithRoles)
-listDecoder =
-    Json.Decode.list decoder
+classListDecoder : Json.Decode.Decoder (List EquipmentClassBase.EquipmentClass)
+classListDecoder =
+    Json.Decode.list classDecoder
 
 
-decoder : Json.Decode.Decoder EquipmentClass.EquipmentClassWithRoles
-decoder =
-    Json.Decode.Pipeline.decode EquipmentClass.EquipmentClassWithRoles
+classDecoder : Json.Decode.Decoder EquipmentClassBase.EquipmentClass
+classDecoder =
+    Json.Decode.Pipeline.decode EquipmentClassBase.EquipmentClass
         |> Json.Decode.Pipeline.required "id" Json.Decode.int
-        |> Json.Decode.Pipeline.required "first_name" Json.Decode.string
-        |> Json.Decode.Pipeline.required "last_name" Json.Decode.string
-        |> Json.Decode.Pipeline.required "email" Json.Decode.string
-        |> Json.Decode.Pipeline.required "photo_url" Json.Decode.string
-        |> Json.Decode.Pipeline.required "roles" Role.listDecoder
+        |> Json.Decode.Pipeline.required "name" Json.Decode.string
+        |> Json.Decode.Pipeline.required "description" Json.Decode.string
+
+
+precisionListDecoder : Json.Decode.Decoder (List EquipmentClassBase.EquipmentPrecision)
+precisionListDecoder =
+    Json.Decode.list precisionDecoder
+
+
+precisionDecoder : Json.Decode.Decoder EquipmentClassBase.EquipmentPrecision
+precisionDecoder =
+    Json.Decode.Pipeline.decode EquipmentClassBase.EquipmentPrecision
+        |> Json.Decode.Pipeline.required "id" Json.Decode.int
+        |> Json.Decode.Pipeline.required "precision" Json.Decode.string
+
+
+classPrecisionListDecoder : Json.Decode.Decoder (List EquipmentClass.EquipmentClassWithPrecision)
+classPrecisionListDecoder =
+    Json.Decode.list classPrecisionDecoder
+
+
+classPrecisionDecoder : Json.Decode.Decoder EquipmentClass.EquipmentClassWithPrecision
+classPrecisionDecoder =
+    Json.Decode.Pipeline.decode EquipmentClass.EquipmentClassWithPrecision
+        |> Json.Decode.Pipeline.required "id" Json.Decode.int
+        |> Json.Decode.Pipeline.required "name" Json.Decode.string
+        |> Json.Decode.Pipeline.required "description" Json.Decode.string
+        |> Json.Decode.Pipeline.required "equipment_precision" precisionListDecoder
 
 
 urlEquipmentClasss : String
 urlEquipmentClasss =
-    "http://localhost:4000/api/users"
+    "http://localhost:4000/api/equipmentclass"
 
 
 urlRefData : String
@@ -41,42 +64,32 @@ urlRefData =
 get : Cmd AppMsg.Msg
 get =
     --Http.send AppMsg.MsgForEquipmentClass ProcessEquipmentClassGet (Http.get url listDecoder)
-    Http.send (\result -> AppMsg.MsgForEquipmentClass (ProcessEquipmentClassGet result)) (Http.get urlEquipmentClasss listDecoder)
+    Http.send (\result -> AppMsg.MsgForEquipmentClass (ProcessEquipmentClassGet result)) (Http.get urlEquipmentClasss classPrecisionListDecoder)
 
 
-getRefData : Cmd AppMsg.Msg
-getRefData =
-    --Http.send AppMsg.MsgForEquipmentClass ProcessEquipmentClassGet (Http.get url listDecoder)
-    Http.send (\result -> AppMsg.MsgForEquipmentClass (ProcessRefDataGet result)) (Http.get urlRefData Role.listDecoder)
-
-
-payload : EquipmentClass.EquipmentClassWithRoleString -> Json.Encode.Value
-payload user =
+payload : EquipmentClass.EquipmentClassWithPrecisionString -> Json.Encode.Value
+payload ec =
     Json.Encode.object
-        [ ( "first_name", Json.Encode.string user.first_name )
-        , ( "last_name", Json.Encode.string user.last_name )
-        , ( "email", Json.Encode.string user.email )
-        , ( "photo_url", Json.Encode.string user.photo_url )
-        , ( "roles", Json.Encode.string user.roles )
+        [ ( "name", Json.Encode.string ec.name )
+        , ( "description", Json.Encode.string ec.description )
+        , ( "precisions", Json.Encode.string ec.precisions )
         ]
 
 
-payload2 : EquipmentClass.EquipmentClassWithRoles -> Json.Encode.Value
-payload2 user =
+payload2 : EquipmentClass.EquipmentClassWithPrecision -> Json.Encode.Value
+payload2 ec =
     Json.Encode.object
-        [ ( "first_name", Json.Encode.string user.first_name )
-        , ( "last_name", Json.Encode.string user.last_name )
-        , ( "email", Json.Encode.string user.email )
-        , ( "photo_url", Json.Encode.string user.photo_url )
+        [ ( "name", Json.Encode.string ec.name )
+        , ( "description", Json.Encode.string ec.description )
         ]
 
 
-post : EquipmentClass.EquipmentClassWithRoleString -> Cmd AppMsg.Msg
-post user =
+post : EquipmentClass.EquipmentClassWithPrecisionString -> Cmd AppMsg.Msg
+post equipClass =
     let
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload user))
+                (Json.Encode.encode 0 (payload equipClass))
 
         jj =
             Debug.log "json" body
@@ -84,21 +97,21 @@ post user =
         --ProcessEquipmentClassPost (Result Http.Error EquipmentClass)
         --Http.send ProcessEquipmentClassPost (Http.post url body decoder)
         --send first arg is a function that can translate a result into a message
-        Http.send (\result -> AppMsg.MsgForEquipmentClass (ProcessEquipmentClassPost result)) (Http.post urlEquipmentClasss body decoder)
+        Http.send (\result -> AppMsg.MsgForEquipmentClass (ProcessEquipmentClassPost result)) (Http.post urlEquipmentClasss body classPrecisionDecoder)
 
 
-put : EquipmentClass.EquipmentClassWithRoleString -> Cmd AppMsg.Msg
-put user =
+put : EquipmentClass.EquipmentClassWithPrecisionString -> Cmd AppMsg.Msg
+put equipClass =
     let
         putUrl =
-            if user.id < 1 then
+            if equipClass.id < 1 then
                 urlEquipmentClasss ++ "/bad"
             else
-                urlEquipmentClasss ++ "/" ++ (toString user.id)
+                urlEquipmentClasss ++ "/" ++ (toString equipClass.id)
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload user))
+                (Json.Encode.encode 0 (payload equipClass))
 
         putRequest =
             Http.request
@@ -106,7 +119,7 @@ put user =
                 , headers = []
                 , url = putUrl
                 , body = body
-                , expect = Http.expectJson decoder
+                , expect = Http.expectJson classPrecisionDecoder
                 , timeout = Nothing
                 , withCredentials = False
                 }
@@ -118,18 +131,18 @@ put user =
 --Http.send (AppMsg.MsgForEquipmentClass ProcessEquipmentClassPost) putRequest
 
 
-delete : EquipmentClass.EquipmentClassWithRoles -> Cmd AppMsg.Msg
-delete user =
+delete : EquipmentClass.EquipmentClassWithPrecision -> Cmd AppMsg.Msg
+delete equipClass =
     let
         putUrl =
-            if user.id < 1 then
+            if equipClass.id < 1 then
                 urlEquipmentClasss ++ "/bad"
             else
-                urlEquipmentClasss ++ "/" ++ (toString user.id)
+                urlEquipmentClasss ++ "/" ++ (toString equipClass.id)
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload2 user))
+                (Json.Encode.encode 0 (payload2 equipClass))
 
         putRequest =
             Http.request
@@ -137,7 +150,7 @@ delete user =
                 , headers = []
                 , url = putUrl
                 , body = body
-                , expect = Http.expectJson decoder
+                , expect = Http.expectJson classPrecisionDecoder
                 , timeout = Nothing
                 , withCredentials = False
                 }

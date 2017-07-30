@@ -26,7 +26,7 @@ update msg model =
         KeyX key ->
             let
                 userCount =
-                    Array.length (model.filteredEquipmentClasss)
+                    Array.length (model.classes)
 
                 currentIdx =
                     case model.selectedEquipmentClassIndex of
@@ -82,7 +82,7 @@ update msg model =
                     model.startDisplayIndex + idx
 
                 user =
-                    View.maybeFindEquipmentClass (Just index) model.filteredEquipmentClasss
+                    View.maybeFindEquipmentClass (Just index) model.classes
 
                 newModel =
                     case user of
@@ -117,13 +117,13 @@ update msg model =
                             identity
 
                 sortedEquipmentClasss =
-                    sort (Array.toList model.filteredEquipmentClasss) |> Array.fromList
+                    sort (Array.toList model.classes) |> Array.fromList
 
                 nextEquipmentClass =
                     View.alwaysFindEquipmentClass model.selectedEquipmentClassIndex sortedEquipmentClasss
             in
                 --the user index and id will nno longer match up now.  Either need to find current user, or keep selector on same page/offset
-                { model | order = sortOrder, filteredEquipmentClasss = sortedEquipmentClasss, selectedEquipmentClassId = Just nextEquipmentClass.id } ! []
+                { model | order = sortOrder, classes = sortedEquipmentClasss, selectedEquipmentClassId = Just nextEquipmentClass.id } ! []
 
         CancelDeleteEquipmentClass ->
             { model | formAction = EquipmentClass.None } ! []
@@ -134,7 +134,7 @@ update msg model =
                     model.selectedEquipmentClassIndex
 
                 usr =
-                    View.maybeFindEquipmentClass idx model.filteredEquipmentClasss
+                    View.maybeFindEquipmentClass idx model.classes
             in
                 { model | formAction = EquipmentClass.ConfirmDelete } ! []
 
@@ -144,7 +144,7 @@ update msg model =
                     model.selectedEquipmentClassIndex
 
                 usr =
-                    View.maybeFindEquipmentClass idx model.filteredEquipmentClasss
+                    View.maybeFindEquipmentClass idx model.classes
             in
                 case usr of
                     Nothing ->
@@ -199,7 +199,7 @@ update msg model =
                     model.selectedEquipmentClassIndex
 
                 user =
-                    View.maybeFindEquipmentClass idx model.filteredEquipmentClasss
+                    View.maybeFindEquipmentClass idx model.classes
 
                 newModel =
                     populateScratchEquipmentClassData user idx model EquipmentClass.Edit
@@ -257,15 +257,12 @@ update msg model =
                 }
                     ! []
 
-        ProcessEquipmentClassGet (Ok users) ->
+        ProcessEquipmentClassGet (Ok classes) ->
             let
-                userArray =
-                    Array.fromList (users)
-
-                newModel =
-                    filteredModel { model | users = userArray }
+                classesArray =
+                    Array.fromList (classes)
             in
-                newModel ! []
+                { model | classes = classesArray } ! []
 
         ProcessEquipmentClassGet (Err error) ->
             { model
@@ -387,7 +384,7 @@ update msg model =
         EquipmentClassSlider valuePC ->
             let
                 len =
-                    Array.length model.filteredEquipmentClasss
+                    Array.length model.classes
 
                 reducedLen =
                     len - model.pageSize
@@ -420,7 +417,7 @@ update msg model =
                     page * model.pageSize
 
                 userCount =
-                    Array.length model.filteredEquipmentClasss
+                    Array.length model.classes
 
                 start =
                     if userCount - s < model.pageSize then
@@ -435,7 +432,7 @@ update msg model =
                     start + offset
 
                 nextEquipmentClass =
-                    View.alwaysFindEquipmentClass (Just nextIdx) model.filteredEquipmentClasss
+                    View.alwaysFindEquipmentClass (Just nextIdx) model.classes
             in
                 { model
                     | startDisplayIndex = start
@@ -444,76 +441,6 @@ update msg model =
                     , selectedEquipmentClassIndex = Just nextIdx
                 }
                     ! []
-
-        ApplyEquipmentClassFilter filterEquipmentClass ->
-            let
-                fm =
-                    { model | filterState = Applied, selectedEquipmentClassIndex = Nothing }
-            in
-                (filteredModel fm) ! []
-
-        ResetEquipmentClassFilter ->
-            { model | filterScratchEquipmentClass = EquipmentClass.emptyEquipmentClassWithRoleSet } ! []
-
-        CancelEquipmentClassFilter ->
-            { model | selectedTab = Details } ! []
-
-        ClearEquipmentClassFilter ->
-            let
-                fm =
-                    { model
-                        | filterState = NoFilter
-                        , filterScratchEquipmentClass = EquipmentClass.emptyEquipmentClassWithRoleSet
-                        , selectedEquipmentClassIndex = Nothing
-                    }
-            in
-                (filteredModel fm) ! []
-
-        SetFilterFirstName value ->
-            let
-                user =
-                    model.filterScratchEquipmentClass
-
-                new_user =
-                    { user | first_name = value }
-            in
-                { model | filterScratchEquipmentClass = new_user } ! []
-
-        SetFilterLastName value ->
-            let
-                user =
-                    model.filterScratchEquipmentClass
-
-                new_user =
-                    { user | last_name = value }
-            in
-                { model | filterScratchEquipmentClass = new_user } ! []
-
-        ToggleFilterRole roleID ->
-            let
-                user =
-                    model.filterScratchEquipmentClass
-
-                roleSet =
-                    user.roles
-
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
-
-                        False ->
-                            Set.insert roleID roleSet
-
-                newEquipmentClass =
-                    { user | roles = newRoleSet }
-            in
-                { model | filterScratchEquipmentClass = newEquipmentClass } ! []
-
-
-
-{- Rotate table ordering : Ascending -> Descending -> No sorting -> ... -}
---this should be a utility function.  Should we have to have a reference to a rendering module to determine sort order?
 
 
 toggleSort : Maybe Table.Order -> Maybe Table.Order

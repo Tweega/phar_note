@@ -1,6 +1,7 @@
 module PharNoteApp.Equipment.Model exposing (..)
 
 import PharNoteApp.Equipment.BaseModel as EquipmentBase
+import PharNoteApp.EquipmentClass.Model as EquipmentClass
 import Material.Table as Table
 import Http exposing (..)
 import Array exposing (..)
@@ -46,8 +47,7 @@ type RefDataStatus
 
 
 type alias RefData =
-    { roles : Dict Int EquipmentBase.Equipment
-    }
+    { equipment_precision : List EquipmentClass.EquipmentClassWithPrecision }
 
 
 type FormAction

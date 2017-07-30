@@ -4,7 +4,7 @@ import PharNoteApp.Msg as AppMsg
 import PharNoteApp.Equipment.Msg exposing (..)
 import PharNoteApp.Equipment.BaseModel as EquipmentBase
 import PharNoteApp.Equipment.Model as Equipment
-import PharNoteApp.Role.Rest as Role
+import PharNoteApp.EquipmentClass.Rest as EquipClass
 import Http
 import Http exposing (..)
 import Json.Decode
@@ -12,13 +12,13 @@ import Json.Encode
 import Json.Decode.Pipeline
 
 
-listDecoder : Json.Decode.Decoder (List EquipmentBase.Equipment)
-listDecoder =
-    Json.Decode.list decoder
+equipListDecoder : Json.Decode.Decoder (List EquipmentBase.Equipment)
+equipListDecoder =
+    Json.Decode.list equipDecoder
 
 
-decoder : Json.Decode.Decoder EquipmentBase.Equipment
-decoder =
+equipDecoder : Json.Decode.Decoder EquipmentBase.Equipment
+equipDecoder =
     Json.Decode.Pipeline.decode EquipmentBase.Equipment
         |> Json.Decode.Pipeline.required "equipment_id" Json.Decode.int
         |> Json.Decode.Pipeline.required "equipment_name" Json.Decode.string
@@ -36,19 +36,19 @@ urlEquipment =
 
 urlRefData : String
 urlRefData =
-    "http://localhost:4000/api/roledata"
+    "http://localhost:4000/api/equipment/refdata"
 
 
 get : Cmd AppMsg.Msg
 get =
     --Http.send AppMsg.MsgForEquipment ProcessEquipmentGet (Http.get url listDecoder)
-    Http.send (\result -> AppMsg.MsgForEquipment (ProcessEquipmentGet result)) (Http.get urlEquipment listDecoder)
+    Http.send (\result -> AppMsg.MsgForEquipment (ProcessEquipmentGet result)) (Http.get urlEquipment equipListDecoder)
 
 
 getRefData : Cmd AppMsg.Msg
 getRefData =
     --Http.send AppMsg.MsgForEquipment ProcessEquipmentGet (Http.get url listDecoder)
-    Http.send (\result -> AppMsg.MsgForEquipment (ProcessRefDataGet result)) (Http.get urlRefData Role.listDecoder)
+    Http.send (\result -> AppMsg.MsgForEquipment (ProcessRefDataGet result)) (Http.get urlRefData EquipClass.classPrecisionListDecoder)
 
 
 

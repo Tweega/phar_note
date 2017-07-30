@@ -3,15 +3,24 @@ module PharNoteApp.EquipmentClass.BaseModel exposing (..)
 --base model needed to avoid circular links between many to many data definitions
 
 
-type alias User =
+type alias EquipmentClass =
     { id : Int
-    , first_name : String
-    , last_name : String
-    , email : String
-    , photo_url : String
+    , name : String
+    , description : String
     }
 
 
-emptyUser : User
-emptyUser =
-    User 0 "" "" "" ""
+type alias EquipmentPrecision =
+    { id : Int
+    , precision : String
+    }
+
+
+emptyEquipmentClass : EquipmentClass
+emptyEquipmentClass =
+    EquipmentClass 0 "" ""
+
+
+emptyEquipmentPrecision : EquipmentPrecision
+emptyEquipmentPrecision =
+    EquipmentPrecision 0 ""

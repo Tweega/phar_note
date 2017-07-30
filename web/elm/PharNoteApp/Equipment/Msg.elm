@@ -2,6 +2,7 @@ module PharNoteApp.Equipment.Msg exposing (..)
 
 import PharNoteApp.Equipment.Model as Equipment
 import PharNoteApp.Equipment.BaseModel as EquipmentBase
+import PharNoteApp.EquipmentClass.Model as EquipmentClass
 
 
 --import PharNoteApp.Equipment.Model exposing (FilterAction(..))
@@ -20,7 +21,7 @@ type Msg
     | ProcessEquipmentGet (Result Http.Error (List EquipmentBase.Equipment))
     | ProcessEquipmentPost (Result Http.Error EquipmentBase.Equipment)
     | ProcessEquipmentDelete (Result Http.Error EquipmentBase.Equipment)
-    | ProcessRefDataGet (Result Http.Error (List Role.Role))
+    | ProcessRefDataGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecision))
     | SetFirstName String
     | SetLastName String
     | ToggleRole Int

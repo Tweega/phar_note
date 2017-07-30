@@ -1,6 +1,7 @@
 module PharNoteApp.EquipmentClass.Msg exposing (..)
 
 import PharNoteApp.EquipmentClass.Model as EquipmentClass
+import PharNoteApp.EquipmentClass.BaseModel as EquipmentClassBase
 
 
 --import PharNoteApp.EquipmentClass.Model exposing (FilterAction(..))
@@ -16,29 +17,20 @@ type Msg
     | DeleteEquipmentClass
     | NewEquipmentClass
     | CancelNewEquipmentClass
-    | ProcessEquipmentClassGet (Result Http.Error (List EquipmentClass.EquipmentClassWithRoles))
-    | ProcessEquipmentClassPost (Result Http.Error EquipmentClass.EquipmentClassWithRoles)
-    | ProcessEquipmentClassDelete (Result Http.Error EquipmentClass.EquipmentClassWithRoles)
-    | ProcessRefDataGet (Result Http.Error (List Role.Role))
+    | ProcessEquipmentClassGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecision))
+    | ProcessEquipmentClassPost (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
+    | ProcessEquipmentClassDelete (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
     | SetFirstName String
     | SetLastName String
     | SetEmail String
     | SetPhotoUrl String
     | ToggleRole Int
-    | EquipmentClassPost EquipmentClass.EquipmentClassWithRoleSet
-    | EquipmentClassPut EquipmentClass.EquipmentClassWithRoleSet
+    | EquipmentClassPost EquipmentClass.EquipmentClassWithPrecision
+    | EquipmentClassPut EquipmentClass.EquipmentClassWithPrecision
     | Reorder
     | KeyX Int
     | PaginateEquipmentClass Int
-    | SelectTab EquipmentClass.EquipmentClassTab
     | EquipmentClassSlider Float
-    | SetFilterFirstName String
-    | SetFilterLastName String
-    | ToggleFilterRole Int
-    | ApplyEquipmentClassFilter EquipmentClass.EquipmentClassWithRoleSet
-    | ResetEquipmentClassFilter
-    | ClearEquipmentClassFilter
-    | CancelEquipmentClassFilter
     | ConfirmDeleteEquipmentClass
     | CancelDeleteEquipmentClass
 

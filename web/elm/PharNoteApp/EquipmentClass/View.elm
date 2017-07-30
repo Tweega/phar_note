@@ -3,7 +3,7 @@ module PharNoteApp.EquipmentClass.View exposing (view, alwaysFindEquipmentClass,
 import PharNoteApp.EquipmentClass.Rest as Rest
 import PharNoteApp.EquipmentClass.Model as EquipmentClass
 import PharNoteApp.EquipmentClass.BaseModel as EquipmentClassBase
-import PharNoteApp.EquipmentClass.Model exposing (FormAction(..), EquipmentClassTab(..), RefDataStatus(..), EquipmentClassType(..))
+import PharNoteApp.EquipmentClass.Model exposing (FormAction(..))
 import PharNoteApp.EquipmentClass.Msg as EquipmentClassMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -33,33 +33,20 @@ import Dict exposing (Dict)
 view : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
-        userTableContents =
-            --userTable model.filteredEquipmentClasss model.selectedEquipmentClassId model.order model.startDisplayIndex model.endDisplayIndex
+        equipClassTableContents =
+            --equipClassTable model.filteredEquipmentClasss model.selectedEquipmentClassId model.order model.startDisplayIndex model.endDisplayIndex
             tableCard model mdlStore
 
-        user =
+        cards =
             case model.formAction of
                 Edit ->
-                    WithSet model.scratchEquipmentClass
+                    (editCards model.scratchEquipmentClass model.formAction mdlStore)
 
                 Create ->
-                    WithSet model.scratchEquipmentClass
+                    (editCards model.scratchEquipmentClass model.formAction mdlStore)
 
                 _ ->
-                    WithRoles (alwaysFindEquipmentClass model.selectedEquipmentClassIndex model.filteredEquipmentClasss)
-
-        cards =
-            case model.selectedTab of
-                Details ->
-                    case user of
-                        WithSet userWithRoleSet ->
-                            (editCards userWithRoleSet model.refDataStatus model.formAction mdlStore)
-
-                        WithRoles userWithRoles ->
-                            (viewCards userWithRoles model.refDataStatus model.formAction mdlStore)
-
-                Filter ->
-                    (filterCards model.filterScratchEquipmentClass model.refDataStatus mdlStore)
+                    ((viewCards (alwaysFindEquipmentClass model.selectedEquipmentClassIndex model.classes) model.formAction mdlStore))
     in
         div [ style [ ( "height", "90vh" ), ( "border", "1px solid green" ), ( "overflow-y", "hidden" ) ] ]
             [ grid
@@ -70,7 +57,7 @@ view model mdlStore =
                     ]
                 ]
                 [ cell [ Grid.size All 5 ]
-                    [ userTableContents
+                    [ equipClassTableContents
                     , pager model
                     ]
                 , cell
@@ -82,59 +69,54 @@ view model mdlStore =
             ]
 
 
-viewCards : EquipmentClass.EquipmentClassWithRoles -> EquipmentClass.RefDataStatus -> EquipmentClass.FormAction -> Material.Model -> List (Html AppMsg.Msg)
-viewCards user refDataStatus action mdlStore =
-    [ userCard user refDataStatus action mdlStore
+viewCards : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+viewCards equipClass action mdlStore =
+    [ equipClassCard equipClass action mdlStore
     , Options.div
         [ Grid.size All 1
         , css "height" "32px"
         ]
         []
 
-    --, roleCard user.roles mdlStore
+    --, precisionCard equipClass.precisions mdlStore
     ]
 
 
-editCards : EquipmentClass.EquipmentClassWithRoleSet -> EquipmentClass.RefDataStatus -> EquipmentClass.FormAction -> Material.Model -> List (Html AppMsg.Msg)
-editCards scratchEquipmentClass refDataStatus action mdlStore =
+editCards : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+editCards scratchEquipmentClass action mdlStore =
     --check that ref data is loaded.
     let
         html =
-            case refDataStatus of
-                Loaded refData ->
-                    [ userEditCard scratchEquipmentClass refData action mdlStore
-                    , Options.div
-                        [ Grid.size All 1
-                        , css "height" "32px"
-                        ]
-                        []
+            [ equipClassEditCard scratchEquipmentClass action mdlStore
+            , Options.div
+                [ Grid.size All 1
+                , css "height" "32px"
+                ]
+                []
 
-                    --, roleEditCard scratchEquipmentClass.roles refData mdlStore
-                    ]
-
-                _ ->
-                    [ text "no ref data" ]
+            --, precisionEditCard scratchEquipmentClass.precisions refData mdlStore
+            ]
     in
         html
 
 
-maybeFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithRoles -> Maybe EquipmentClass.EquipmentClassWithRoles
-maybeFindEquipmentClass maybeIndex users =
+maybeFindEquipmentClass : Maybe Int -> Array EquipmentClassBase.EquipmentClass -> Maybe EquipmentClassBase.EquipmentClass
+maybeFindEquipmentClass maybeIndex equipClasss =
     case maybeIndex of
         Just idx ->
-            Array.get idx users
+            Array.get idx equipClasss
 
         _ ->
             Nothing
 
 
-alwaysFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithRoles -> EquipmentClass.EquipmentClassWithRoles
-alwaysFindEquipmentClass maybeIndex users =
+alwaysFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.EquipmentClassWithPrecision
+alwaysFindEquipmentClass maybeIndex equipClasss =
     let
         maybeEquipmentClass =
             case maybeIndex of
                 Just idx ->
-                    Array.get idx users
+                    Array.get idx equipClasss
 
                 _ ->
                     Nothing
@@ -144,15 +126,15 @@ alwaysFindEquipmentClass maybeIndex users =
                 usr
 
             Nothing ->
-                EquipmentClass.emptyEquipmentClassWithRoles
+                EquipmentClass.emptyEquipmentClassWithPrecision
 
 
-fieldStringValue : Maybe EquipmentClass.EquipmentClassWithRoles -> EquipmentClass.FormAction -> (EquipmentClass.EquipmentClassWithRoles -> String) -> String
-fieldStringValue user formAction extractor =
-    case user of
-        Just user ->
+fieldStringValue : Maybe EquipmentClassBase.EquipmentClass -> EquipmentClass.FormAction -> (EquipmentClassBase.EquipmentClass -> String) -> String
+fieldStringValue equipClass formAction extractor =
+    case equipClass of
+        Just equipClass ->
             if formAction == Edit then
-                extractor user
+                extractor equipClass
             else
                 ""
 
@@ -160,12 +142,12 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe EquipmentClass.EquipmentClassWithRoles -> EquipmentClass.FormAction -> (EquipmentClass.EquipmentClassWithRoles -> Int) -> String
-fieldIntValue user formAction extractor =
-    case user of
-        Just user ->
+fieldIntValue : Maybe EquipmentClassBase.EquipmentClass -> EquipmentClass.FormAction -> (EquipmentClassBase.EquipmentClass -> Int) -> String
+fieldIntValue equipClass formAction extractor =
+    case equipClass of
+        Just equipClass ->
             if formAction == Edit then
-                extractor user |> toString
+                extractor equipClass |> toString
             else
                 ""
 
@@ -173,8 +155,8 @@ fieldIntValue user formAction extractor =
             ""
 
 
-userDetails : EquipmentClass.EquipmentClassWithRoles -> Html AppMsg.Msg
-userDetails user =
+equipClassDetails : EquipmentClass.EquipmentClassWithPrecision -> Html AppMsg.Msg
+equipClassDetails equipClass =
     Options.div
         [ css "display" "flex"
         , css "align-items" "flex-start"
@@ -182,26 +164,16 @@ userDetails user =
         ]
         [ Options.div []
             (List.map
-                userInfo
-                [ ( "First Name:", user.first_name )
-                , ( "Last Name", user.last_name )
-                , ( "Email", user.email )
-                , ( "Photo Url", user.photo_url )
+                equipClassInfo
+                [ ( "First Name:", equipClass.name )
+                , ( "Last Name", equipClass.description )
                 ]
             )
-        , Options.div []
-            [ Options.img
-                [ Options.attribute <| Html.Attributes.src user.photo_url
-                , css "height" "96px"
-                , css "width" "96px"
-                ]
-                []
-            ]
         ]
 
 
-userInfo : ( String, String ) -> Html AppMsg.Msg
-userInfo ( fieldName, fieldValue ) =
+equipClassInfo : ( String, String ) -> Html AppMsg.Msg
+equipClassInfo ( fieldName, fieldValue ) =
     Options.div
         [ css "width" "100%"
         , css "float" "left"
@@ -222,52 +194,45 @@ userInfo ( fieldName, fieldValue ) =
         ]
 
 
-userEditItem : ( String, String, String -> AppMsg.Msg ) -> Html AppMsg.Msg
-userEditItem ( fieldName, fieldValue, userMsg ) =
+equipClassEditItem : ( String, String, String -> AppMsg.Msg ) -> Html AppMsg.Msg
+equipClassEditItem ( fieldName, fieldValue, equipClassMsg ) =
     div [ class "form-group" ]
         [ label [] [ text fieldName ]
         , input
             [ value fieldValue
-            , onInput userMsg
+            , onInput equipClassMsg
             , class "form-control"
             ]
             []
         ]
 
 
-userForm : EquipmentClass.EquipmentClassWithRoleSet -> EquipmentClass.RefData -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
-userForm user refData action mdlStore =
+equipClassForm : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
+equipClassForm equipClass action mdlStore =
     div []
         [ div [ class "form-group" ]
             [ label [] [ text "First Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
+            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetFirstName s)), value equipClass.name, class "form-control" ] []
             ]
         , div [ class "form-group" ]
             [ label [] [ text "Last Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetLastName s)), value user.last_name, class "form-control" ] []
+            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetLastName s)), value equipClass.description, class "form-control" ] []
             ]
-        , div [ class "form-group" ]
-            [ label [] [ text "Email" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetEmail s)), value user.email, class "form-control" ] []
-            ]
-        , div [ class "form-group" ]
-            [ label [] [ text "Photo URL" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
-            ]
-        , rolesHeading
+        , precisionsHeading
         , Options.styled Html.ul
             [ css "list-style-type" "none"
             , css "margin" "0"
             , css "padding" "0"
             ]
-            (roleOptions user.roles refData mdlStore)
+            []
 
+        --(precisionOptions equipClass.precisions mdlStore)
         --, button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
         ]
 
 
-userTable : Array EquipmentClass.EquipmentClassWithRoles -> Maybe Int -> Maybe Table.Order -> EquipmentClass.FormAction -> Int -> Int -> Html AppMsg.Msg
-userTable users selectedEquipmentClassId order action startDisplayIndex endDisplayIndex =
+equipClassTable : Array EquipmentClass.EquipmentClassWithPrecision -> Maybe Int -> Maybe Table.Order -> EquipmentClass.FormAction -> Int -> Int -> Html AppMsg.Msg
+equipClassTable equipClasss selectedEquipmentClassId order action startDisplayIndex endDisplayIndex =
     let
         divAt =
             case action of
@@ -300,8 +265,8 @@ userTable users selectedEquipmentClassId order action startDisplayIndex endDispl
                 , Options.css "padding" "0px"
                 , Options.css "width" "100%"
                 ]
-                [ userTableHeader order
-                , tbody [] (userRows users action selectedEquipmentClassId startDisplayIndex endDisplayIndex)
+                [ equipClassTableHeader order
+                , tbody [] (equipClassRows equipClasss action selectedEquipmentClassId startDisplayIndex endDisplayIndex)
                 ]
             ]
 
@@ -309,49 +274,8 @@ userTable users selectedEquipmentClassId order action startDisplayIndex endDispl
 tableCard : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
 tableCard model mdlStore =
     let
-        ( msg, icon, tooltip ) =
-            case model.selectedTab of
-                Details ->
-                    ( (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SelectTab Filter)), "filter_list", "Show filter form" )
-
-                Filter ->
-                    ( (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SelectTab Details)), "people", "Close filter form" )
-
-        userCount =
-            Array.length model.filteredEquipmentClasss
-
-        actions =
-            case model.refDataStatus of
-                Loaded data ->
-                    [ Button.render AppMsg.Mdl
-                        [ 4, 1 ]
-                        mdlStore
-                        [ Button.icon
-                        , Options.onClick msg
-                        , css "float" "left"
-                        ]
-                        [ Icon.view icon
-                            [ Tooltip.attach AppMsg.Mdl [ 4, 11 ] ]
-                        , Tooltip.render AppMsg.Mdl
-                            [ 4, 11 ]
-                            mdlStore
-                            []
-                            [ text tooltip ]
-                        ]
-                    , Options.div
-                        [ css "float" "right"
-                        , css "font-size" "0.8em"
-                        , css "margin-right" "15px"
-                        , css "margin-top" "5px"
-                        ]
-                        [ text ("(" ++ toString userCount ++ " users)") ]
-                    ]
-
-                _ ->
-                    []
-
         textStuff =
-            userTable model.filteredEquipmentClasss model.selectedEquipmentClassId model.order model.formAction model.startDisplayIndex model.endDisplayIndex
+            equipClassTable model.classes model.selectedEquipmentClassId model.order model.formAction model.startDisplayIndex model.endDisplayIndex
     in
         Card.view
             [ css "width" "100%"
@@ -385,16 +309,17 @@ tableCard model mdlStore =
                     ]
                     [ textStuff ]
                 ]
-            , Card.actions
-                [ Card.border
-                , css "float" "left"
-                ]
-                actions
+
+            -- , Card.actions
+            --     [ Card.border
+            --     , css "float" "left"
+            --     ]
+            --actions
             ]
 
 
-userTableHeader : Maybe Table.Order -> Html AppMsg.Msg
-userTableHeader order =
+equipClassTableHeader : Maybe Table.Order -> Html AppMsg.Msg
+equipClassTableHeader order =
     Table.thead []
         [ Table.tr []
             [ Table.th
@@ -413,10 +338,10 @@ userTableHeader order =
         ]
 
 
-userRows : Array EquipmentClass.EquipmentClassWithRoles -> EquipmentClass.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
-userRows users action selectedEquipmentClassId startDisplayIndex endDisplayIndex =
+equipClassRows : Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
+equipClassRows equipClasss action selectedEquipmentClassId startDisplayIndex endDisplayIndex =
     let
-        userId =
+        equipClassId =
             case selectedEquipmentClassId of
                 Just id ->
                     id
@@ -424,10 +349,10 @@ userRows users action selectedEquipmentClassId startDisplayIndex endDisplayIndex
                 Nothing ->
                     -1
     in
-        users
+        equipClasss
             |> Array.slice startDisplayIndex (endDisplayIndex + 1)
             |> Array.toIndexedList
-            |> List.map (userRow action userId)
+            |> List.map (equipClassRow action equipClassId)
 
 
 
@@ -435,13 +360,13 @@ userRows users action selectedEquipmentClassId startDisplayIndex endDisplayIndex
 --look at using array.fold(l/r)
 
 
-userRow : EquipmentClass.FormAction -> Int -> ( Int, EquipmentClass.EquipmentClassWithRoles ) -> Html AppMsg.Msg
-userRow action userId ( idx, user ) =
+equipClassRow : EquipmentClass.FormAction -> Int -> ( Int, EquipmentClass.EquipmentClassWithPrecision ) -> Html AppMsg.Msg
+equipClassRow action equipClassId ( idx, equipClass ) =
     let
         f allowSelect =
             []
                 |> (\a ->
-                        if userId == user.id then
+                        if equipClassId == equipClass.id then
                             Options.css "background-color" "green" :: a
                         else
                             a
@@ -471,10 +396,10 @@ userRow action userId ( idx, user ) =
                     []
     in
         Table.tr row_style
-            [ Table.td [] [ text user.first_name ]
-            , Table.td [] [ text user.last_name ]
-            , Table.td [] [ text user.email ]
-            , Table.td [ css "width" "100%" ] [ text user.photo_url ]
+            [ Table.td [] [ text equipClass.name ]
+            , Table.td [] [ text equipClass.description ]
+
+            --precisions tk
             ]
 
 
@@ -520,62 +445,8 @@ updatesCard model mdlStore =
         ]
 
 
-optionsCard : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
-optionsCard model mdlStore =
-    let
-        option title index =
-            Options.styled Html.li
-                [ css "margin" "4px 0" ]
-                [ Toggles.checkbox AppMsg.Mdl
-                    index
-                    mdlStore
-                    [ Toggles.ripple
-                    , Toggles.value (Maybe.withDefault False Nothing)
-
-                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
-                    -- to be List (Material.Toggles.Property Msg)
-                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
-                    --, Options.onToggle (Toggle index)
-                    ]
-                    [ text title ]
-                ]
-    in
-        Card.view
-            [ css "width" "100%"
-            , Color.background (Color.color Color.Pink Color.S500)
-            , Options.cs "demo-options"
-            ]
-            [ Card.text [ white ]
-                [ Options.styled Html.h3
-                    [ css "font-size" "1em"
-                    , css "margin" "0"
-                    ]
-                    [ text "Options"
-                    ]
-                , Options.styled Html.ul
-                    [ css "list-style-type" "none"
-                    , css "margin" "0"
-                    , css "padding" "0"
-                    ]
-                    [ option "Clicks per object" [ 0 ]
-                    , option "Views per object" [ 1 ]
-                    , option "Objects selected" [ 2 ]
-                    , option "Objects viewed" [ 3 ]
-                    ]
-                ]
-            , Card.actions
-                [ Card.border ]
-                [ Button.render AppMsg.Mdl
-                    [ 1, 1 ]
-                    mdlStore
-                    [ Button.ripple, white ]
-                    [ text "Great" ]
-                ]
-            ]
-
-
-userCard : EquipmentClass.EquipmentClassWithRoles -> EquipmentClass.RefDataStatus -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
-userCard user refData action mdlStore =
+equipClassCard : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
+equipClassCard equipClass action mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -622,53 +493,48 @@ userCard user refData action mdlStore =
                                 ]
                                 [ text "Do it!" ]
                             ]
-                        , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this user?" ]
+                        , Options.span [ css "float" "right", css "margin-right" "2em", css "margin-top" "7px" ] [ text "Are you sure you want to delete this equipClass?" ]
                         ]
                     ]
 
                 _ ->
-                    case refData of
-                        Loaded data ->
-                            [ Button.render AppMsg.Mdl
-                                [ 2, 2 ]
-                                mdlStore
-                                [ Button.icon
+                    [ Button.render AppMsg.Mdl
+                        [ 2, 2 ]
+                        mdlStore
+                        [ Button.icon
 
-                                --, white
-                                , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewEquipmentClass)
-                                , css "float" "left"
-                                ]
-                                [ Icon.i "person_add" ]
-                            , Button.render AppMsg.Mdl
-                                [ 2, 3 ]
-                                mdlStore
-                                [ Button.icon
-                                , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditEquipmentClass)
-                                , css "float" "left"
-                                ]
-                                [ Icon.i "mode_edit" ]
-                            , Button.render AppMsg.Mdl
-                                [ 2, 4 ]
-                                mdlStore
-                                [ Button.icon
-                                , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.ConfirmDeleteEquipmentClass)
-                                , css "float" "right"
-                                , css "margin-right" "15px"
-                                ]
-                                [ Icon.i "delete" ]
-                            ]
-
-                        _ ->
-                            []
+                        --, white
+                        , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewEquipmentClass)
+                        , css "float" "left"
+                        ]
+                        [ Icon.i "person_add" ]
+                    , Button.render AppMsg.Mdl
+                        [ 2, 3 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditEquipmentClass)
+                        , css "float" "left"
+                        ]
+                        [ Icon.i "mode_edit" ]
+                    , Button.render AppMsg.Mdl
+                        [ 2, 4 ]
+                        mdlStore
+                        [ Button.icon
+                        , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.ConfirmDeleteEquipmentClass)
+                        , css "float" "right"
+                        , css "margin-right" "15px"
+                        ]
+                        [ Icon.i "delete" ]
+                    ]
 
         textStuff =
-            if List.length user.roles > 0 then
-                [ userDetails user
-                , rolesHeading
-                , roleDetails user.roles
+            if List.length equipClass.precisions > 0 then
+                [ equipClassDetails equipClass
+                , precisionsHeading
+                , precisionDetails equipClass.precisions
                 ]
             else
-                [ userDetails user
+                [ equipClassDetails equipClass
                 ]
     in
         Card.view
@@ -706,8 +572,8 @@ userCard user refData action mdlStore =
             ]
 
 
-rolesHeading : Html AppMsg.Msg
-rolesHeading =
+precisionsHeading : Html AppMsg.Msg
+precisionsHeading =
     Options.div
         [ white
         , css "font-size" "1.3em"
@@ -717,8 +583,8 @@ rolesHeading =
         ]
 
 
-roleCard : List RoleBase.Role -> Material.Model -> Html AppMsg.Msg
-roleCard roles mdlStore =
+precisionCard : List EquipmentClassBase.EquipmentPrecision -> Material.Model -> Html AppMsg.Msg
+precisionCard precisions mdlStore =
     let
         option title index =
             Options.styled Html.li
@@ -761,7 +627,7 @@ roleCard roles mdlStore =
                     [ text "Roles" ]
                 ]
             , Card.text [ white ]
-                [ roleDetails roles
+                [ precisionDetails precisions
                 ]
             , Card.actions
                 [ Card.border ]
@@ -796,17 +662,17 @@ roleCard roles mdlStore =
             ]
 
 
-roleDetails : List RoleBase.Role -> Html AppMsg.Msg
-roleDetails roles =
+precisionDetails : List EquipmentClassBase.EquipmentPrecision -> Html AppMsg.Msg
+precisionDetails precisions =
     Options.div
         [ css "width" "100%"
         , css "float" "left"
         ]
-        (List.indexedMap roleInfo roles)
+        (List.indexedMap precisionInfo precisions)
 
 
-roleInfo : Int -> RoleBase.Role -> Html AppMsg.Msg
-roleInfo i role =
+precisionInfo : Int -> EquipmentClassBase.EquipmentPrecision -> Html AppMsg.Msg
+precisionInfo i precision =
     Options.div
         [ css "width" "100%"
         , css "float" "left"
@@ -817,16 +683,12 @@ roleInfo i role =
             , css "width" "150px"
             , css "float" "left"
             ]
-            [ text role.role_name ]
-        , Options.div
-            [ css "float" "left"
-            ]
-            [ text role.role_desc ]
+            [ text precision.precision ]
         ]
 
 
-userEditCard : EquipmentClass.EquipmentClassWithRoleSet -> EquipmentClass.RefData -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
-userEditCard scratchEquipmentClass refData action mdlStore =
+equipClassEditCard : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
+equipClassEditCard scratchEquipmentClass action mdlStore =
     let
         buttonText =
             if action == Edit then
@@ -881,7 +743,7 @@ userEditCard scratchEquipmentClass refData action mdlStore =
                     [ text "Details" ]
                 ]
             , Card.text [ white ]
-                [ userForm scratchEquipmentClass refData action mdlStore
+                [ equipClassForm scratchEquipmentClass action mdlStore
                 ]
             , Card.actions
                 [ Card.border ]
@@ -905,84 +767,8 @@ userEditCard scratchEquipmentClass refData action mdlStore =
             ]
 
 
-roleOption : RoleBase.Role -> Int -> Bool -> Material.Model -> Html AppMsg.Msg
-roleOption role index value mdlStore =
-    Options.styled Html.li
-        [ css "margin" "4px 0" ]
-        [ Toggles.checkbox AppMsg.Mdl
-            [ 4, index ]
-            mdlStore
-            [ Toggles.ripple
-            , Toggles.value value
-
-            --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
-            -- to be List (Material.Toggles.Property Msg)
-            , Options.onToggle (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.ToggleRole role.id))
-
-            --, Options.onToggle (Toggle index)
-            ]
-            [ text role.role_name ]
-        ]
-
-
-roleFilterOption : RoleBase.Role -> Int -> Bool -> Material.Model -> Html AppMsg.Msg
-roleFilterOption role index value mdlStore =
-    Options.styled Html.li
-        [ css "margin" "4px 0" ]
-        [ Toggles.checkbox AppMsg.Mdl
-            [ 8, index ]
-            mdlStore
-            [ Toggles.ripple
-            , Toggles.value value
-
-            --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
-            -- to be List (Material.Toggles.Property Msg)
-            , Options.onToggle (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.ToggleFilterRole role.id))
-
-            --, Options.onToggle (Toggle index)
-            ]
-            [ text role.role_name ]
-        ]
-
-
-roleOptions : Set Int -> EquipmentClass.RefData -> Material.Model -> List (Html AppMsg.Msg)
-roleOptions roleSet refData mdlStore =
-    --may want to sort the list
-    let
-        roles =
-            Dict.toList refData.roles
-    in
-        List.map
-            (\( index, role ) ->
-                let
-                    value =
-                        Set.member role.id roleSet
-                in
-                    roleOption role index value mdlStore
-            )
-            roles
-
-
-roleFilterOptions : Set Int -> EquipmentClass.RefData -> Material.Model -> List (Html AppMsg.Msg)
-roleFilterOptions roleSet refData mdlStore =
-    --may want to sort the list
-    let
-        roles =
-            Dict.toList refData.roles
-    in
-        List.map
-            (\( index, role ) ->
-                let
-                    value =
-                        Set.member role.id roleSet
-                in
-                    roleFilterOption role index value mdlStore
-            )
-            roles
-
-
-roleEditCard : Set Int -> EquipmentClass.RefData -> Material.Model -> Html AppMsg.Msg
-roleEditCard roleSet refData mdlStore =
+precisionEditCard : Set Int -> Material.Model -> Html AppMsg.Msg
+precisionEditCard precisionSet mdlStore =
     Card.view
         [ css "width" "100%"
         , Color.background (Color.color Color.Pink Color.S500)
@@ -1000,7 +786,9 @@ roleEditCard roleSet refData mdlStore =
                 , css "margin" "0"
                 , css "padding" "0"
                 ]
-                (roleOptions roleSet refData mdlStore)
+                []
+
+            --(precisionOptions precisionSet mdlStore)
             ]
         , Card.actions
             [ Card.border ]
@@ -1017,7 +805,7 @@ pager : EquipmentClass.Model -> Html AppMsg.Msg
 pager model =
     let
         pageCount =
-            floor (toFloat (Array.length model.filteredEquipmentClasss) / toFloat model.pageSize)
+            floor (toFloat (Array.length model.classes) / toFloat model.pageSize)
 
         pageList =
             List.range 0 pageCount
@@ -1073,167 +861,12 @@ pager model =
 
 
 --[]
-
-
-slider : EquipmentClass.Model -> Html AppMsg.Msg
-slider model =
-    p [ style [ ( "width", "300px" ) ] ]
-        [ Slider.view
-            [ Slider.onChange (\value -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.EquipmentClassSlider value))
-            , Slider.value model.userSliderValue
-            ]
-        ]
-
-
-filterCards : EquipmentClass.EquipmentClassWithRoleSet -> EquipmentClass.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
-filterCards scratchEquipmentClass refDataStatus mdlStore =
-    --check that ref data is loaded.
-    let
-        html =
-            case refDataStatus of
-                Loaded refData ->
-                    [ userFilterCard scratchEquipmentClass refData mdlStore ]
-
-                _ ->
-                    [ text "no ref data" ]
-    in
-        html
-
-
-userFilterCard : EquipmentClass.EquipmentClassWithRoleSet -> EquipmentClass.RefData -> Material.Model -> Html AppMsg.Msg
-userFilterCard filterEquipmentClass refData mdlStore =
-    let
-        option title index =
-            Options.styled Html.li
-                [ css "margin" "4px 0" ]
-                [ Toggles.checkbox AppMsg.Mdl
-                    [ 6, index ]
-                    mdlStore
-                    [ Toggles.ripple
-                    , Toggles.value (Maybe.withDefault False Nothing)
-
-                    --somehow we need to get , Options.onToggle (AppMsg.MsgForChart (Toggle index))
-                    -- to be List (Material.Toggles.Property Msg)
-                    --, Options.onToggle (AppMsg.MsgForChart (ChartMsg.Toggle index))
-                    --, Options.onToggle (Toggle index)
-                    ]
-                    [ text title ]
-                ]
-
-        --makeAction msg icon tooltip index =
-        acts =
-            [ Button.render AppMsg.Mdl
-                [ 3, 1 ]
-                mdlStore
-                [ Button.icon
-                , Options.onClick (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.ApplyEquipmentClassFilter filterEquipmentClass))
-                , css "float" "left"
-                ]
-                [ Icon.view "filter_list"
-                    [ Tooltip.attach AppMsg.Mdl [ 3, 11 ] ]
-                , Tooltip.render AppMsg.Mdl
-                    [ 3, 11 ]
-                    mdlStore
-                    []
-                    [ text "Apply filter" ]
-                ]
-
-            --
-            --                 [ Icon.view "add"
-            --     [ Tooltip.attach Mdl [0] ]
-            -- , Tooltip.render Mdl [0] model.mdl
-            --     []
-            --     [ text "This is an add icon" ]
-            -- ]
-            -- , Button.render AppMsg.Mdl
-            --     [ 3, 1 ]
-            --     mdlStore
-            --     [ Button.ripple
-            --     , Button.accent
-            --     , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.ResetEquipmentClassFilter)
-            --     ]
-            --     [ text "Reset" ]
-            , Button.render AppMsg.Mdl
-                [ 3, 3 ]
-                mdlStore
-                [ Button.icon
-                , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.CancelEquipmentClassFilter)
-                , css "float" "right"
-                , css "margin-right" "15px"
-                ]
-                [ Icon.i "people" ]
-            ]
-
-        actions =
-            acts
-                ++ [ Button.render AppMsg.Mdl
-                        [ 3, 2 ]
-                        mdlStore
-                        [ Button.icon
-                        , Options.onClick (AppMsg.MsgForEquipmentClass EquipmentClassMsg.ClearEquipmentClassFilter)
-                        , css "float" "left"
-                        ]
-                        [ Icon.view "undo"
-                            [ Tooltip.attach AppMsg.Mdl [ 3, 21 ] ]
-                        , Tooltip.render AppMsg.Mdl
-                            [ 3, 21 ]
-                            mdlStore
-                            []
-                            [ text "Revert to original user list" ]
-                        ]
-                   ]
-
-        --[ text "Close" ]
-    in
-        Card.view
-            [ css "width" "100%"
-            , Color.background (Color.color Color.Green Color.S500)
-
-            --, Options.cs "demo-options"
-            ]
-            [ Card.title
-                [ Color.background (Color.color Color.Blue Color.S500)
-                , css "padding" "0"
-
-                -- Clear default padding to encompass scrim
-                , Color.background <| Color.color Color.Teal Color.S300
-                ]
-                [ Card.head
-                    [ white
-
-                    --, Options.scrim 0.75
-                    --, css "padding" "16px"
-                    -- Restore default padding inside scrim
-                    --, css "width" "100%"
-                    ]
-                    [ text "Details" ]
-                ]
-            , Card.text [ white ]
-                [ Options.div
-                    [ css "display" "flex"
-                    , css "align-items" "flex-start"
-                    , css "justify-content" "space-between"
-                    ]
-                    [ Options.div []
-                        (List.map
-                            userEditItem
-                            [ ( "First Name:", filterEquipmentClass.first_name, (\f -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetFilterFirstName f)) )
-                            , ( "Last Name", filterEquipmentClass.last_name, (\f -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetFilterLastName f)) )
-                            ]
-                        )
-                    , Options.div []
-                        [ Options.styled Html.ul
-                            [ css "list-style-type" "none"
-                            , css "margin" "0"
-                            , css "padding" "0"
-                            ]
-                            (roleFilterOptions filterEquipmentClass.roles refData mdlStore)
-                        ]
-                    ]
-                ]
-            , Card.actions
-                [ Card.border
-                , css "float" "left"
-                ]
-                actions
-            ]
+--
+-- slider : EquipmentClass.Model -> Html AppMsg.Msg
+-- slider model =
+--     p [ style [ ( "width", "300px" ) ] ]
+--         [ Slider.view
+--             [ Slider.onChange (\value -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.EquipmentClassSlider value))
+--             , Slider.value model.equipClassSliderValue
+--             ]
+--         ]

@@ -31,7 +31,7 @@ defmodule PharNote.EquipmentClasses do
   def class(query) do
 
       from ec in query,
-            select: %{ class: ec.name }
+            select: map(ec, [:id, :name, :description])
   end
 
   def sorted(query) do
