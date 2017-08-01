@@ -82,7 +82,7 @@ view model mdlStore =
             ]
 
 
-viewCards : Campaign.CampaignWithRoles -> Campaign.RefDataStatus -> Campaign.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+viewCards : CampaignBase.Campaign -> Campaign.RefDataStatus -> Campaign.FormAction -> Material.Model -> List (Html AppMsg.Msg)
 viewCards user refDataStatus action mdlStore =
     [ userCard user refDataStatus action mdlStore
     , Options.div
@@ -95,7 +95,7 @@ viewCards user refDataStatus action mdlStore =
     ]
 
 
-editCards : Campaign.CampaignWithRoleSet -> Campaign.RefDataStatus -> Campaign.FormAction -> Material.Model -> List (Html AppMsg.Msg)
+editCards : CampaignBase.Campaign -> Campaign.RefDataStatus -> Campaign.FormAction -> Material.Model -> List (Html AppMsg.Msg)
 editCards scratchCampaign refDataStatus action mdlStore =
     --check that ref data is loaded.
     let
@@ -118,7 +118,7 @@ editCards scratchCampaign refDataStatus action mdlStore =
         html
 
 
-maybeFindCampaign : Maybe Int -> Array Campaign.CampaignWithRoles -> Maybe Campaign.CampaignWithRoles
+maybeFindCampaign : Maybe Int -> Array CampaignBase.Campaign -> Maybe CampaignBase.Campaign
 maybeFindCampaign maybeIndex users =
     case maybeIndex of
         Just idx ->
@@ -128,7 +128,7 @@ maybeFindCampaign maybeIndex users =
             Nothing
 
 
-alwaysFindCampaign : Maybe Int -> Array Campaign.CampaignWithRoles -> Campaign.CampaignWithRoles
+alwaysFindCampaign : Maybe Int -> Array CampaignBase.Campaign -> CampaignBase.Campaign
 alwaysFindCampaign maybeIndex users =
     let
         maybeCampaign =
@@ -144,10 +144,10 @@ alwaysFindCampaign maybeIndex users =
                 usr
 
             Nothing ->
-                Campaign.emptyCampaignWithRoles
+                CampaignBase.emptyCampaign
 
 
-fieldStringValue : Maybe Campaign.CampaignWithRoles -> Campaign.FormAction -> (Campaign.CampaignWithRoles -> String) -> String
+fieldStringValue : Maybe CampaignBase.Campaign -> Campaign.FormAction -> (CampaignBase.Campaign -> String) -> String
 fieldStringValue user formAction extractor =
     case user of
         Just user ->
@@ -160,7 +160,7 @@ fieldStringValue user formAction extractor =
             ""
 
 
-fieldIntValue : Maybe Campaign.CampaignWithRoles -> Campaign.FormAction -> (Campaign.CampaignWithRoles -> Int) -> String
+fieldIntValue : Maybe CampaignBase.Campaign -> Campaign.FormAction -> (CampaignBase.Campaign -> Int) -> String
 fieldIntValue user formAction extractor =
     case user of
         Just user ->
@@ -173,7 +173,7 @@ fieldIntValue user formAction extractor =
             ""
 
 
-userDetails : Campaign.CampaignWithRoles -> Html AppMsg.Msg
+userDetails : CampaignBase.Campaign -> Html AppMsg.Msg
 userDetails user =
     Options.div
         [ css "display" "flex"
@@ -183,10 +183,8 @@ userDetails user =
         [ Options.div []
             (List.map
                 userInfo
-                [ ( "First Name:", user.first_name )
-                , ( "Last Name", user.last_name )
-                , ( "Email", user.email )
-                , ( "Photo Url", user.photo_url )
+                [ ( "First Name:", user.campaign_name )
+                , ( "Last Name", user.campaign_desc )
                 ]
             )
         , Options.div []
@@ -235,24 +233,16 @@ userEditItem ( fieldName, fieldValue, userMsg ) =
         ]
 
 
-userForm : Campaign.CampaignWithRoleSet -> Campaign.RefData -> Campaign.FormAction -> Material.Model -> Html AppMsg.Msg
+userForm : CampaignBase.Campaign -> Campaign.RefData -> Campaign.FormAction -> Material.Model -> Html AppMsg.Msg
 userForm user refData action mdlStore =
     div []
         [ div [ class "form-group" ]
             [ label [] [ text "First Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForCampaign (CampaignMsg.SetFirstName s)), value user.first_name, class "form-control" ] []
+            , input [ onInput (\s -> AppMsg.MsgForCampaign (CampaignMsg.SetFirstName s)), value user.campaign_name, class "form-control" ] []
             ]
         , div [ class "form-group" ]
             [ label [] [ text "Last Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForCampaign (CampaignMsg.SetLastName s)), value user.last_name, class "form-control" ] []
-            ]
-        , div [ class "form-group" ]
-            [ label [] [ text "Email" ]
-            , input [ onInput (\s -> AppMsg.MsgForCampaign (CampaignMsg.SetEmail s)), value user.email, class "form-control" ] []
-            ]
-        , div [ class "form-group" ]
-            [ label [] [ text "Photo URL" ]
-            , input [ onInput (\s -> AppMsg.MsgForCampaign (CampaignMsg.SetPhotoUrl s)), value user.photo_url, class "form-control" ] []
+            , input [ onInput (\s -> AppMsg.MsgForCampaign (CampaignMsg.SetLastName s)), value user.campaign_desc, class "form-control" ] []
             ]
         , rolesHeading
         , Options.styled Html.ul
@@ -260,13 +250,14 @@ userForm user refData action mdlStore =
             , css "margin" "0"
             , css "padding" "0"
             ]
-            (roleOptions user.roles refData mdlStore)
+            []
 
+        --(roleOptions user.roles refData mdlStore)
         --, button [ HtmlUtils.onClickNoDefault buttonAction, class "btn btn-primary" ] [ text buttonText ]
         ]
 
 
-userTable : Array Campaign.CampaignWithRoles -> Maybe Int -> Maybe Table.Order -> Campaign.FormAction -> Int -> Int -> Html AppMsg.Msg
+userTable : Array CampaignBase.Campaign -> Maybe Int -> Maybe Table.Order -> Campaign.FormAction -> Int -> Int -> Html AppMsg.Msg
 userTable users selectedCampaignId order action startDisplayIndex endDisplayIndex =
     let
         divAt =
@@ -413,7 +404,7 @@ userTableHeader order =
         ]
 
 
-userRows : Array Campaign.CampaignWithRoles -> Campaign.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
+userRows : Array CampaignBase.Campaign -> Campaign.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
 userRows users action selectedCampaignId startDisplayIndex endDisplayIndex =
     let
         userId =
@@ -435,7 +426,7 @@ userRows users action selectedCampaignId startDisplayIndex endDisplayIndex =
 --look at using array.fold(l/r)
 
 
-userRow : Campaign.FormAction -> Int -> ( Int, Campaign.CampaignWithRoles ) -> Html AppMsg.Msg
+userRow : Campaign.FormAction -> Int -> ( Int, CampaignBase.Campaign ) -> Html AppMsg.Msg
 userRow action userId ( idx, user ) =
     let
         f allowSelect =
@@ -471,10 +462,8 @@ userRow action userId ( idx, user ) =
                     []
     in
         Table.tr row_style
-            [ Table.td [] [ text user.first_name ]
-            , Table.td [] [ text user.last_name ]
-            , Table.td [] [ text user.email ]
-            , Table.td [ css "width" "100%" ] [ text user.photo_url ]
+            [ Table.td [] [ text user.campaign_name ]
+            , Table.td [] [ text user.campaign_desc ]
             ]
 
 
@@ -574,7 +563,7 @@ optionsCard model mdlStore =
             ]
 
 
-userCard : Campaign.CampaignWithRoles -> Campaign.RefDataStatus -> Campaign.FormAction -> Material.Model -> Html AppMsg.Msg
+userCard : CampaignBase.Campaign -> Campaign.RefDataStatus -> Campaign.FormAction -> Material.Model -> Html AppMsg.Msg
 userCard user refData action mdlStore =
     let
         option title index =
@@ -825,7 +814,7 @@ roleInfo i role =
         ]
 
 
-userEditCard : Campaign.CampaignWithRoleSet -> Campaign.RefData -> Campaign.FormAction -> Material.Model -> Html AppMsg.Msg
+userEditCard : CampaignBase.Campaign -> Campaign.RefData -> Campaign.FormAction -> Material.Model -> Html AppMsg.Msg
 userEditCard scratchCampaign refData action mdlStore =
     let
         buttonText =
@@ -1085,7 +1074,7 @@ slider model =
         ]
 
 
-filterCards : Campaign.CampaignWithRoleSet -> Campaign.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
+filterCards : CampaignBase.Campaign -> Campaign.RefDataStatus -> Material.Model -> List (Html AppMsg.Msg)
 filterCards scratchCampaign refDataStatus mdlStore =
     --check that ref data is loaded.
     let
@@ -1100,7 +1089,7 @@ filterCards scratchCampaign refDataStatus mdlStore =
         html
 
 
-userFilterCard : Campaign.CampaignWithRoleSet -> Campaign.RefData -> Material.Model -> Html AppMsg.Msg
+userFilterCard : CampaignBase.Campaign -> Campaign.RefData -> Material.Model -> Html AppMsg.Msg
 userFilterCard filterCampaign refData mdlStore =
     let
         option title index =
@@ -1217,8 +1206,8 @@ userFilterCard filterCampaign refData mdlStore =
                     [ Options.div []
                         (List.map
                             userEditItem
-                            [ ( "First Name:", filterCampaign.first_name, (\f -> AppMsg.MsgForCampaign (CampaignMsg.SetFilterFirstName f)) )
-                            , ( "Last Name", filterCampaign.last_name, (\f -> AppMsg.MsgForCampaign (CampaignMsg.SetFilterLastName f)) )
+                            [ ( "First Name:", filterCampaign.campaign_name, (\f -> AppMsg.MsgForCampaign (CampaignMsg.SetFilterFirstName f)) )
+                            , ( "Last Name", filterCampaign.campaign_desc, (\f -> AppMsg.MsgForCampaign (CampaignMsg.SetFilterLastName f)) )
                             ]
                         )
                     , Options.div []

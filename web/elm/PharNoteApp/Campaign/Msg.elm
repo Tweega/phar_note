@@ -1,6 +1,7 @@
 module PharNoteApp.Campaign.Msg exposing (..)
 
 import PharNoteApp.Campaign.Model as Campaign
+import PharNoteApp.Campaign.BaseModel as CampaignBase
 
 
 --import PharNoteApp.Campaign.Model exposing (FilterAction(..))
@@ -16,17 +17,17 @@ type Msg
     | DeleteCampaign
     | NewCampaign
     | CancelNewCampaign
-    | ProcessCampaignGet (Result Http.Error (List Campaign.CampaignWithRoles))
-    | ProcessCampaignPost (Result Http.Error Campaign.CampaignWithRoles)
-    | ProcessCampaignDelete (Result Http.Error Campaign.CampaignWithRoles)
+    | ProcessCampaignGet (Result Http.Error (List CampaignBase.Campaign))
+    | ProcessCampaignPost (Result Http.Error CampaignBase.Campaign)
+    | ProcessCampaignDelete (Result Http.Error CampaignBase.Campaign)
     | ProcessRefDataGet (Result Http.Error (List Role.Role))
     | SetFirstName String
     | SetLastName String
     | SetEmail String
     | SetPhotoUrl String
     | ToggleRole Int
-    | CampaignPost Campaign.CampaignWithRoleSet
-    | CampaignPut Campaign.CampaignWithRoleSet
+    | CampaignPost CampaignBase.Campaign
+    | CampaignPut CampaignBase.Campaign
     | Reorder
     | KeyX Int
     | PaginateCampaign Int
@@ -35,7 +36,7 @@ type Msg
     | SetFilterFirstName String
     | SetFilterLastName String
     | ToggleFilterRole Int
-    | ApplyCampaignFilter Campaign.CampaignWithRoleSet
+    | ApplyCampaignFilter CampaignBase.Campaign
     | ResetCampaignFilter
     | ClearCampaignFilter
     | CancelCampaignFilter

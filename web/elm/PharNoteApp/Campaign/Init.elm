@@ -1,11 +1,13 @@
 module PharNoteApp.Campaign.Init exposing (..)
 
 import PharNoteApp.Campaign.Rest exposing (getRefData)
-import PharNoteApp.Campaign.Model exposing (Model, FormAction(..), CampaignTab(..), RefDataStatus(..), FilterState(..), emptyCampaignWithRoleSet)
 import PharNoteApp.Campaign.BaseModel as CampaignBase
 import PharNoteApp.Msg as AppMsg
 import Material.Table as Table
 import Array exposing (empty)
+
+
+--import PharNoteApp.Campaign.Model exposing (Model, FormAction(..), CampaignTab(..), RefDataStatus(..), FilterState(..), emptyCampaignWithRoleSet)
 
 
 init : ( Model, Cmd AppMsg.Msg )
@@ -34,8 +36,8 @@ initialModel =
     , startDisplayIndex = -1
     , endDisplayIndex = -1
     , userSliderValue = 0
-    , scratchCampaign = emptyCampaignWithRoleSet
-    , filterScratchCampaign = emptyCampaignWithRoleSet
+    , scratchCampaign = emptyCampaign
+    , filterScratchCampaign = emptyCampaign
     , refDataStatus = Loading
     , filterState = NoFilter
     }
