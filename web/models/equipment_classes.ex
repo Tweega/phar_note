@@ -40,13 +40,42 @@ defmodule PharNote.EquipmentClasses do
   end
 
 
-  def class_precision(query) do
+   def class_precision(query) do
 
-      from ec in query,
-            join: ep in assoc(ec, :equipment_precision),
-            preload: [:equipment_precision],
-            select: map(ec, [:id, :name, :description, equipment_precision: [:id, :precision]]),
-            order_by: [asc: ec.name, asc: ep.precision]
+     #  x = PharNote.EquipmentPrecision |>
+     #  PharNote.EquipmentClasses
+     #     |> from ec in
+     ep_query = from ep in PharNote.EquipmentPrecision, order_by: [asc: ep.precision]
+
+     from ec in query,
+
+         join: ep in assoc(ec, :equipment_precision),
+          preload: [equipment_precision: ^ep_query],
+          group_by: ec.id,
+          select: map(ec, [:id, :name, :description, equipment_precision: [:id, :precision]]),
+          order_by: [asc: ec.name]
+
+
+  end
+
+ def cp_test() do
+
+    #  x = PharNote.EquipmentPrecision |>
+    #  PharNote.EquipmentClasses
+    #     |> from ec in
+    ep_query = from ep in PharNote.EquipmentPrecision, order_by: ep.precision
+
+
+    x = from ec in PharNote.EquipmentClasses,
+        join: ep in assoc(ec, :equipment_precision),
+         #preload: [equipment_precision: ^ep_query],
+        # group_by: ec.id,
+         #select: map(ec, [:id, :name, :description, equipment_precision: [:id, :precision]])
+         select: %{ec_id: ec.id, ec_name: ec.name, ec_description: ec.description, precisions: %{ep_id: ep.id, ep_precision: ep.precision}}
+         #order_by: [asc: ec.name, asc: ep.precision]
+         Repo.all(x)
+
+
  end
 
 

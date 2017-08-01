@@ -53,3 +53,14 @@ type FormAction
 emptyEquipmentClassWithPrecision : EquipmentClassWithPrecision
 emptyEquipmentClassWithPrecision =
     EquipmentClassWithPrecision 0 "" "" []
+
+
+scratchToEquipmentClassWithPrecisionString : EquipmentClassWithPrecision -> EquipmentClassWithPrecisionString
+scratchToEquipmentClassWithPrecisionString classPrecision =
+    let
+        precisions =
+            classPrecision.precisions
+                |> List.map (\i -> toString i.id)
+                |> String.join (",")
+    in
+        EquipmentClassWithPrecisionString classPrecision.id classPrecision.name classPrecision.description precisions

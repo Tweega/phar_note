@@ -1,10 +1,9 @@
 module PharNoteApp.EquipmentClass.Update exposing (..)
 
-import PharNoteApp.EquipmentClass.Msg exposing (..)
+import PharNoteApp.EquipmentClass.Msg exposing (Msg(..))
 import PharNoteApp.Msg as AppMsg
 import PharNoteApp.EquipmentClass.Model as EquipmentClass
 import PharNoteApp.EquipmentClass.BaseModel as EquipmentClassBase
-import PharNoteApp.EquipmentClass.Model exposing (RefDataStatus(..), FilterState(..), EquipmentClassTab(..))
 import PharNoteApp.EquipmentClass.Rest as Rest
 import PharNoteApp.EquipmentClass.View as View
 import PharNoteApp.Utils as Utils
@@ -19,9 +18,6 @@ update msg model =
     case msg of
         NoOp ->
             model ! []
-
-        SelectTab userTab ->
-            { model | selectedTab = userTab } ! []
 
         KeyX key ->
             let
@@ -57,7 +53,7 @@ update msg model =
                     startIndex + model.pageSize - 1
 
                 user =
-                    View.maybeFindEquipmentClass (Just idx) model.filteredEquipmentClasss
+                    View.maybeFindEquipmentClass (Just idx) model.classes
 
                 newModel =
                     case user of
@@ -116,14 +112,14 @@ update msg model =
                         Nothing ->
                             identity
 
-                sortedEquipmentClasss =
+                sortedEquipmentClass =
                     sort (Array.toList model.classes) |> Array.fromList
 
                 nextEquipmentClass =
-                    View.alwaysFindEquipmentClass model.selectedEquipmentClassIndex sortedEquipmentClasss
+                    View.alwaysFindEquipmentClass model.selectedEquipmentClassIndex sortedEquipmentClass
             in
                 --the user index and id will nno longer match up now.  Either need to find current user, or keep selector on same page/offset
-                { model | order = sortOrder, classes = sortedEquipmentClasss, selectedEquipmentClassId = Just nextEquipmentClass.id } ! []
+                { model | order = sortOrder, classes = sortedEquipmentClass, selectedEquipmentClassId = Just nextEquipmentClass.id } ! []
 
         CancelDeleteEquipmentClass ->
             { model | formAction = EquipmentClass.None } ! []
@@ -163,9 +159,9 @@ update msg model =
                                         0
 
                             ( maybeNextEquipmentClass, nextIndex ) =
-                                case View.maybeFindEquipmentClass (Just (i + 1)) model.filteredEquipmentClasss of
+                                case View.maybeFindEquipmentClass (Just (i + 1)) model.classes of
                                     Nothing ->
-                                        case View.maybeFindEquipmentClass (Just (i - 1)) model.filteredEquipmentClasss of
+                                        case View.maybeFindEquipmentClass (Just (i - 1)) model.classes of
                                             Nothing ->
                                                 ( Nothing, -1 )
 
@@ -210,7 +206,7 @@ update msg model =
         NewEquipmentClass ->
             { model
                 | formAction = EquipmentClass.Create
-                , scratchEquipmentClass = EquipmentClass.emptyEquipmentClassWithRoleSet
+                , scratchEquipmentClass = EquipmentClass.emptyEquipmentClassWithPrecision
                 , selectedEquipmentClassId = Nothing
                 , selectedEquipmentClassIndex = Nothing
                 , previousSelectedEquipmentClassIndex = model.selectedEquipmentClassIndex
@@ -236,33 +232,15 @@ update msg model =
             in
                 newModel ! []
 
-        ProcessRefDataGet (Ok roles) ->
-            let
-                roleDict =
-                    List.map (\role -> ( role.id, role )) roles
-                        |> Dict.fromList
-            in
-                { model
-                    | refDataStatus = Loaded (EquipmentClass.RefData roleDict)
-                }
-                    ! []
-
-        ProcessRefDataGet (Err error) ->
-            let
-                x =
-                    Debug.log "refdata error" error
-            in
-                { model
-                    | errors = Just error
-                }
-                    ! []
-
         ProcessEquipmentClassGet (Ok classes) ->
             let
                 classesArray =
                     Array.fromList (classes)
+
+                new_model =
+                    filteredModel model classesArray
             in
-                { model | classes = classesArray } ! []
+                new_model ! []
 
         ProcessEquipmentClassGet (Err error) ->
             { model
@@ -295,112 +273,41 @@ update msg model =
                 ! []
 
         EquipmentClassPost user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            EquipmentClass.scratchToEquipmentClassWithRoles model.scratchEquipmentClass refData
-                    in
-                        model ! [ Rest.post userWithRoles ]
-
-                _ ->
-                    --need to provide a message here.
-                    model ! []
+            let
+                classWithPrecisions =
+                    EquipmentClass.scratchToEquipmentClassWithPrecisionString model.scratchEquipmentClass
+            in
+                model ! [ Rest.post classWithPrecisions ]
 
         EquipmentClassPut user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            EquipmentClass.scratchToEquipmentClassWithRoles model.scratchEquipmentClass refData
-                    in
-                        model ! [ Rest.put userWithRoles ]
-
-                _ ->
-                    --need to provide a message here.
-                    model ! []
-
-        SetFirstName value ->
             let
-                user =
+                classWithPrecisions =
+                    EquipmentClass.scratchToEquipmentClassWithPrecisionString model.scratchEquipmentClass
+            in
+                model ! [ Rest.put classWithPrecisions ]
+
+        SetClassName value ->
+            let
+                class =
                     model.scratchEquipmentClass
 
-                new_user =
-                    { user | first_name = value }
+                new_class =
+                    { class | name = value }
             in
-                { model | scratchEquipmentClass = new_user } ! []
+                { model | scratchEquipmentClass = new_class } ! []
 
-        SetLastName value ->
+        SetClassDesc value ->
             let
-                user =
+                class =
                     model.scratchEquipmentClass
 
-                new_user =
-                    { user | last_name = value }
+                new_class =
+                    { class | description = value }
             in
-                { model | scratchEquipmentClass = new_user } ! []
-
-        SetEmail value ->
-            let
-                user =
-                    model.scratchEquipmentClass
-
-                new_user =
-                    { user | email = value }
-            in
-                { model | scratchEquipmentClass = new_user } ! []
-
-        SetPhotoUrl value ->
-            let
-                user =
-                    model.scratchEquipmentClass
-
-                new_user =
-                    { user | photo_url = value }
-            in
-                { model | scratchEquipmentClass = new_user } ! []
+                { model | scratchEquipmentClass = new_class } ! []
 
         ToggleRole roleID ->
-            let
-                user =
-                    model.scratchEquipmentClass
-
-                roleSet =
-                    user.roles
-
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
-
-                        False ->
-                            Set.insert roleID roleSet
-
-                newEquipmentClass =
-                    { user | roles = newRoleSet }
-            in
-                { model | scratchEquipmentClass = newEquipmentClass } ! []
-
-        EquipmentClassSlider valuePC ->
-            let
-                len =
-                    Array.length model.classes
-
-                reducedLen =
-                    len - model.pageSize
-
-                start =
-                    floor ((valuePC / 100) * (toFloat reducedLen))
-
-                end =
-                    start + model.pageSize
-            in
-                { model
-                    | startDisplayIndex = start
-                    , endDisplayIndex = end
-                    , userSliderValue = valuePC
-                }
-                    ! []
+            model ! []
 
         PaginateEquipmentClass page ->
             let
@@ -456,13 +363,13 @@ toggleSort order =
             Just Table.Ascending
 
 
-populateScratchEquipmentClassData : Maybe EquipmentClass.EquipmentClassWithRoles -> Maybe Int -> EquipmentClass.Model -> EquipmentClass.FormAction -> EquipmentClass.Model
+populateScratchEquipmentClassData : Maybe EquipmentClass.EquipmentClassWithPrecision -> Maybe Int -> EquipmentClass.Model -> EquipmentClass.FormAction -> EquipmentClass.Model
 populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex model action =
     case maybeEquipmentClass of
         Nothing ->
             --could we realistically arrive here?
             { model
-                | scratchEquipmentClass = EquipmentClass.emptyEquipmentClassWithRoleSet
+                | scratchEquipmentClass = EquipmentClass.emptyEquipmentClassWithPrecision
                 , formAction = action
                 , selectedEquipmentClassId = Nothing
                 , selectedEquipmentClassIndex = Nothing
@@ -472,20 +379,20 @@ populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex m
             --if we only have role ids, not the whole role record, then we won't need the first map function
             let
                 roleSet =
-                    List.map (\r -> r.id) u.roles
+                    List.map (\r -> r.id) u.precisions
                         |> Set.fromList
             in
                 { model
-                    | scratchEquipmentClass = EquipmentClass.EquipmentClassWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
+                    | scratchEquipmentClass = EquipmentClass.EquipmentClassWithPrecision u.id u.name u.description u.precisions
                     , formAction = action
                     , selectedEquipmentClassId = Just u.id
                     , selectedEquipmentClassIndex = maybeEquipmentClassIndex
                 }
 
 
-sort_by_last_first : EquipmentClass.EquipmentClassWithRoles -> String
+sort_by_last_first : EquipmentClass.EquipmentClassWithPrecision -> String
 sort_by_last_first u =
-    u.last_name ++ u.first_name
+    u.name
 
 
 reverse : comparable -> comparable -> Order
@@ -501,67 +408,45 @@ reverse x y =
             EQ
 
 
-applyFilter : EquipmentClass.EquipmentClassWithRoleSet -> Array EquipmentClass.EquipmentClassWithRoles -> Array EquipmentClass.EquipmentClassWithRoles
-applyFilter filterEquipmentClass userArray =
-    Array.filter
-        (\userWithRole ->
-            let
-                userRoleSet =
-                    List.map (\r -> r.id) userWithRole.roles
-                        |> Set.fromList
-            in
-                Set.size (Set.intersect filterEquipmentClass.roles userRoleSet) > 0
-        )
-        userArray
-
-
-filteredModel : EquipmentClass.Model -> EquipmentClass.Model
-filteredModel model =
+filteredModel : EquipmentClass.Model -> Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.Model
+filteredModel model classes =
     let
-        filteredEquipmentClasss =
-            case model.filterState of
-                Applied ->
-                    applyFilter model.filterScratchEquipmentClass model.users
+        equipmentCount =
+            Array.length classes
 
-                _ ->
-                    model.users
-
-        userCount =
-            Array.length filteredEquipmentClasss
-
-        ( selectedEquipmentClassId, selectedEquipmentClassIndex, firstIndex, lastIndex ) =
+        ( selectedEquipmentId, selectedEquipmentIndex, firstIndex, lastIndex ) =
             case model.selectedEquipmentClassIndex of
                 Nothing ->
                     let
-                        firstEquipmentClass =
-                            Array.get 0 filteredEquipmentClasss
+                        firstEquipment =
+                            Array.get 0 classes
 
                         firstIdx =
                             0
 
                         lastIdx =
-                            if userCount > model.pageSize then
+                            if equipmentCount > model.pageSize then
                                 model.pageSize - 1
                             else
-                                userCount - 1
+                                equipmentCount - 1
                     in
-                        case firstEquipmentClass of
+                        case firstEquipment of
                             Nothing ->
                                 ( Nothing, Nothing, -1, -1 )
 
-                            Just user ->
-                                ( Just user.id, Just 0, firstIdx, lastIdx )
+                            Just equipment ->
+                                ( Just equipment.id, Just 0, firstIdx, lastIdx )
 
                 _ ->
                     ( model.selectedEquipmentClassId, model.selectedEquipmentClassIndex, model.startDisplayIndex, model.endDisplayIndex )
 
-        --if we have done an edit then the selected user and index will stay the same
+        --if we have done an edit then the selected equipment and index will stay the same
     in
         { model
-            | selectedEquipmentClassId = selectedEquipmentClassId
-            , selectedEquipmentClassIndex = selectedEquipmentClassIndex
+            | classes = classes
+            , selectedEquipmentClassId = selectedEquipmentId
+            , selectedEquipmentClassIndex = selectedEquipmentIndex
             , startDisplayIndex = firstIndex
             , endDisplayIndex = lastIndex
-            , filteredEquipmentClasss = filteredEquipmentClasss
             , errors = Nothing
         }

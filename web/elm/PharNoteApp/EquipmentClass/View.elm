@@ -34,7 +34,7 @@ view : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
 view model mdlStore =
     let
         equipClassTableContents =
-            --equipClassTable model.filteredEquipmentClasss model.selectedEquipmentClassId model.order model.startDisplayIndex model.endDisplayIndex
+            --equipClassTable model.filteredEquipmentClass model.selectedEquipmentClassId model.order model.startDisplayIndex model.endDisplayIndex
             tableCard model mdlStore
 
         cards =
@@ -100,23 +100,23 @@ editCards scratchEquipmentClass action mdlStore =
         html
 
 
-maybeFindEquipmentClass : Maybe Int -> Array EquipmentClassBase.EquipmentClass -> Maybe EquipmentClassBase.EquipmentClass
-maybeFindEquipmentClass maybeIndex equipClasss =
+maybeFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithPrecision -> Maybe EquipmentClass.EquipmentClassWithPrecision
+maybeFindEquipmentClass maybeIndex equipClass =
     case maybeIndex of
         Just idx ->
-            Array.get idx equipClasss
+            Array.get idx equipClass
 
         _ ->
             Nothing
 
 
 alwaysFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.EquipmentClassWithPrecision
-alwaysFindEquipmentClass maybeIndex equipClasss =
+alwaysFindEquipmentClass maybeIndex equipClass =
     let
         maybeEquipmentClass =
             case maybeIndex of
                 Just idx ->
-                    Array.get idx equipClasss
+                    Array.get idx equipClass
 
                 _ ->
                     Nothing
@@ -165,8 +165,8 @@ equipClassDetails equipClass =
         [ Options.div []
             (List.map
                 equipClassInfo
-                [ ( "First Name:", equipClass.name )
-                , ( "Last Name", equipClass.description )
+                [ ( "Class Name:", equipClass.name )
+                , ( "Class description", equipClass.description )
                 ]
             )
         ]
@@ -211,12 +211,12 @@ equipClassForm : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.Fo
 equipClassForm equipClass action mdlStore =
     div []
         [ div [ class "form-group" ]
-            [ label [] [ text "First Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetFirstName s)), value equipClass.name, class "form-control" ] []
+            [ label [] [ text "Class Name" ]
+            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetClassName s)), value equipClass.name, class "form-control" ] []
             ]
         , div [ class "form-group" ]
-            [ label [] [ text "Last Name" ]
-            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetLastName s)), value equipClass.description, class "form-control" ] []
+            [ label [] [ text "Class Description" ]
+            , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetClassDesc s)), value equipClass.description, class "form-control" ] []
             ]
         , precisionsHeading
         , Options.styled Html.ul
@@ -232,7 +232,7 @@ equipClassForm equipClass action mdlStore =
 
 
 equipClassTable : Array EquipmentClass.EquipmentClassWithPrecision -> Maybe Int -> Maybe Table.Order -> EquipmentClass.FormAction -> Int -> Int -> Html AppMsg.Msg
-equipClassTable equipClasss selectedEquipmentClassId order action startDisplayIndex endDisplayIndex =
+equipClassTable equipClass selectedEquipmentClassId order action startDisplayIndex endDisplayIndex =
     let
         divAt =
             case action of
@@ -266,7 +266,7 @@ equipClassTable equipClasss selectedEquipmentClassId order action startDisplayIn
                 , Options.css "width" "100%"
                 ]
                 [ equipClassTableHeader order
-                , tbody [] (equipClassRows equipClasss action selectedEquipmentClassId startDisplayIndex endDisplayIndex)
+                , tbody [] (equipClassRows equipClass action selectedEquipmentClassId startDisplayIndex endDisplayIndex)
                 ]
             ]
 
@@ -298,7 +298,7 @@ tableCard model mdlStore =
                     -- Restore default padding inside scrim
                     , css "width" "100%"
                     ]
-                    [ text "EquipmentClasss" ]
+                    [ text "EquipmentClass" ]
                 ]
             , Card.text
                 [ css "height" "400px"
@@ -324,7 +324,7 @@ equipClassTableHeader order =
         [ Table.tr []
             [ Table.th
                 []
-                [ text "First Name" ]
+                [ text "Class Name" ]
             , Table.th
                 [ order
                     |> Maybe.map Table.sorted
@@ -339,7 +339,7 @@ equipClassTableHeader order =
 
 
 equipClassRows : Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Maybe Int -> Int -> Int -> List (Html AppMsg.Msg)
-equipClassRows equipClasss action selectedEquipmentClassId startDisplayIndex endDisplayIndex =
+equipClassRows equipClass action selectedEquipmentClassId startDisplayIndex endDisplayIndex =
     let
         equipClassId =
             case selectedEquipmentClassId of
@@ -348,8 +348,11 @@ equipClassRows equipClasss action selectedEquipmentClassId startDisplayIndex end
 
                 Nothing ->
                     -1
+
+        temp =
+            Debug.log "class count" (Array.length equipClass)
     in
-        equipClasss
+        equipClass
             |> Array.slice startDisplayIndex (endDisplayIndex + 1)
             |> Array.toIndexedList
             |> List.map (equipClassRow action equipClassId)
@@ -394,6 +397,9 @@ equipClassRow action equipClassId ( idx, equipClass ) =
 
                 _ ->
                     []
+
+        temp =
+            Debug.log "class name" equipClass.name
     in
         Table.tr row_style
             [ Table.td [] [ text equipClass.name ]

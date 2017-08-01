@@ -20,22 +20,20 @@ type Msg
     | ProcessEquipmentClassGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecision))
     | ProcessEquipmentClassPost (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
     | ProcessEquipmentClassDelete (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
-    | SetFirstName String
-    | SetLastName String
-    | SetEmail String
-    | SetPhotoUrl String
+    | SetClassName String
+    | SetClassDesc String
     | ToggleRole Int
     | EquipmentClassPost EquipmentClass.EquipmentClassWithPrecision
     | EquipmentClassPut EquipmentClass.EquipmentClassWithPrecision
     | Reorder
     | KeyX Int
     | PaginateEquipmentClass Int
-    | EquipmentClassSlider Float
     | ConfirmDeleteEquipmentClass
     | CancelDeleteEquipmentClass
 
 
 
+--| EquipmentClassSlider Float
 --reset - clears entries on filter formAction
 -- clear - goes back to original user list
 -- cancel - just closes the filter form.

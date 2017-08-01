@@ -10,7 +10,7 @@ defmodule PharNote.EquipmentClassesController do
 
   def index_data() do
     data = PharNote.EquipmentClasses
-     |> PharNote.EquipmentClasses.class
+     |> PharNote.EquipmentClasses.class_precision
      |> PharNote.EquipmentClasses.sorted
      |> Repo.all
 

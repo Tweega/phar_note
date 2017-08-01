@@ -56,11 +56,6 @@ urlEquipmentClasss =
     "http://localhost:4000/api/equipmentclass"
 
 
-urlRefData : String
-urlRefData =
-    "http://localhost:4000/api/roledata"
-
-
 get : Cmd AppMsg.Msg
 get =
     --Http.send AppMsg.MsgForEquipmentClass ProcessEquipmentClassGet (Http.get url listDecoder)
