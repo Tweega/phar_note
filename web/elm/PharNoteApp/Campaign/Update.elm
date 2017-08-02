@@ -20,12 +20,12 @@ update msg model =
         NoOp ->
             model ! []
 
-        SelectTab userTab ->
-            { model | selectedTab = userTab } ! []
+        SelectTab campaignTab ->
+            { model | selectedTab = campaignTab } ! []
 
         KeyX key ->
             let
-                userCount =
+                campaignCount =
                     Array.length (model.filteredCampaigns)
 
                 currentIdx =
@@ -39,12 +39,12 @@ update msg model =
                 idx =
                     if key == 38 && currentIdx > 0 then
                         currentIdx - 1
-                    else if key == 40 && currentIdx < userCount - 1 then
+                    else if key == 40 && currentIdx < campaignCount - 1 then
                         currentIdx + 1
                     else
                         currentIdx
 
-                --if selected user is off the beginning of screen then start window from index
+                --if selected campaign is off the beginning of screen then start window from index
                 startIndex =
                     if idx < model.startDisplayIndex then
                         idx
@@ -56,11 +56,11 @@ update msg model =
                 endIndex =
                     startIndex + model.pageSize - 1
 
-                user =
+                campaign =
                     View.maybeFindCampaign (Just idx) model.filteredCampaigns
 
                 newModel =
-                    case user of
+                    case campaign of
                         Just u ->
                             { model
                                 | selectedCampaignId = Just u.id
@@ -72,7 +72,7 @@ update msg model =
                         _ ->
                             model
 
-                --populateScratchCampaignData user (Just idx) model model.formAction
+                --populateScratchCampaignData campaign (Just idx) model model.formAction
             in
                 newModel ! []
 
@@ -81,11 +81,11 @@ update msg model =
                 index =
                     model.startDisplayIndex + idx
 
-                user =
+                campaign =
                     View.maybeFindCampaign (Just index) model.filteredCampaigns
 
                 newModel =
-                    case user of
+                    case campaign of
                         Just u ->
                             { model
                                 | selectedCampaignId = Just u.id
@@ -95,7 +95,7 @@ update msg model =
                         _ ->
                             model
 
-                --populateScratchCampaignData user (Just idx) model model.formAction
+                --populateScratchCampaignData campaign (Just idx) model model.formAction
             in
                 newModel
                     ! []
@@ -122,7 +122,7 @@ update msg model =
                 nextCampaign =
                     View.alwaysFindCampaign model.selectedCampaignIndex sortedCampaigns
             in
-                --the user index and id will nno longer match up now.  Either need to find current user, or keep selector on same page/offset
+                --the campaign index and id will nno longer match up now.  Either need to find current campaign, or keep selector on same page/offset
                 { model | order = sortOrder, filteredCampaigns = sortedCampaigns, selectedCampaignId = Just nextCampaign.id } ! []
 
         CancelDeleteCampaign ->
@@ -150,7 +150,7 @@ update msg model =
                     Nothing ->
                         model ! []
 
-                    Just user ->
+                    Just campaign ->
                         --we need to identify a record to be current after successful delete
                         let
                             --this would be a case of using one of those Maybe.andThen things as if idx was Nothing we would not get here.
@@ -180,29 +180,29 @@ update msg model =
                                     Nothing ->
                                         { model
                                             | formAction = Campaign.Delete
-                                            , selectedCampaignId = Just user.id
+                                            , selectedCampaignId = Just campaign.id
                                         }
 
                                     Just nextCampaign ->
                                         { model
                                             | formAction = Campaign.Delete
-                                            , selectedCampaignId = Just user.id
+                                            , selectedCampaignId = Just campaign.id
                                             , previousSelectedCampaignId = Just nextCampaign.id
                                             , previousSelectedCampaignIndex = Just nextIndex
                                         }
                         in
-                            newModel ! [ Rest.delete user ]
+                            newModel ! [ Rest.delete campaign ]
 
         EditCampaign ->
             let
                 idx =
                     model.selectedCampaignIndex
 
-                user =
+                campaign =
                     View.maybeFindCampaign idx model.filteredCampaigns
 
                 newModel =
-                    populateScratchCampaignData user idx model Campaign.Edit
+                    populateScratchCampaignData campaign idx model Campaign.Edit
             in
                 newModel
                     ! []
@@ -210,7 +210,7 @@ update msg model =
         NewCampaign ->
             { model
                 | formAction = Campaign.Create
-                , scratchCampaign = Campaign.emptyCampaignWithRoleSet
+                , scratchCampaign = Campaign.emptyCampaign
                 , selectedCampaignId = Nothing
                 , selectedCampaignIndex = Nothing
                 , previousSelectedCampaignIndex = model.selectedCampaignIndex
@@ -237,15 +237,15 @@ update msg model =
                 newModel ! []
 
         ProcessRefDataGet (Ok roles) ->
-            let
-                roleDict =
-                    List.map (\role -> ( role.id, role )) roles
-                        |> Dict.fromList
-            in
-                { model
-                    | refDataStatus = Loaded (Campaign.RefData roleDict)
-                }
-                    ! []
+            -- let
+            --     roleDict =
+            --         List.map (\role -> ( role.id, role )) roles
+            --             |> Dict.fromList
+            -- in
+            --     { model
+            --         | refDataStatus = Loaded (Campaign.RefData roleDict)
+            --     }
+            model ! []
 
         ProcessRefDataGet (Err error) ->
             let
@@ -257,23 +257,33 @@ update msg model =
                 }
                     ! []
 
-        ProcessCampaignGet (Ok users) ->
+        ProcessCampaignGet (Ok campaigns) ->
             let
-                userArray =
-                    Array.fromList (users)
+                campaignArray =
+                    Array.fromList (campaigns)
+
+                cCount =
+                    Array.length campaignArray
+
+                temp =
+                    Debug.log "cCount" cCount
 
                 newModel =
-                    filteredModel { model | users = userArray }
+                    filteredModel { model | campaigns = campaignArray }
             in
                 newModel ! []
 
         ProcessCampaignGet (Err error) ->
-            { model
-                | errors = Just error
-            }
-                ! []
+            let
+                temp =
+                    Debug.log "Error getting campaign data" error
+            in
+                { model
+                    | errors = Just error
+                }
+                    ! []
 
-        ProcessCampaignPost (Ok user) ->
+        ProcessCampaignPost (Ok campaign) ->
             { model | formAction = Campaign.None } ! [ Rest.get ]
 
         ProcessCampaignPost (Err error) ->
@@ -282,8 +292,8 @@ update msg model =
             }
                 ! []
 
-        ProcessCampaignDelete (Ok user) ->
-            -- need to set current user to previousSelectedCampaignId
+        ProcessCampaignDelete (Ok campaign) ->
+            -- need to set current campaign to previousSelectedCampaignId
             { model
                 | formAction = Campaign.None
                 , selectedCampaignId = model.previousSelectedCampaignId
@@ -297,92 +307,73 @@ update msg model =
             }
                 ! []
 
-        CampaignPost user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            Campaign.scratchToCampaignWithRoles model.scratchCampaign refData
-                    in
-                        model ! [ Rest.post userWithRoles ]
+        CampaignPost campaign ->
+            -- case model.refDataStatus of
+            --     Loaded refData ->
+            --         let
+            --             campaignWithRoles =
+            --                 Campaign.scratchToCampaignWithRoles model.scratchCampaign refData
+            --         in
+            --             model ! [ Rest.post campaignWithRoles ]
+            --
+            --     _ ->
+            --         --need to provide a message here.
+            model ! []
 
-                _ ->
-                    --need to provide a message here.
-                    model ! []
-
-        CampaignPut user ->
-            case model.refDataStatus of
-                Loaded refData ->
-                    let
-                        userWithRoles =
-                            Campaign.scratchToCampaignWithRoles model.scratchCampaign refData
-                    in
-                        model ! [ Rest.put userWithRoles ]
-
-                _ ->
-                    --need to provide a message here.
-                    model ! []
+        CampaignPut campaign ->
+            -- case model.refDataStatus of
+            --     Loaded refData ->
+            --         let
+            --             campaignWithRoles =
+            --                 Campaign.scratchToCampaignWithRoles model.scratchCampaign refData
+            --         in
+            --             model ! [ Rest.put campaignWithRoles ]
+            --
+            --     _ ->
+            --         --need to provide a message here.
+            model ! []
 
         SetFirstName value ->
             let
-                user =
+                campaign =
                     model.scratchCampaign
 
-                new_user =
-                    { user | first_name = value }
+                new_campaign =
+                    { campaign | campaign_name = value }
             in
-                { model | scratchCampaign = new_user } ! []
+                { model | scratchCampaign = new_campaign } ! []
 
         SetLastName value ->
             let
-                user =
+                campaign =
                     model.scratchCampaign
 
-                new_user =
-                    { user | last_name = value }
+                new_campaign =
+                    { campaign | campaign_desc = value }
             in
-                { model | scratchCampaign = new_user } ! []
-
-        SetEmail value ->
-            let
-                user =
-                    model.scratchCampaign
-
-                new_user =
-                    { user | email = value }
-            in
-                { model | scratchCampaign = new_user } ! []
-
-        SetPhotoUrl value ->
-            let
-                user =
-                    model.scratchCampaign
-
-                new_user =
-                    { user | photo_url = value }
-            in
-                { model | scratchCampaign = new_user } ! []
+                { model | scratchCampaign = new_campaign } ! []
 
         ToggleRole roleID ->
-            let
-                user =
-                    model.scratchCampaign
-
-                roleSet =
-                    user.roles
-
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
-
-                        False ->
-                            Set.insert roleID roleSet
-
-                newCampaign =
-                    { user | roles = newRoleSet }
-            in
-                { model | scratchCampaign = newCampaign } ! []
+            -- let
+            --     campaign =
+            --         model.scratchCampaign
+            --
+            --     roleSet =
+            --         campaign.roles
+            --
+            --     newRoleSet =
+            --         case Set.member roleID roleSet of
+            --             True ->
+            --                 Set.remove roleID roleSet
+            --
+            --             False ->
+            --                 Set.insert roleID roleSet
+            --
+            --     newCampaign =
+            --         { campaign | roles = newRoleSet }
+            -- in
+            --     { model | scratchCampaign = newCampaign } ! []
+            model ! []
 
         CampaignSlider valuePC ->
             let
@@ -401,7 +392,7 @@ update msg model =
                 { model
                     | startDisplayIndex = start
                     , endDisplayIndex = end
-                    , userSliderValue = valuePC
+                    , campaignSliderValue = valuePC
                 }
                     ! []
 
@@ -419,12 +410,12 @@ update msg model =
                 s =
                     page * model.pageSize
 
-                userCount =
+                campaignCount =
                     Array.length model.filteredCampaigns
 
                 start =
-                    if userCount - s < model.pageSize then
-                        userCount - model.pageSize
+                    if campaignCount - s < model.pageSize then
+                        campaignCount - model.pageSize
                     else
                         s
 
@@ -453,7 +444,7 @@ update msg model =
                 (filteredModel fm) ! []
 
         ResetCampaignFilter ->
-            { model | filterScratchCampaign = Campaign.emptyCampaignWithRoleSet } ! []
+            { model | filterScratchCampaign = Campaign.emptyCampaign } ! []
 
         CancelCampaignFilter ->
             { model | selectedTab = Details } ! []
@@ -463,7 +454,7 @@ update msg model =
                 fm =
                     { model
                         | filterState = NoFilter
-                        , filterScratchCampaign = Campaign.emptyCampaignWithRoleSet
+                        , filterScratchCampaign = Campaign.emptyCampaign
                         , selectedCampaignIndex = Nothing
                     }
             in
@@ -471,44 +462,45 @@ update msg model =
 
         SetFilterFirstName value ->
             let
-                user =
+                campaign =
                     model.filterScratchCampaign
 
-                new_user =
-                    { user | first_name = value }
+                new_campaign =
+                    { campaign | campaign_name = value }
             in
-                { model | filterScratchCampaign = new_user } ! []
+                { model | filterScratchCampaign = new_campaign } ! []
 
         SetFilterLastName value ->
             let
-                user =
+                campaign =
                     model.filterScratchCampaign
 
-                new_user =
-                    { user | last_name = value }
+                new_campaign =
+                    { campaign | campaign_desc = value }
             in
-                { model | filterScratchCampaign = new_user } ! []
+                { model | filterScratchCampaign = new_campaign } ! []
 
         ToggleFilterRole roleID ->
-            let
-                user =
-                    model.filterScratchCampaign
-
-                roleSet =
-                    user.roles
-
-                newRoleSet =
-                    case Set.member roleID roleSet of
-                        True ->
-                            Set.remove roleID roleSet
-
-                        False ->
-                            Set.insert roleID roleSet
-
-                newCampaign =
-                    { user | roles = newRoleSet }
-            in
-                { model | filterScratchCampaign = newCampaign } ! []
+            -- let
+            --     campaign =
+            --         model.filterScratchCampaign
+            --
+            --     roleSet =
+            --         campaign.roles
+            --
+            --     newRoleSet =
+            --         case Set.member roleID roleSet of
+            --             True ->
+            --                 Set.remove roleID roleSet
+            --
+            --             False ->
+            --                 Set.insert roleID roleSet
+            --
+            --     newCampaign =
+            --         { campaign | roles = newRoleSet }
+            -- in
+            --     { model | filterScratchCampaign = newCampaign } ! []
+            model ! []
 
 
 
@@ -535,7 +527,7 @@ populateScratchCampaignData maybeCampaign maybeCampaignIndex model action =
         Nothing ->
             --could we realistically arrive here?
             { model
-                | scratchCampaign = Campaign.emptyCampaignWithRoleSet
+                | scratchCampaign = Campaign.emptyCampaign
                 , formAction = action
                 , selectedCampaignId = Nothing
                 , selectedCampaignIndex = Nothing
@@ -543,22 +535,22 @@ populateScratchCampaignData maybeCampaign maybeCampaignIndex model action =
 
         Just u ->
             --if we only have role ids, not the whole role record, then we won't need the first map function
-            let
-                roleSet =
-                    List.map (\r -> r.id) u.roles
-                        |> Set.fromList
-            in
-                { model
-                    | scratchCampaign = Campaign.CampaignWithRoleSet u.id u.first_name u.last_name u.email u.photo_url roleSet
-                    , formAction = action
-                    , selectedCampaignId = Just u.id
-                    , selectedCampaignIndex = maybeCampaignIndex
-                }
+            -- let
+            --     roleSet =
+            --         List.map (\r -> r.id) u.roles
+            --             |> Set.fromList
+            -- in
+            { model
+                | scratchCampaign = CampaignBase.Campaign u.id u.campaign_name u.campaign_desc u.planned_start u.planned_end u.actual_start u.actual_end u.order_number
+                , formAction = action
+                , selectedCampaignId = Just u.id
+                , selectedCampaignIndex = maybeCampaignIndex
+            }
 
 
 sort_by_last_first : Campaign.CampaignWithRoles -> String
 sort_by_last_first u =
-    u.last_name ++ u.first_name
+    u.campaign_name
 
 
 reverse : comparable -> comparable -> Order
@@ -574,18 +566,18 @@ reverse x y =
             EQ
 
 
-applyFilter : Campaign.CampaignWithRoleSet -> Array Campaign.CampaignWithRoles -> Array Campaign.CampaignWithRoles
-applyFilter filterCampaign userArray =
-    Array.filter
-        (\userWithRole ->
-            let
-                userRoleSet =
-                    List.map (\r -> r.id) userWithRole.roles
-                        |> Set.fromList
-            in
-                Set.size (Set.intersect filterCampaign.roles userRoleSet) > 0
-        )
-        userArray
+applyFilter : CampaignBase.Campaign -> Array Campaign.CampaignWithRoles -> Array Campaign.CampaignWithRoles
+applyFilter filterCampaign campaignArray =
+    -- Array.filter
+    --     (\campaignWithRole ->
+    --         let
+    --             campaignRoleSet =
+    --                 List.map (\r -> r.id) campaignWithRole.roles
+    --                     |> Set.fromList
+    --         in
+    --             Set.size (Set.intersect filterCampaign.roles campaignRoleSet) > 0
+    --     )
+    campaignArray
 
 
 filteredModel : Campaign.Model -> Campaign.Model
@@ -594,12 +586,12 @@ filteredModel model =
         filteredCampaigns =
             case model.filterState of
                 Applied ->
-                    applyFilter model.filterScratchCampaign model.users
+                    applyFilter model.filterScratchCampaign model.campaigns
 
                 _ ->
-                    model.users
+                    model.campaigns
 
-        userCount =
+        campaignCount =
             Array.length filteredCampaigns
 
         ( selectedCampaignId, selectedCampaignIndex, firstIndex, lastIndex ) =
@@ -613,22 +605,22 @@ filteredModel model =
                             0
 
                         lastIdx =
-                            if userCount > model.pageSize then
+                            if campaignCount > model.pageSize then
                                 model.pageSize - 1
                             else
-                                userCount - 1
+                                campaignCount - 1
                     in
                         case firstCampaign of
                             Nothing ->
                                 ( Nothing, Nothing, -1, -1 )
 
-                            Just user ->
-                                ( Just user.id, Just 0, firstIdx, lastIdx )
+                            Just campaign ->
+                                ( Just campaign.id, Just 0, firstIdx, lastIdx )
 
                 _ ->
                     ( model.selectedCampaignId, model.selectedCampaignIndex, model.startDisplayIndex, model.endDisplayIndex )
 
-        --if we have done an edit then the selected user and index will stay the same
+        --if we have done an edit then the selected campaign and index will stay the same
     in
         { model
             | selectedCampaignId = selectedCampaignId

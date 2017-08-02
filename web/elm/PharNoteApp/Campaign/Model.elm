@@ -10,7 +10,7 @@ import Set exposing (Set)
 
 
 type alias Model =
-    { users : Array CampaignBase.Campaign
+    { campaigns : Array CampaignBase.Campaign
     , filteredCampaigns : Array CampaignBase.Campaign
     , formAction : FormAction
     , selectedCampaignId : Maybe Int
@@ -20,7 +20,7 @@ type alias Model =
     , pageSize : Int
     , startDisplayIndex : Int
     , endDisplayIndex : Int
-    , userSliderValue : Float
+    , campaignSliderValue : Float
     , scratchCampaign : CampaignBase.Campaign
     , filterScratchCampaign : CampaignBase.Campaign
     , selectedTab : CampaignTab
@@ -63,6 +63,43 @@ type FormAction
 type CampaignType
     = WithRoles CampaignBase.Campaign
     | WithSet CampaignBase.Campaign
+
+
+type alias CampaignWithRoleString =
+    { id : Int
+    , campaign_name : String
+    , campaign_desc : String
+
+    -- , product : Product
+    -- , location : Location
+    -- , requirements : List Requirement
+    , planned_start : String
+    , planned_end : String
+    , actual_start : String
+    , actual_end : String
+    , order_number : String
+    }
+
+
+type alias CampaignWithRoles =
+    { id : Int
+    , campaign_name : String
+    , campaign_desc : String
+
+    -- , product : Product
+    -- , location : Location
+    -- , requirements : List Requirement
+    , planned_start : String
+    , planned_end : String
+    , actual_start : String
+    , actual_end : String
+    , order_number : String
+    }
+
+
+emptyCampaign : CampaignBase.Campaign
+emptyCampaign =
+    CampaignBase.Campaign 0 "" "" "" "" "" "" ""
 
 
 

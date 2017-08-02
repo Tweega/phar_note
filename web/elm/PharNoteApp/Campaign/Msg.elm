@@ -23,8 +23,6 @@ type Msg
     | ProcessRefDataGet (Result Http.Error (List Role.Role))
     | SetFirstName String
     | SetLastName String
-    | SetEmail String
-    | SetPhotoUrl String
     | ToggleRole Int
     | CampaignPost CampaignBase.Campaign
     | CampaignPut CampaignBase.Campaign

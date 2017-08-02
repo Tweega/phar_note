@@ -63,7 +63,7 @@ defmodule PharNote.Router do
     resources "/product", ProductController, only: [:index]
     resources "/productstrength", ProductStrengthController, only: [:index]
 
-    resources "/campaign", CampaignController, only: [:index]
+    resources "/campaigns", CampaignController, only: [:index]
     #resources "/requirement", RequirementController, only: [:index]
     #resources "/fulfilment", FulfilmentController, only: [:index]
 

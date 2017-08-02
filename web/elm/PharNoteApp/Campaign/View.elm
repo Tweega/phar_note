@@ -187,14 +187,6 @@ userDetails user =
                 , ( "Last Name", user.campaign_desc )
                 ]
             )
-        , Options.div []
-            [ Options.img
-                [ Options.attribute <| Html.Attributes.src user.photo_url
-                , css "height" "96px"
-                , css "width" "96px"
-                ]
-                []
-            ]
         ]
 
 
@@ -310,6 +302,9 @@ tableCard model mdlStore =
 
         userCount =
             Array.length model.filteredCampaigns
+
+        temp =
+            Debug.log "campaign count" userCount
 
         actions =
             case model.refDataStatus of
@@ -651,14 +646,16 @@ userCard user refData action mdlStore =
                             []
 
         textStuff =
-            if List.length user.roles > 0 then
-                [ userDetails user
-                , rolesHeading
-                , roleDetails user.roles
-                ]
-            else
-                [ userDetails user
-                ]
+            -- if List.length user.roles > 0 then
+            --     [ userDetails user
+            --     , rolesHeading
+            --     , roleDetails user.roles
+            --     ]
+            -- else
+            --     [ userDetails user
+            --     ]
+            [ userDetails user
+            ]
     in
         Card.view
             [ css "width" "100%"
@@ -941,15 +938,16 @@ roleOptions roleSet refData mdlStore =
         roles =
             Dict.toList refData.roles
     in
-        List.map
-            (\( index, role ) ->
-                let
-                    value =
-                        Set.member role.id roleSet
-                in
-                    roleOption role index value mdlStore
-            )
-            roles
+        -- List.map
+        --     (\( index, role ) ->
+        --         let
+        --             value =
+        --                 Set.member role.id roleSet
+        --         in
+        --             roleOption role index value mdlStore
+        --     )
+        --roles
+        [ text "roles placecholder1" ]
 
 
 roleFilterOptions : Set Int -> Campaign.RefData -> Material.Model -> List (Html AppMsg.Msg)
@@ -959,15 +957,16 @@ roleFilterOptions roleSet refData mdlStore =
         roles =
             Dict.toList refData.roles
     in
-        List.map
-            (\( index, role ) ->
-                let
-                    value =
-                        Set.member role.id roleSet
-                in
-                    roleFilterOption role index value mdlStore
-            )
-            roles
+        -- List.map
+        --     (\( index, role ) ->
+        --         let
+        --             value =
+        --                 Set.member role.id roleSet
+        --         in
+        --             roleFilterOption role index value mdlStore
+        --     )
+        --roles
+        [ text "roles placeholder 2" ]
 
 
 roleEditCard : Set Int -> Campaign.RefData -> Material.Model -> Html AppMsg.Msg
@@ -1069,7 +1068,7 @@ slider model =
     p [ style [ ( "width", "300px" ) ] ]
         [ Slider.view
             [ Slider.onChange (\value -> AppMsg.MsgForCampaign (CampaignMsg.CampaignSlider value))
-            , Slider.value model.userSliderValue
+            , Slider.value model.campaignSliderValue
             ]
         ]
 
@@ -1210,14 +1209,15 @@ userFilterCard filterCampaign refData mdlStore =
                             , ( "Last Name", filterCampaign.campaign_desc, (\f -> AppMsg.MsgForCampaign (CampaignMsg.SetFilterLastName f)) )
                             ]
                         )
-                    , Options.div []
-                        [ Options.styled Html.ul
-                            [ css "list-style-type" "none"
-                            , css "margin" "0"
-                            , css "padding" "0"
-                            ]
-                            (roleFilterOptions filterCampaign.roles refData mdlStore)
-                        ]
+
+                    -- , Options.div []
+                    --     [ Options.styled Html.ul
+                    --         [ css "list-style-type" "none"
+                    --         , css "margin" "0"
+                    --         , css "padding" "0"
+                    --         ]
+                    --         (roleFilterOptions filterCampaign.roles refData mdlStore)
+                    --     ]
                     ]
                 ]
             , Card.actions

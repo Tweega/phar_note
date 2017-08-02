@@ -10,6 +10,8 @@ import PharNoteApp.Equipment.Update as Equipment
 import PharNoteApp.Equipment.Rest as EquipmentData
 import PharNoteApp.EquipmentClass.Update as EquipmentClass
 import PharNoteApp.EquipmentClass.Rest as EquipmentClassData
+import PharNoteApp.Campaign.Update as Campaign
+import PharNoteApp.Campaign.Rest as CampaignData
 import PharNoteApp.Chart.Update as Chart
 import PharNoteApp.Route as Route
 import Material
@@ -62,7 +64,15 @@ update msg model =
                 )
 
         MsgForCampaign campaignMsg ->
-            model ! []
+            let
+                ( campaign_data, cmd ) =
+                    Campaign.update campaignMsg model.campaignData
+            in
+                ( { model
+                    | campaignData = campaign_data
+                  }
+                , cmd
+                )
 
         MsgForEquipment equipMsg ->
             let
@@ -132,6 +142,14 @@ urlUpdate model route =
                     case model.equipmentClassData.selectedEquipmentClassId of
                         Nothing ->
                             [ EquipmentClassData.get ]
+
+                        Just something ->
+                            []
+
+                Just Route.Campaigns ->
+                    case model.campaignData.selectedCampaignId of
+                        Nothing ->
+                            [ CampaignData.get ]
 
                         Just something ->
                             []

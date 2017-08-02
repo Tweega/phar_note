@@ -47,14 +47,14 @@ type alias Fulfilment =
 
 type alias Campaign =
     { id : Int
+    , campaign_name : String
+    , campaign_desc : String
 
     -- , product : Product
     -- , location : Location
     -- , requirements : List Requirement
     , planned_start : String
     , planned_end : String
-    , campaign_name : String
-    , campaign_desc : String
     , actual_start : String
     , actual_end : String
     , order_number : String
@@ -63,22 +63,18 @@ type alias Campaign =
 
 type alias CampaignActual =
     { id : Int
+    , campaign_name : String
+    , campaign_desc : String
     , product : Product
     , location : Location
     , requirements : List Requirement
     , planned_start : Date
     , planned_end : Date
-    , campaign_name : String
-    , campaign_desc : String
     , actual_start : Date
     , actual_end : Date
     , order_number : String
 
     -- , status
-    , first_name : String
-    , last_name : String
-    , email : String
-    , photo_url : String
     }
 
 

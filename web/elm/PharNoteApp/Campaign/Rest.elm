@@ -22,16 +22,16 @@ decoder =
         |> Json.Decode.Pipeline.required "id" Json.Decode.int
         |> Json.Decode.Pipeline.required "campaign_name" Json.Decode.string
         |> Json.Decode.Pipeline.required "campaign_desc" Json.Decode.string
-        |> Json.Decode.Pipeline.required "planned_end" Json.Decode.string
-        |> Json.Decode.Pipeline.required "actual_start" Json.Decode.string
-        |> Json.Decode.Pipeline.required "actual_start" Json.Decode.string
-        |> Json.Decode.Pipeline.required "actual_end" Json.Decode.string
+        |> Json.Decode.Pipeline.optional "planned_start" Json.Decode.string ""
+        |> Json.Decode.Pipeline.optional "planned_end" Json.Decode.string ""
+        |> Json.Decode.Pipeline.optional "actual_start" Json.Decode.string ""
+        |> Json.Decode.Pipeline.optional "actual_end" Json.Decode.string ""
         |> Json.Decode.Pipeline.required "order_number" Json.Decode.string
 
 
 urlCampaigns : String
 urlCampaigns =
-    "http://localhost:4000/api/campaign"
+    "http://localhost:4000/api/campaigns"
 
 
 urlRefData : String
@@ -43,6 +43,11 @@ get : Cmd AppMsg.Msg
 get =
     --Http.send AppMsg.MsgForCampaign ProcessCampaignGet (Http.get url listDecoder)
     Http.send (\result -> AppMsg.MsgForCampaign (ProcessCampaignGet result)) (Http.get urlCampaigns listDecoder)
+
+
+getRefData : Cmd AppMsg.Msg
+getRefData =
+    Cmd.none
 
 
 
@@ -73,8 +78,14 @@ get =
 --         ]
 --
 --
--- post : Campaign.CampaignWithRoleString -> Cmd AppMsg.Msg
--- post user =
+
+
+post : Campaign.CampaignWithRoleString -> Cmd AppMsg.Msg
+post user =
+    Cmd.none
+
+
+
 --     let
 --         body =
 --             Http.stringBody "application/json"
@@ -120,8 +131,14 @@ get =
 -- --Http.send (AppMsg.MsgForCampaign ProcessCampaignPost) putRequest
 --
 --
--- delete : Campaign.CampaignWithRoles -> Cmd AppMsg.Msg
--- delete user =
+
+
+delete : Campaign.CampaignWithRoles -> Cmd AppMsg.Msg
+delete user =
+    Cmd.none
+
+
+
 --     let
 --         putUrl =
 --             if user.id < 1 then

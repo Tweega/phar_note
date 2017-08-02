@@ -23,6 +23,9 @@ init location =
         ( equipData, equipCmd ) =
             EquipmentInit.init
 
+        ( campaignData, campaignCmd ) =
+            CampaignInit.init
+
         --  ( chartData, chartCmd ) =
         --      ChartInit.init
         maybeRoute =
@@ -32,7 +35,7 @@ init location =
         , history = Route.init maybeRoute
         , userData = userData
         , roleData = RoleInit.initialModel
-        , campaignData = CampaignInit.initialModel
+        , campaignData = campaignData
         , equipmentData = equipData
         , equipmentClassData = EquipmentClassInit.initialModel
         , chartData = ChartInit.initialModel
