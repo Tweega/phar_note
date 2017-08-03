@@ -1,6 +1,6 @@
 module PharNoteApp.EquipmentClass.Init exposing (..)
 
-import PharNoteApp.EquipmentClass.Model exposing (Model, FormAction(..), EquipmentClassWithPrecision, emptyEquipmentClassWithPrecision)
+import PharNoteApp.EquipmentClass.Model exposing (Model, FormAction(..), PrecisionAction(..), EquipmentClassWithPrecision, emptyEquipmentClassWithPrecision)
 import PharNoteApp.EquipmentClass.BaseModel as EquipmentClassBase
 import PharNoteApp.Msg as AppMsg
 import Material.Table as Table
@@ -21,8 +21,10 @@ initialModel : Model
 initialModel =
     { classes = Array.empty
     , formAction = None
+    , precisionAction = PrecisionNone
     , selectedEquipmentClassId = Nothing
     , selectedEquipmentClassIndex = Nothing
+    , selectedPrecisionId = Nothing
     , previousSelectedEquipmentClassId = Nothing
     , previousSelectedEquipmentClassIndex = Nothing
     , pageSize = 6

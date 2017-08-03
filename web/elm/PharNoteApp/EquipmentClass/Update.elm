@@ -19,6 +19,9 @@ update msg model =
         NoOp ->
             model ! []
 
+        PrecisionKeyX key ->
+            model ! []
+
         KeyX key ->
             let
                 userCount =
@@ -90,6 +93,35 @@ update msg model =
 
                         _ ->
                             model
+
+                --populateScratchEquipmentClassData user (Just idx) model model.formAction
+            in
+                newModel
+                    ! []
+
+        SelectPrecision idx ->
+            let
+                equipClass =
+                    View.maybeFindEquipmentClass model.selectedEquipmentClassIndex model.classes
+
+                newModel =
+                    case equipClass of
+                        Nothing ->
+                            model
+
+                        Just class ->
+                            let
+                                precision =
+                                    View.maybeFindPrecision (Just idx) class.precisions
+                            in
+                                case precision of
+                                    Just p ->
+                                        { model
+                                            | selectedPrecisionId = Just p.id
+                                        }
+
+                                    _ ->
+                                        model
 
                 --populateScratchEquipmentClassData user (Just idx) model model.formAction
             in

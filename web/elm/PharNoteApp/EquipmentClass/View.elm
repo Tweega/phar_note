@@ -1,9 +1,9 @@
-module PharNoteApp.EquipmentClass.View exposing (view, alwaysFindEquipmentClass, maybeFindEquipmentClass)
+module PharNoteApp.EquipmentClass.View exposing (view, alwaysFindEquipmentClass, maybeFindEquipmentClass, maybeFindPrecision)
 
 import PharNoteApp.EquipmentClass.Rest as Rest
 import PharNoteApp.EquipmentClass.Model as EquipmentClass
 import PharNoteApp.EquipmentClass.BaseModel as EquipmentClassBase
-import PharNoteApp.EquipmentClass.Model exposing (FormAction(..))
+import PharNoteApp.EquipmentClass.Model exposing (FormAction(..), PrecisionAction(..))
 import PharNoteApp.EquipmentClass.Msg as EquipmentClassMsg exposing (Msg(..))
 import PharNoteApp.Role.BaseModel as RoleBase
 import PharNoteApp.Msg as AppMsg
@@ -40,10 +40,10 @@ view model mdlStore =
         cards =
             case model.formAction of
                 Edit ->
-                    (editCards model.scratchEquipmentClass model.formAction mdlStore)
+                    (editCards model.scratchEquipmentClass model.formAction model.precisionAction model.selectedPrecisionId mdlStore)
 
                 Create ->
-                    (editCards model.scratchEquipmentClass model.formAction mdlStore)
+                    (editCards model.scratchEquipmentClass model.formAction model.precisionAction model.selectedPrecisionId mdlStore)
 
                 _ ->
                     ((viewCards (alwaysFindEquipmentClass model.selectedEquipmentClassIndex model.classes) model.formAction mdlStore))
@@ -82,8 +82,8 @@ viewCards equipClass action mdlStore =
     ]
 
 
-editCards : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> List (Html AppMsg.Msg)
-editCards scratchEquipmentClass action mdlStore =
+editCards : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> List (Html AppMsg.Msg)
+editCards scratchEquipmentClass action precisionAction maybePrecisionId mdlStore =
     --check that ref data is loaded.
     let
         html =
@@ -93,8 +93,7 @@ editCards scratchEquipmentClass action mdlStore =
                 , css "height" "32px"
                 ]
                 []
-
-            --, precisionEditCard scratchEquipmentClass.precisions refData mdlStore
+            , precisionEditCard scratchEquipmentClass.precisions precisionAction maybePrecisionId mdlStore
             ]
     in
         html
@@ -108,6 +107,20 @@ maybeFindEquipmentClass maybeIndex equipClass =
 
         _ ->
             Nothing
+
+
+maybeFindPrecision : Maybe Int -> List EquipmentClassBase.EquipmentPrecision -> Maybe EquipmentClassBase.EquipmentPrecision
+maybeFindPrecision maybeId precisions =
+    case precisions of
+        [] ->
+            Nothing
+
+        precision :: t ->
+            if precision.id == Maybe.withDefault -1 maybeId then
+                Just precision
+            else
+                maybeFindPrecision maybeId
+                    t
 
 
 alwaysFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.EquipmentClassWithPrecision
@@ -237,11 +250,11 @@ equipClassTable equipClass selectedEquipmentClassId order action startDisplayInd
         divAt =
             case action of
                 EquipmentClass.None ->
-                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.KeyX x)) keyCode)
+                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.PrecisionKeyX x)) keyCode)
                     ]
 
                 EquipmentClass.CancelNewEquipmentClass ->
-                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.KeyX x)) keyCode)
+                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.PrecisionKeyX x)) keyCode)
                     ]
 
                 _ ->
@@ -585,7 +598,7 @@ precisionsHeading =
         , css "font-size" "1.3em"
         , css "margin-top" "2em"
         ]
-        [ text "Roles"
+        [ text "Precisions"
         ]
 
 
@@ -773,8 +786,8 @@ equipClassEditCard scratchEquipmentClass action mdlStore =
             ]
 
 
-precisionEditCard : Set Int -> Material.Model -> Html AppMsg.Msg
-precisionEditCard precisionSet mdlStore =
+precisionEditCardx : List EquipmentClassBase.EquipmentPrecision -> Material.Model -> Html AppMsg.Msg
+precisionEditCardx precisionSet mdlStore =
     Card.view
         [ css "width" "100%"
         , Color.background (Color.color Color.Pink Color.S500)
@@ -799,7 +812,7 @@ precisionEditCard precisionSet mdlStore =
         , Card.actions
             [ Card.border ]
             [ Button.render AppMsg.Mdl
-                [ 1, 1 ]
+                [ 11, 1 ]
                 mdlStore
                 [ Button.ripple, white ]
                 [ text "Great" ]
@@ -876,3 +889,144 @@ pager model =
 --             , Slider.value model.equipClassSliderValue
 --             ]
 --         ]
+--precisionEditCard : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
+
+
+precisionEditCard : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
+precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
+    let
+        textStuff =
+            precisionTable precisionList precisionAction maybePrecisionId mdlStore
+    in
+        Card.view
+            [ css "width" "80%"
+            , Color.background (Color.color Color.Yellow Color.S500)
+
+            --, Options.cs "demo-options"
+            ]
+            [ Card.title
+                [ Color.background (Color.color Color.Blue Color.S500)
+                , css "padding" "0"
+
+                -- Clear default padding to encompass scrim
+                , Color.background <| Color.color Color.Teal Color.S300
+                ]
+                [ Card.head
+                    [ white
+
+                    --, Options.scrim 0.75
+                    --, css "padding" "16px"
+                    -- Restore default padding inside scrim
+                    , css "width" "100%"
+                    ]
+                    [ text "EquipmentClass" ]
+                ]
+            , Card.text
+                [ css "height" "400px"
+                , css "width" "100%"
+                ]
+                [ Options.div
+                    [ css "width" "100%"
+                    ]
+                    [ textStuff ]
+                ]
+
+            -- , Card.actions
+            --     [ Card.border
+            --     , css "float" "left"
+            --     ]
+            --actions
+            ]
+
+
+precisionTable : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
+precisionTable precisionList precisionAction maybePrecisionId mdlStore =
+    let
+        divAt =
+            case precisionAction of
+                EquipmentClass.PrecisionNone ->
+                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.PrecisionKeyX x)) keyCode)
+                    ]
+
+                _ ->
+                    []
+
+        divAttributes =
+            [ tabindex 0
+            , style
+                [ ( "height", "100%" )
+                , ( "width", "100%" )
+                , ( "overflow-y", "hidden" )
+                , ( "overflow-x", "hidden" )
+                ]
+            ]
+                ++ divAt
+    in
+        div
+            divAttributes
+            [ Table.table
+                [ Options.css "margin" "0px"
+                , Options.css "padding" "0px"
+                , Options.css "width" "100%"
+                ]
+                [ --equipClassTableHeader order
+                  tbody [] (precisionRows precisionList precisionAction maybePrecisionId)
+                ]
+            ]
+
+
+precisionRows : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> List (Html AppMsg.Msg)
+precisionRows precisions action selectedPrecisionId =
+    let
+        precisionId =
+            case selectedPrecisionId of
+                Just id ->
+                    id
+
+                Nothing ->
+                    -1
+    in
+        precisions
+            |> List.indexedMap (,)
+            |> List.map (precisionRow action precisionId)
+
+
+
+--bit of a pain to have to switch in and out of arrays.  May want to rethink this.  Possibly keep lists and just have an array containing ids backed by a map?
+--look at using array.fold(l/r)
+
+
+precisionRow : EquipmentClass.PrecisionAction -> Int -> ( Int, EquipmentClassBase.EquipmentPrecision ) -> Html AppMsg.Msg
+precisionRow action equipClassId ( idx, precision ) =
+    let
+        f allowSelect =
+            []
+                |> (\a ->
+                        if equipClassId == precision.id then
+                            Options.css "background-color" "green" :: a
+                        else
+                            a
+                   )
+                |> (\a ->
+                        if allowSelect == True then
+                            Options.onClick (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SelectPrecision precision.id)) :: a
+                        else
+                            a
+                   )
+
+        row_style =
+            case action of
+                EquipmentClass.PrecisionNone ->
+                    f True
+
+                EquipmentClass.PrecisionConfirmDelete ->
+                    f False
+
+                _ ->
+                    []
+    in
+        Table.tr row_style
+            [ Table.td [] [ text precision.precision ]
+
+            --precisions tk
+            ]

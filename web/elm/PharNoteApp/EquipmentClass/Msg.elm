@@ -14,6 +14,7 @@ type Msg
     = NoOp
     | EditEquipmentClass
     | SelectEquipmentClass Int
+    | SelectPrecision Int
     | DeleteEquipmentClass
     | NewEquipmentClass
     | CancelNewEquipmentClass
@@ -27,6 +28,7 @@ type Msg
     | EquipmentClassPut EquipmentClass.EquipmentClassWithPrecision
     | Reorder
     | KeyX Int
+    | PrecisionKeyX Int
     | PaginateEquipmentClass Int
     | ConfirmDeleteEquipmentClass
     | CancelDeleteEquipmentClass

@@ -27,6 +27,36 @@ defmodule PharNote.EquipmentClasses do
       |> unique_constraint(:name)
   end
 
+  def changeset_new(equipment_class, params \\ :empty) do
+    #assuming here that new user will not have any roles, which is probably not going to be the case
+    equipment_class
+      |> cast(params, [:name, :description])
+      |> unique_constraint(:name)
+  end
+
+  def changesetx(equipment_class, params \\ %{}) do
+    # struct
+    # |> Ecto.Changeset.cast(params, [:title, :body])
+    # |> Ecto.Changeset.put_assoc(:tags, parse_tags(params))
+
+    equipment_class
+      |> Repo.preload(:equipment_precision)
+      |> cast(params, [:name, :description])
+      |> put_assoc(:equipment_precision, parse_precisions(params))
+      |> unique_constraint(:name)
+  end
+
+  defp parse_precisions(params)  do
+    (params["precisions"] || "")
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(& &1 == "")
+    |> Enum.map(&get_or_insert_tagx/1)
+  end
+
+  defp get_or_insert_tagx(precisionID) do
+    Repo.get(PharNote.EquipmentPrecision, precisionID)
+  end
 
   def class(query) do
 

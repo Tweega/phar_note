@@ -27,8 +27,10 @@ type alias EquipmentClassWithPrecisionString =
 type alias Model =
     { classes : Array EquipmentClassWithPrecision
     , formAction : FormAction
+    , precisionAction : PrecisionAction
     , selectedEquipmentClassId : Maybe Int
     , selectedEquipmentClassIndex : Maybe Int
+    , selectedPrecisionId : Maybe Int
     , previousSelectedEquipmentClassId : Maybe Int
     , previousSelectedEquipmentClassIndex : Maybe Int
     , pageSize : Int
@@ -48,6 +50,13 @@ type FormAction
     | Delete
     | CancelNewEquipmentClass
     | None
+
+
+type PrecisionAction
+    = PrecisionCreate
+    | PrecisionConfirmDelete
+    | PrecisionDelete
+    | PrecisionNone
 
 
 emptyEquipmentClassWithPrecision : EquipmentClassWithPrecision
