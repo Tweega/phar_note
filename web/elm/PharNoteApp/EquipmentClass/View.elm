@@ -87,13 +87,14 @@ editCards scratchEquipmentClass action precisionAction maybePrecisionId mdlStore
     --check that ref data is loaded.
     let
         html =
-            [ equipClassEditCard scratchEquipmentClass action mdlStore
+            [ equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId mdlStore
             , Options.div
                 [ Grid.size All 1
                 , css "height" "32px"
                 ]
                 []
-            , precisionEditCard scratchEquipmentClass.precisions precisionAction maybePrecisionId mdlStore
+
+            --, precisionEditCard scratchEquipmentClass.precisions precisionAction maybePrecisionId mdlStore
             ]
     in
         html
@@ -231,7 +232,8 @@ equipClassForm equipClass action mdlStore =
             [ label [] [ text "Class Description" ]
             , input [ onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetClassDesc s)), value equipClass.description, class "form-control" ] []
             ]
-        , precisionsHeading
+
+        --, precisionsHeading
         , Options.styled Html.ul
             [ css "list-style-type" "none"
             , css "margin" "0"
@@ -425,6 +427,11 @@ equipClassRow action equipClassId ( idx, equipClass ) =
 white : Options.Property a b
 white =
     Color.text Color.white
+
+
+black : Options.Property a b
+black =
+    Color.text Color.black
 
 
 updatesCard : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
@@ -706,8 +713,8 @@ precisionInfo i precision =
         ]
 
 
-equipClassEditCard : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> Material.Model -> Html AppMsg.Msg
-equipClassEditCard scratchEquipmentClass action mdlStore =
+equipClassEditCard : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
+equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId mdlStore =
     let
         buttonText =
             if action == Edit then
@@ -763,6 +770,7 @@ equipClassEditCard scratchEquipmentClass action mdlStore =
                 ]
             , Card.text [ white ]
                 [ equipClassForm scratchEquipmentClass action mdlStore
+                , precisionEditCard scratchEquipmentClass.precisions precisionAction maybePrecisionId mdlStore
                 ]
             , Card.actions
                 [ Card.border ]
@@ -892,14 +900,47 @@ pager model =
 --precisionEditCard : EquipmentClass.Model -> Material.Model -> Html AppMsg.Msg
 
 
+addAction : List Int -> Material.Model -> AppMsg.Msg -> String -> String -> Bool -> List (Html AppMsg.Msg) -> List (Html AppMsg.Msg)
+addAction indexList mdlStore msg float icon include actions =
+    if include == True then
+        actions
+            ++ [ Button.render AppMsg.Mdl
+                    indexList
+                    mdlStore
+                    [ Button.icon
+                    , Options.onClick msg
+                    , css "float" float
+                    ]
+                    [ Icon.i icon ]
+               ]
+    else
+        actions
+
+
+fBool : Bool
+fBool =
+    True
+
+
 precisionEditCard : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
 precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
     let
         textStuff =
             precisionTable precisionList precisionAction maybePrecisionId mdlStore
+
+        actions =
+            []
+                |> addAction
+                    [ 12, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewEquipmentClass)
+                    "left"
+                    "person_add"
+                    fBool
     in
         Card.view
             [ css "width" "80%"
+            , css "margin-top" "2em"
             , Color.background (Color.color Color.Yellow Color.S500)
 
             --, Options.cs "demo-options"
@@ -919,7 +960,7 @@ precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
                     -- Restore default padding inside scrim
                     , css "width" "100%"
                     ]
-                    [ text "EquipmentClass" ]
+                    [ text "Precisions" ]
                 ]
             , Card.text
                 [ css "height" "400px"
@@ -927,15 +968,29 @@ precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
                 ]
                 [ Options.div
                     [ css "width" "100%"
+                    , css "display" "flex"
+                    , css "flex-direction" "column"
+                    , css "justify-content" "space-between"
+                    , css "height" "100%"
                     ]
-                    [ textStuff ]
+                    [ Options.div
+                        [ css "width" "100%"
+                        , css "align-self" "flex-start"
+                        ]
+                        [ textStuff ]
+                    , Options.div
+                        [ css "width" "100%"
+                        , css "align-self" "flex-end"
+                        ]
+                        [ text "text edit box somewhere here" ]
+                    ]
                 ]
-
-            -- , Card.actions
-            --     [ Card.border
-            --     , css "float" "left"
-            --     ]
-            --actions
+            , Card.actions
+                [ Card.border
+                , css "float" "left"
+                , black
+                ]
+                actions
             ]
 
 
@@ -997,12 +1052,12 @@ precisionRows precisions action selectedPrecisionId =
 
 
 precisionRow : EquipmentClass.PrecisionAction -> Int -> ( Int, EquipmentClassBase.EquipmentPrecision ) -> Html AppMsg.Msg
-precisionRow action equipClassId ( idx, precision ) =
+precisionRow action precisionId ( idx, precision ) =
     let
         f allowSelect =
             []
                 |> (\a ->
-                        if equipClassId == precision.id then
+                        if precisionId == precision.id then
                             Options.css "background-color" "green" :: a
                         else
                             a

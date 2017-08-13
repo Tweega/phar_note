@@ -446,7 +446,7 @@ filteredModel model classes =
         equipmentCount =
             Array.length classes
 
-        ( selectedEquipmentId, selectedEquipmentIndex, firstIndex, lastIndex ) =
+        ( selectedEquipmentId, selectedEquipmentIndex, firstIndex, lastIndex, selectedPrecisionId ) =
             case model.selectedEquipmentClassIndex of
                 Nothing ->
                     let
@@ -461,22 +461,43 @@ filteredModel model classes =
                                 model.pageSize - 1
                             else
                                 equipmentCount - 1
+
+                        selectedPrecisionId =
+                            case firstEquipment of
+                                Nothing ->
+                                    -1
+
+                                Just equip ->
+                                    let
+                                        fp =
+                                            List.head equip.precisions
+                                    in
+                                        case fp of
+                                            Just precision ->
+                                                precision.id
+
+                                            _ ->
+                                                -1
+
+                        x =
+                            Debug.log "xxx precision id" selectedPrecisionId
                     in
                         case firstEquipment of
                             Nothing ->
-                                ( Nothing, Nothing, -1, -1 )
+                                ( Nothing, Nothing, -1, -1, Nothing )
 
                             Just equipment ->
-                                ( Just equipment.id, Just 0, firstIdx, lastIdx )
+                                ( Just equipment.id, Just 0, firstIdx, lastIdx, Just selectedPrecisionId )
 
                 _ ->
-                    ( model.selectedEquipmentClassId, model.selectedEquipmentClassIndex, model.startDisplayIndex, model.endDisplayIndex )
+                    ( model.selectedEquipmentClassId, model.selectedEquipmentClassIndex, model.startDisplayIndex, model.endDisplayIndex, model.selectedPrecisionId )
 
         --if we have done an edit then the selected equipment and index will stay the same
     in
         { model
             | classes = classes
             , selectedEquipmentClassId = selectedEquipmentId
+            , selectedPrecisionId = selectedPrecisionId
             , selectedEquipmentClassIndex = selectedEquipmentIndex
             , startDisplayIndex = firstIndex
             , endDisplayIndex = lastIndex
