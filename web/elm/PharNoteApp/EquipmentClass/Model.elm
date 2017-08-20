@@ -24,6 +24,12 @@ type alias EquipmentClassWithPrecisionString =
     }
 
 
+type alias Precision =
+    { id : Int
+    , precision : String
+    }
+
+
 type alias Model =
     { classes : Array EquipmentClassWithPrecision
     , formAction : FormAction
@@ -31,13 +37,17 @@ type alias Model =
     , selectedEquipmentClassId : Maybe Int
     , selectedEquipmentClassIndex : Maybe Int
     , selectedPrecisionId : Maybe Int
+    , selectedPrecisionIndex : Maybe Int
     , previousSelectedEquipmentClassId : Maybe Int
     , previousSelectedEquipmentClassIndex : Maybe Int
+    , previousSelectedPrecisionId : Maybe Int
+    , previousSelectedPrecisionIndex : Maybe Int
     , pageSize : Int
     , startDisplayIndex : Int
     , endDisplayIndex : Int
     , classSliderValue : Float
     , scratchEquipmentClass : EquipmentClassWithPrecision
+    , scratchPrecision : Precision
     , order : Maybe Table.Order
     , errors : Maybe Http.Error
     }
@@ -54,14 +64,21 @@ type FormAction
 
 type PrecisionAction
     = PrecisionCreate
+    | PrecisionEdit
     | PrecisionConfirmDelete
     | PrecisionDelete
+    | CancelNewPrecision
     | PrecisionNone
 
 
 emptyEquipmentClassWithPrecision : EquipmentClassWithPrecision
 emptyEquipmentClassWithPrecision =
     EquipmentClassWithPrecision 0 "" "" []
+
+
+emptyPrecision : Precision
+emptyPrecision =
+    Precision 0 ""
 
 
 scratchToEquipmentClassWithPrecisionString : EquipmentClassWithPrecision -> EquipmentClassWithPrecisionString

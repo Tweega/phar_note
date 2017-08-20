@@ -129,14 +129,7 @@ update msg model =
             { model | formAction = User.None } ! []
 
         ConfirmDeleteUser ->
-            let
-                idx =
-                    model.selectedUserIndex
-
-                usr =
-                    View.maybeFindUser idx model.filteredUsers
-            in
-                { model | formAction = User.ConfirmDelete } ! []
+            { model | formAction = User.ConfirmDelete } ! []
 
         DeleteUser ->
             let

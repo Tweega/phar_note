@@ -118,6 +118,7 @@ update msg model =
                                     Just p ->
                                         { model
                                             | selectedPrecisionId = Just p.id
+                                            , scratchPrecision = EquipmentClass.Precision p.id p.precision
                                         }
 
                                     _ ->
@@ -157,14 +158,7 @@ update msg model =
             { model | formAction = EquipmentClass.None } ! []
 
         ConfirmDeleteEquipmentClass ->
-            let
-                idx =
-                    model.selectedEquipmentClassIndex
-
-                usr =
-                    View.maybeFindEquipmentClass idx model.classes
-            in
-                { model | formAction = EquipmentClass.ConfirmDelete } ! []
+            { model | formAction = EquipmentClass.ConfirmDelete } ! []
 
         DeleteEquipmentClass ->
             let
@@ -226,11 +220,11 @@ update msg model =
                 idx =
                     model.selectedEquipmentClassIndex
 
-                user =
+                eqClass =
                     View.maybeFindEquipmentClass idx model.classes
 
                 newModel =
-                    populateScratchEquipmentClassData user idx model EquipmentClass.Edit
+                    populateScratchEquipmentClassData eqClass idx model EquipmentClass.Edit
             in
                 newModel
                     ! []
@@ -263,6 +257,99 @@ update msg model =
                             }
             in
                 newModel ! []
+
+        CancelNewPrecision ->
+            let
+                newModel =
+                    case model.precisionAction of
+                        EquipmentClass.PrecisionCreate ->
+                            { model
+                                | precisionAction = EquipmentClass.CancelNewPrecision
+                                , selectedPrecisionId = model.previousSelectedPrecisionId
+                                , selectedPrecisionIndex = model.previousSelectedPrecisionIndex
+                            }
+
+                        _ ->
+                            { model
+                                | precisionAction = EquipmentClass.CancelNewPrecision
+                            }
+            in
+                newModel ! []
+
+        CancelDeletePrecision ->
+            { model | precisionAction = EquipmentClass.PrecisionNone } ! []
+
+        ConfirmDeletePrecision ->
+            { model | precisionAction = EquipmentClass.PrecisionConfirmDelete } ! []
+
+        DeletePrecision ->
+            let
+                classIdx =
+                    model.selectedEquipmentClassIndex
+
+                eqClass =
+                    View.maybeFindEquipmentClass classIdx model.classes
+
+                ( class, precision ) =
+                    case eqClass of
+                        Nothing ->
+                            ( EquipmentClass.emptyEquipmentClassWithPrecision, Nothing )
+
+                        Just c ->
+                            let
+                                precisionIdx =
+                                    model.selectedPrecisionIndex
+                            in
+                                ( c, View.maybeFindPrecision precisionIdx c.precisions )
+            in
+                case precision of
+                    Nothing ->
+                        model ! []
+
+                    Just p ->
+                        --we need to identify a record to be current after successful delete
+                        let
+                            --this would be a case of using one of those Maybe.andThen things as if idx was Nothing we would not get here.
+                            i =
+                                case model.selectedPrecisionIndex of
+                                    Just x ->
+                                        x
+
+                                    _ ->
+                                        0
+
+                            ( maybeNextPrecision, nextIndex ) =
+                                case View.maybeFindPrecision (Just (i + 1)) class.precisions of
+                                    Nothing ->
+                                        case View.maybeFindPrecision (Just (i - 1)) class.precisions of
+                                            Nothing ->
+                                                ( Nothing, -1 )
+
+                                            Just precis ->
+                                                ( Just precis, i - 1 )
+
+                                    Just prec ->
+                                        ( Just prec, i )
+
+                            newModel =
+                                case maybeNextPrecision of
+                                    Nothing ->
+                                        { model
+                                            | precisionAction = EquipmentClass.PrecisionDelete
+                                            , selectedPrecisionId = Just p.id
+                                        }
+
+                                    Just nextPrecision ->
+                                        { model
+                                            | precisionAction = EquipmentClass.PrecisionDelete
+                                            , selectedPrecisionId = Just p.id
+                                            , previousSelectedPrecisionId = Just nextPrecision.id
+                                            , previousSelectedPrecisionIndex = Just nextIndex
+                                        }
+                        in
+                            --for the moment, save precisions along with equipment class? or place on separate tab and save separately?
+                            --newModel ! [ Rest.delete user ]
+                            newModel ! []
 
         ProcessEquipmentClassGet (Ok classes) ->
             let
@@ -381,6 +468,52 @@ update msg model =
                 }
                     ! []
 
+        NewPrecision ->
+            { model
+                | scratchPrecision = EquipmentClass.emptyPrecision
+            }
+                ! []
+
+        EditPrecision ->
+            --this is a case for using maybe.andThen
+            let
+                classIdx =
+                    model.selectedEquipmentClassIndex
+
+                eqClass =
+                    View.maybeFindEquipmentClass classIdx model.classes
+
+                newModel =
+                    case eqClass of
+                        Nothing ->
+                            model
+
+                        Just class ->
+                            let
+                                precisionIdx =
+                                    model.selectedPrecisionIndex
+
+                                precision =
+                                    View.maybeFindPrecision precisionIdx class.precisions
+
+                                modl =
+                                    populateScratchPrecisionData precision precisionIdx model EquipmentClass.PrecisionEdit
+                            in
+                                modl
+            in
+                newModel
+                    ! []
+
+        SetPrecision precision ->
+            let
+                scratchPrecision =
+                    model.scratchPrecision
+
+                new_precision =
+                    { scratchPrecision | precision = precision }
+            in
+                { model | scratchPrecision = new_precision } ! []
+
 
 toggleSort : Maybe Table.Order -> Maybe Table.Order
 toggleSort order =
@@ -420,6 +553,27 @@ populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex m
                     , selectedEquipmentClassId = Just u.id
                     , selectedEquipmentClassIndex = maybeEquipmentClassIndex
                 }
+
+
+populateScratchPrecisionData : Maybe EquipmentClass.Precision -> Maybe Int -> EquipmentClass.Model -> EquipmentClass.PrecisionAction -> EquipmentClass.Model
+populateScratchPrecisionData maybePrecision maybePrecisionIndex model action =
+    case maybePrecision of
+        Nothing ->
+            --could we realistically arrive here?
+            { model
+                | scratchPrecision = EquipmentClass.emptyPrecision
+                , precisionAction = action
+                , selectedPrecisionId = Nothing
+                , selectedPrecisionIndex = Nothing
+            }
+
+        Just p ->
+            { model
+                | scratchPrecision = EquipmentClass.Precision p.id p.precision
+                , precisionAction = action
+                , selectedPrecisionId = Just p.id
+                , selectedPrecisionIndex = maybePrecisionIndex
+            }
 
 
 sort_by_last_first : EquipmentClass.EquipmentClassWithPrecision -> String

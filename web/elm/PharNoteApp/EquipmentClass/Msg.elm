@@ -12,17 +12,26 @@ import Http exposing (..)
 
 type Msg
     = NoOp
+    | NewEquipmentClass
     | EditEquipmentClass
+    | CancelNewEquipmentClass
     | SelectEquipmentClass Int
     | SelectPrecision Int
     | DeleteEquipmentClass
-    | NewEquipmentClass
-    | CancelNewEquipmentClass
+    | ConfirmDeleteEquipmentClass
+    | CancelDeleteEquipmentClass
     | ProcessEquipmentClassGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecision))
     | ProcessEquipmentClassPost (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
     | ProcessEquipmentClassDelete (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
+    | DeletePrecision
+    | ConfirmDeletePrecision
+    | CancelDeletePrecision
     | SetClassName String
     | SetClassDesc String
+    | NewPrecision
+    | EditPrecision
+    | CancelNewPrecision
+    | SetPrecision String
     | ToggleRole Int
     | EquipmentClassPost EquipmentClass.EquipmentClassWithPrecision
     | EquipmentClassPut EquipmentClass.EquipmentClassWithPrecision
@@ -30,8 +39,6 @@ type Msg
     | KeyX Int
     | PrecisionKeyX Int
     | PaginateEquipmentClass Int
-    | ConfirmDeleteEquipmentClass
-    | CancelDeleteEquipmentClass
 
 
 

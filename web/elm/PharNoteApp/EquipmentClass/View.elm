@@ -40,10 +40,10 @@ view model mdlStore =
         cards =
             case model.formAction of
                 Edit ->
-                    (editCards model.scratchEquipmentClass model.formAction model.precisionAction model.selectedPrecisionId mdlStore)
+                    (editCards model.scratchEquipmentClass model.formAction model.precisionAction model.selectedPrecisionId model.scratchPrecision mdlStore)
 
                 Create ->
-                    (editCards model.scratchEquipmentClass model.formAction model.precisionAction model.selectedPrecisionId mdlStore)
+                    (editCards model.scratchEquipmentClass model.formAction model.precisionAction model.selectedPrecisionId model.scratchPrecision mdlStore)
 
                 _ ->
                     ((viewCards (alwaysFindEquipmentClass model.selectedEquipmentClassIndex model.classes) model.formAction mdlStore))
@@ -82,12 +82,12 @@ viewCards equipClass action mdlStore =
     ]
 
 
-editCards : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> List (Html AppMsg.Msg)
-editCards scratchEquipmentClass action precisionAction maybePrecisionId mdlStore =
+editCards : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> List (Html AppMsg.Msg)
+editCards scratchEquipmentClass action precisionAction maybePrecisionId scratchPrecision mdlStore =
     --check that ref data is loaded.
     let
         html =
-            [ equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId mdlStore
+            [ equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId scratchPrecision mdlStore
             , Options.div
                 [ Grid.size All 1
                 , css "height" "32px"
@@ -713,8 +713,8 @@ precisionInfo i precision =
         ]
 
 
-equipClassEditCard : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
-equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId mdlStore =
+equipClassEditCard : EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.FormAction -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> Html AppMsg.Msg
+equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId scratchPrecision mdlStore =
     let
         buttonText =
             if action == Edit then
@@ -770,7 +770,7 @@ equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId
                 ]
             , Card.text [ white ]
                 [ equipClassForm scratchEquipmentClass action mdlStore
-                , precisionEditCard scratchEquipmentClass.precisions precisionAction maybePrecisionId mdlStore
+                , precisionEditCard scratchEquipmentClass.precisions precisionAction maybePrecisionId scratchPrecision mdlStore
                 ]
             , Card.actions
                 [ Card.border ]
@@ -922,8 +922,8 @@ fBool =
     True
 
 
-precisionEditCard : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
-precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
+precisionEditCard : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> Html AppMsg.Msg
+precisionEditCard precisionList precisionAction maybePrecisionId scratchPrecision mdlStore =
     let
         textStuff =
             precisionTable precisionList precisionAction maybePrecisionId mdlStore
@@ -933,9 +933,23 @@ precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
                 |> addAction
                     [ 12, 2 ]
                     mdlStore
-                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewEquipmentClass)
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewPrecision)
                     "left"
                     "person_add"
+                    fBool
+                |> addAction
+                    [ 12, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditPrecision)
+                    "left"
+                    "mode_edit"
+                    fBool
+                |> addAction
+                    [ 12, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.DeletePrecision)
+                    "right"
+                    "delete"
                     fBool
     in
         Card.view
@@ -982,7 +996,17 @@ precisionEditCard precisionList precisionAction maybePrecisionId mdlStore =
                         [ css "width" "100%"
                         , css "align-self" "flex-end"
                         ]
-                        [ text "text edit box somewhere here" ]
+                        [ div [ class "form-group" ]
+                            [ label [] [ text "precision" ]
+                            , input
+                                [ value scratchPrecision.precision
+                                , onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetPrecision s))
+                                , class "form-control"
+                                ]
+                                []
+                            ]
+                        , text "buttons here"
+                        ]
                     ]
                 ]
             , Card.actions

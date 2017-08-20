@@ -7,3 +7,4 @@
 [] select first precision row
 [] add edit icon
 [] add place for editable field
+maybePrecisionId etc -should this store the scratch user/precision etc.
