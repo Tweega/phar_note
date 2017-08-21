@@ -363,9 +363,6 @@ equipClassRows equipClass action selectedEquipmentClassId startDisplayIndex endD
 
                 Nothing ->
                     -1
-
-        temp =
-            Debug.log "class count" (Array.length equipClass)
     in
         equipClass
             |> Array.slice startDisplayIndex (endDisplayIndex + 1)
@@ -412,9 +409,6 @@ equipClassRow action equipClassId ( idx, equipClass ) =
 
                 _ ->
                     []
-
-        temp =
-            Debug.log "class name" equipClass.name
     in
         Table.tr row_style
             [ Table.td [] [ text equipClass.name ]
@@ -841,12 +835,6 @@ pager model =
         currentPage =
             floor (toFloat model.endDisplayIndex / toFloat model.pageSize)
 
-        x =
-            Debug.log "currentPage" currentPage
-
-        y =
-            Debug.log "model.startDisplayIndex" model.startDisplayIndex
-
         pageMarker i =
             let
                 x =
@@ -922,35 +910,82 @@ fBool =
     True
 
 
+x : EquipmentClass.Precision -> Html AppMsg.Msg
+x scratchPrecision =
+    Options.div
+        [ css "width" "100%"
+        , css "align-self" "flex-end"
+        ]
+        [ div [ class "form-group" ]
+            [ label [] [ text "precision" ]
+            , input
+                [ value scratchPrecision.precision
+                , onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetPrecision s))
+                , class "form-control"
+                ]
+                []
+            ]
+        , text "buttons here"
+        ]
+
+
+activeEditButtons mdlStore =
+    []
+        |> addAction
+            [ 12, 2 ]
+            mdlStore
+            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.CancelNewPrecision)
+            "left"
+            "person_add"
+            fBool
+
+
 precisionEditCard : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> Html AppMsg.Msg
 precisionEditCard precisionList precisionAction maybePrecisionId scratchPrecision mdlStore =
     let
         textStuff =
-            precisionTable precisionList precisionAction maybePrecisionId mdlStore
+            --if precision action is edit then
+            case precisionAction of
+                EquipmentClass.PrecisionEdit ->
+                    x scratchPrecision
+
+                EquipmentClass.PrecisionCreate ->
+                    x scratchPrecision
+
+                _ ->
+                    precisionTable precisionList precisionAction maybePrecisionId mdlStore
 
         actions =
-            []
-                |> addAction
-                    [ 12, 2 ]
-                    mdlStore
-                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewPrecision)
-                    "left"
-                    "person_add"
-                    fBool
-                |> addAction
-                    [ 12, 2 ]
-                    mdlStore
-                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditPrecision)
-                    "left"
-                    "mode_edit"
-                    fBool
-                |> addAction
-                    [ 12, 2 ]
-                    mdlStore
-                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.DeletePrecision)
-                    "right"
-                    "delete"
-                    fBool
+            case precisionAction of
+                EquipmentClass.PrecisionEdit ->
+                    activeEditButtons mdlStore
+
+                EquipmentClass.PrecisionCreate ->
+                    activeEditButtons mdlStore
+
+                _ ->
+                    []
+                        |> addAction
+                            [ 12, 2 ]
+                            mdlStore
+                            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewPrecision)
+                            "left"
+                            "person_add"
+                            fBool
+                        |> addAction
+                            [ 12, 2 ]
+                            mdlStore
+                            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditPrecision)
+                            "left"
+                            "mode_edit"
+                            fBool
+                        |> addAction
+                            [ 12, 2 ]
+                            mdlStore
+                            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.DeletePrecision)
+                            "right"
+                            "delete"
+                            fBool
     in
         Card.view
             [ css "width" "80%"
@@ -992,21 +1027,6 @@ precisionEditCard precisionList precisionAction maybePrecisionId scratchPrecisio
                         , css "align-self" "flex-start"
                         ]
                         [ textStuff ]
-                    , Options.div
-                        [ css "width" "100%"
-                        , css "align-self" "flex-end"
-                        ]
-                        [ div [ class "form-group" ]
-                            [ label [] [ text "precision" ]
-                            , input
-                                [ value scratchPrecision.precision
-                                , onInput (\s -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SetPrecision s))
-                                , class "form-control"
-                                ]
-                                []
-                            ]
-                        , text "buttons here"
-                        ]
                     ]
                 ]
             , Card.actions
@@ -1078,6 +1098,15 @@ precisionRows precisions action selectedPrecisionId =
 precisionRow : EquipmentClass.PrecisionAction -> Int -> ( Int, EquipmentClassBase.EquipmentPrecision ) -> Html AppMsg.Msg
 precisionRow action precisionId ( idx, precision ) =
     let
+        x =
+            Debug.log "precision action: " action
+
+        y =
+            Debug.log "precisionId: " precisionId
+
+        z =
+            Debug.log "precision.id: " precision.id
+
         f allowSelect =
             []
                 |> (\a ->
@@ -1097,6 +1126,12 @@ precisionRow action precisionId ( idx, precision ) =
             case action of
                 EquipmentClass.PrecisionNone ->
                     f True
+
+                EquipmentClass.CancelNewPrecision ->
+                    f True
+
+                EquipmentClass.PrecisionEdit ->
+                    f False
 
                 EquipmentClass.PrecisionConfirmDelete ->
                     f False

@@ -155,7 +155,11 @@ update msg model =
                 { model | order = sortOrder, classes = sortedEquipmentClass, selectedEquipmentClassId = Just nextEquipmentClass.id } ! []
 
         CancelDeleteEquipmentClass ->
-            { model | formAction = EquipmentClass.None } ! []
+            { model
+                | formAction = EquipmentClass.None
+                , precisionAction = EquipmentClass.PrecisionNone
+            }
+                ! []
 
         ConfirmDeleteEquipmentClass ->
             { model | formAction = EquipmentClass.ConfirmDelete } ! []
@@ -249,11 +253,15 @@ update msg model =
                                 | formAction = EquipmentClass.CancelNewEquipmentClass
                                 , selectedEquipmentClassId = model.previousSelectedEquipmentClassId
                                 , selectedEquipmentClassIndex = model.previousSelectedEquipmentClassIndex
+                                , precisionAction = EquipmentClass.CancelNewPrecision
+                                , selectedPrecisionId = model.previousSelectedPrecisionId
+                                , selectedPrecisionIndex = model.previousSelectedPrecisionIndex
                             }
 
                         _ ->
                             { model
                                 | formAction = EquipmentClass.CancelNewEquipmentClass
+                                , precisionAction = EquipmentClass.CancelNewPrecision
                             }
             in
                 newModel ! []
@@ -430,9 +438,6 @@ update msg model =
 
         PaginateEquipmentClass page ->
             let
-                g =
-                    Debug.log "page" page
-
                 idx =
                     Maybe.withDefault 0 model.selectedEquipmentClassIndex
 

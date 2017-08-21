@@ -8,3 +8,13 @@
 [] add edit icon
 [] add place for editable field
 maybePrecisionId etc -should this store the scratch user/precision etc.
+
+
+
+[x] dont show precision form until edit actions
+[] if the mode is edit or new, then buttons are cancel or save
+
+[] when editing precision - precision text does not appear in text box
+[] we need a separate cancel button for precision edit
+[] when pressing cancel for the equipment class as a whole, the precision action remains in edit mode
+[] it is not possible to select a precision after going into edit mode and cancelling
