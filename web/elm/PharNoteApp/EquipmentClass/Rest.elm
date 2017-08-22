@@ -37,14 +37,14 @@ precisionDecoder =
         |> Json.Decode.Pipeline.required "precision" Json.Decode.string
 
 
-classPrecisionListDecoder : Json.Decode.Decoder (List EquipmentClass.EquipmentClassWithPrecision)
+classPrecisionListDecoder : Json.Decode.Decoder (List EquipmentClass.EquipmentClassWithPrecisionList)
 classPrecisionListDecoder =
     Json.Decode.list classPrecisionDecoder
 
 
-classPrecisionDecoder : Json.Decode.Decoder EquipmentClass.EquipmentClassWithPrecision
+classPrecisionDecoder : Json.Decode.Decoder EquipmentClass.EquipmentClassWithPrecisionList
 classPrecisionDecoder =
-    Json.Decode.Pipeline.decode EquipmentClass.EquipmentClassWithPrecision
+    Json.Decode.Pipeline.decode EquipmentClass.EquipmentClassWithPrecisionList
         |> Json.Decode.Pipeline.required "id" Json.Decode.int
         |> Json.Decode.Pipeline.required "name" Json.Decode.string
         |> Json.Decode.Pipeline.required "description" Json.Decode.string

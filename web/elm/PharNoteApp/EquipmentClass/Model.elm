@@ -12,6 +12,14 @@ type alias EquipmentClassWithPrecision =
     { id : Int
     , name : String
     , description : String
+    , precisions : Array EquipmentClassBase.EquipmentPrecision
+    }
+
+
+type alias EquipmentClassWithPrecisionList =
+    { id : Int
+    , name : String
+    , description : String
     , precisions : List EquipmentClassBase.EquipmentPrecision
     }
 
@@ -73,7 +81,7 @@ type PrecisionAction
 
 emptyEquipmentClassWithPrecision : EquipmentClassWithPrecision
 emptyEquipmentClassWithPrecision =
-    EquipmentClassWithPrecision 0 "" "" []
+    EquipmentClassWithPrecision 0 "" "" Array.empty
 
 
 emptyPrecision : Precision
@@ -86,6 +94,7 @@ scratchToEquipmentClassWithPrecisionString classPrecision =
     let
         precisions =
             classPrecision.precisions
+                |> Array.toList
                 |> List.map (\i -> toString i.id)
                 |> String.join (",")
     in

@@ -47,7 +47,7 @@ type RefDataStatus
 
 
 type alias RefData =
-    { equipment_precision : List EquipmentClass.EquipmentClassWithPrecision }
+    { equipment_precision : List EquipmentClass.EquipmentClassWithPrecisionList }
 
 
 type FormAction

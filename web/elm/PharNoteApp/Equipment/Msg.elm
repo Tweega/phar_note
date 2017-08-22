@@ -21,7 +21,7 @@ type Msg
     | ProcessEquipmentGet (Result Http.Error (List EquipmentBase.Equipment))
     | ProcessEquipmentPost (Result Http.Error EquipmentBase.Equipment)
     | ProcessEquipmentDelete (Result Http.Error EquipmentBase.Equipment)
-    | ProcessRefDataGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecision))
+    | ProcessRefDataGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecisionList))
     | SetFirstName String
     | SetLastName String
     | ToggleRole Int

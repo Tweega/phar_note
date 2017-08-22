@@ -70,8 +70,6 @@ update msg model =
 
                         _ ->
                             model
-
-                --populateScratchEquipmentClassData user (Just idx) model model.formAction
             in
                 newModel ! []
 
@@ -93,8 +91,6 @@ update msg model =
 
                         _ ->
                             model
-
-                --populateScratchEquipmentClassData user (Just idx) model model.formAction
             in
                 newModel
                     ! []
@@ -118,13 +114,13 @@ update msg model =
                                     Just p ->
                                         { model
                                             | selectedPrecisionId = Just p.id
-                                            , scratchPrecision = EquipmentClass.Precision p.id p.precision
+                                            , selectedPrecisionIndex = Just idx
+
+                                            --, scratchPrecision = EquipmentClass.Precision p.id p.precision
                                         }
 
                                     _ ->
                                         model
-
-                --populateScratchEquipmentClassData user (Just idx) model model.formAction
             in
                 newModel
                     ! []
@@ -246,6 +242,9 @@ update msg model =
 
         CancelNewEquipmentClass ->
             let
+                x =
+                    Debug.log "formAction" model.formAction
+
                 newModel =
                     case model.formAction of
                         EquipmentClass.Create ->
@@ -255,7 +254,8 @@ update msg model =
                                 , selectedEquipmentClassIndex = model.previousSelectedEquipmentClassIndex
                                 , precisionAction = EquipmentClass.CancelNewPrecision
                                 , selectedPrecisionId = model.previousSelectedPrecisionId
-                                , selectedPrecisionIndex = model.previousSelectedPrecisionIndex
+
+                                --, selectedPrecisionIndex = model.previousSelectedPrecisionIndex
                             }
 
                         _ ->
@@ -268,6 +268,9 @@ update msg model =
 
         CancelNewPrecision ->
             let
+                x =
+                    Debug.log "Should not be" "Coming here"
+
                 newModel =
                     case model.precisionAction of
                         EquipmentClass.PrecisionCreate ->
@@ -361,9 +364,24 @@ update msg model =
 
         ProcessEquipmentClassGet (Ok classes) ->
             let
+                --for each class, change precisions to an Array
                 classesArray =
-                    Array.fromList (classes)
+                    List.foldl
+                        (\class acc ->
+                            let
+                                precisionArray =
+                                    Array.fromList class.precisions
 
+                                newClass =
+                                    { class | precisions = precisionArray }
+                            in
+                                Array.push newClass acc
+                        )
+                        Array.empty
+                        classes
+
+                -- classesArray =
+                --     Array.fromList (classes)
                 new_model =
                     filteredModel model classesArray
             in
@@ -482,6 +500,12 @@ update msg model =
         EditPrecision ->
             --this is a case for using maybe.andThen
             let
+                x =
+                    Debug.log "qqqqq model.model.selectedEquipmentClassIndex" model.selectedEquipmentClassIndex
+
+                y =
+                    Debug.log "qqqqq model.selectedPrecisionIndex" model.selectedPrecisionIndex
+
                 classIdx =
                     model.selectedEquipmentClassIndex
 
@@ -545,40 +569,38 @@ populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex m
                 , selectedEquipmentClassIndex = Nothing
             }
 
-        Just u ->
-            --if we only have role ids, not the whole role record, then we won't need the first map function
-            let
-                roleSet =
-                    List.map (\r -> r.id) u.precisions
-                        |> Set.fromList
-            in
-                { model
-                    | scratchEquipmentClass = EquipmentClass.EquipmentClassWithPrecision u.id u.name u.description u.precisions
-                    , formAction = action
-                    , selectedEquipmentClassId = Just u.id
-                    , selectedEquipmentClassIndex = maybeEquipmentClassIndex
-                }
+        Just class ->
+            { model
+                | scratchEquipmentClass = EquipmentClass.EquipmentClassWithPrecision class.id class.name class.description class.precisions
+                , formAction = action
+                , selectedEquipmentClassId = Just class.id
+                , selectedEquipmentClassIndex = maybeEquipmentClassIndex
+            }
 
 
 populateScratchPrecisionData : Maybe EquipmentClass.Precision -> Maybe Int -> EquipmentClass.Model -> EquipmentClass.PrecisionAction -> EquipmentClass.Model
 populateScratchPrecisionData maybePrecision maybePrecisionIndex model action =
-    case maybePrecision of
-        Nothing ->
-            --could we realistically arrive here?
-            { model
-                | scratchPrecision = EquipmentClass.emptyPrecision
-                , precisionAction = action
-                , selectedPrecisionId = Nothing
-                , selectedPrecisionIndex = Nothing
-            }
+    let
+        x =
+            Debug.log "maybePrecision" maybePrecision
+    in
+        case maybePrecision of
+            Nothing ->
+                --could we realistically arrive here?
+                { model
+                    | scratchPrecision = EquipmentClass.emptyPrecision
+                    , precisionAction = action
+                    , selectedPrecisionId = Nothing
+                    , selectedPrecisionIndex = Nothing
+                }
 
-        Just p ->
-            { model
-                | scratchPrecision = EquipmentClass.Precision p.id p.precision
-                , precisionAction = action
-                , selectedPrecisionId = Just p.id
-                , selectedPrecisionIndex = maybePrecisionIndex
-            }
+            Just p ->
+                { model
+                    | scratchPrecision = EquipmentClass.Precision p.id p.precision
+                    , precisionAction = action
+                    , selectedPrecisionId = Just p.id
+                    , selectedPrecisionIndex = maybePrecisionIndex
+                }
 
 
 sort_by_last_first : EquipmentClass.EquipmentClassWithPrecision -> String
@@ -629,7 +651,7 @@ filteredModel model classes =
                                 Just equip ->
                                     let
                                         fp =
-                                            List.head equip.precisions
+                                            Array.get 0 equip.precisions
                                     in
                                         case fp of
                                             Just precision ->

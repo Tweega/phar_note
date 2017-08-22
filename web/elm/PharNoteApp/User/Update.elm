@@ -71,8 +71,6 @@ update msg model =
 
                         _ ->
                             model
-
-                --populateScratchUserData user (Just idx) model model.formAction
             in
                 newModel ! []
 
@@ -94,8 +92,6 @@ update msg model =
 
                         _ ->
                             model
-
-                --populateScratchUserData user (Just idx) model model.formAction
             in
                 newModel
                     ! []

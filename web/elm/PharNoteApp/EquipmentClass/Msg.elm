@@ -20,9 +20,9 @@ type Msg
     | DeleteEquipmentClass
     | ConfirmDeleteEquipmentClass
     | CancelDeleteEquipmentClass
-    | ProcessEquipmentClassGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecision))
-    | ProcessEquipmentClassPost (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
-    | ProcessEquipmentClassDelete (Result Http.Error EquipmentClass.EquipmentClassWithPrecision)
+    | ProcessEquipmentClassGet (Result Http.Error (List EquipmentClass.EquipmentClassWithPrecisionList))
+    | ProcessEquipmentClassPost (Result Http.Error EquipmentClass.EquipmentClassWithPrecisionList)
+    | ProcessEquipmentClassDelete (Result Http.Error EquipmentClass.EquipmentClassWithPrecisionList)
     | DeletePrecision
     | ConfirmDeletePrecision
     | CancelDeletePrecision

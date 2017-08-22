@@ -110,18 +110,33 @@ maybeFindEquipmentClass maybeIndex equipClass =
             Nothing
 
 
-maybeFindPrecision : Maybe Int -> List EquipmentClassBase.EquipmentPrecision -> Maybe EquipmentClassBase.EquipmentPrecision
-maybeFindPrecision maybeId precisions =
-    case precisions of
-        [] ->
+maybeFindPrecision : Maybe Int -> Array EquipmentClassBase.EquipmentPrecision -> Maybe EquipmentClassBase.EquipmentPrecision
+maybeFindPrecision maybeIndex precisions =
+    case maybeIndex of
+        Just idx ->
+            Array.get idx precisions
+
+        _ ->
             Nothing
 
-        precision :: t ->
-            if precision.id == Maybe.withDefault -1 maybeId then
-                Just precision
-            else
-                maybeFindPrecision maybeId
-                    t
+
+alwaysFindPrecision : Maybe Int -> Array EquipmentClassBase.EquipmentPrecision -> EquipmentClassBase.EquipmentPrecision
+alwaysFindPrecision maybeIndex precisions =
+    let
+        maybePrecision =
+            case maybeIndex of
+                Just idx ->
+                    Array.get idx precisions
+
+                _ ->
+                    Nothing
+    in
+        case maybePrecision of
+            Just precision ->
+                precision
+
+            Nothing ->
+                EquipmentClass.emptyPrecision
 
 
 alwaysFindEquipmentClass : Maybe Int -> Array EquipmentClass.EquipmentClassWithPrecision -> EquipmentClass.EquipmentClassWithPrecision
@@ -548,7 +563,7 @@ equipClassCard equipClass action mdlStore =
                     ]
 
         textStuff =
-            if List.length equipClass.precisions > 0 then
+            if Array.length equipClass.precisions > 0 then
                 [ equipClassDetails equipClass
                 , precisionsHeading
                 , precisionDetails equipClass.precisions
@@ -603,7 +618,7 @@ precisionsHeading =
         ]
 
 
-precisionCard : List EquipmentClassBase.EquipmentPrecision -> Material.Model -> Html AppMsg.Msg
+precisionCard : Array EquipmentClassBase.EquipmentPrecision -> Material.Model -> Html AppMsg.Msg
 precisionCard precisions mdlStore =
     let
         option title index =
@@ -682,17 +697,29 @@ precisionCard precisions mdlStore =
             ]
 
 
-precisionDetails : List EquipmentClassBase.EquipmentPrecision -> Html AppMsg.Msg
+precisionDetails : Array EquipmentClassBase.EquipmentPrecision -> Html AppMsg.Msg
 precisionDetails precisions =
-    Options.div
-        [ css "width" "100%"
-        , css "float" "left"
-        ]
-        (List.indexedMap precisionInfo precisions)
+    let
+        precisionList =
+            Array.toIndexedList precisions
+
+        xx =
+            List.map precisionInfo precisionList
+
+        -- xx =
+        --     precisions
+        --         |> Array.toIndexedList
+        --         |> List.indexedMap precisionInfo
+    in
+        Options.div
+            [ css "width" "100%"
+            , css "float" "left"
+            ]
+            xx
 
 
-precisionInfo : Int -> EquipmentClassBase.EquipmentPrecision -> Html AppMsg.Msg
-precisionInfo i precision =
+precisionInfo : ( Int, EquipmentClassBase.EquipmentPrecision ) -> Html AppMsg.Msg
+precisionInfo ( i, precision ) =
     Options.div
         [ css "width" "100%"
         , css "float" "left"
@@ -788,7 +815,7 @@ equipClassEditCard scratchEquipmentClass action precisionAction maybePrecisionId
             ]
 
 
-precisionEditCardx : List EquipmentClassBase.EquipmentPrecision -> Material.Model -> Html AppMsg.Msg
+precisionEditCardx : Array EquipmentClassBase.EquipmentPrecision -> Material.Model -> Html AppMsg.Msg
 precisionEditCardx precisionSet mdlStore =
     Card.view
         [ css "width" "100%"
@@ -940,7 +967,7 @@ activeEditButtons mdlStore =
             fBool
 
 
-precisionEditCard : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> Html AppMsg.Msg
+precisionEditCard : Array EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> Html AppMsg.Msg
 precisionEditCard precisionList precisionAction maybePrecisionId scratchPrecision mdlStore =
     let
         textStuff =
@@ -1038,7 +1065,7 @@ precisionEditCard precisionList precisionAction maybePrecisionId scratchPrecisio
             ]
 
 
-precisionTable : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
+precisionTable : Array EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> Material.Model -> Html AppMsg.Msg
 precisionTable precisionList precisionAction maybePrecisionId mdlStore =
     let
         divAt =
@@ -1074,7 +1101,7 @@ precisionTable precisionList precisionAction maybePrecisionId mdlStore =
             ]
 
 
-precisionRows : List EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> List (Html AppMsg.Msg)
+precisionRows : Array EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> List (Html AppMsg.Msg)
 precisionRows precisions action selectedPrecisionId =
     let
         precisionId =
@@ -1086,7 +1113,7 @@ precisionRows precisions action selectedPrecisionId =
                     -1
     in
         precisions
-            |> List.indexedMap (,)
+            |> Array.toIndexedList
             |> List.map (precisionRow action precisionId)
 
 
@@ -1117,7 +1144,7 @@ precisionRow action precisionId ( idx, precision ) =
                    )
                 |> (\a ->
                         if allowSelect == True then
-                            Options.onClick (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SelectPrecision precision.id)) :: a
+                            Options.onClick (AppMsg.MsgForEquipmentClass (EquipmentClassMsg.SelectPrecision idx)) :: a
                         else
                             a
                    )
