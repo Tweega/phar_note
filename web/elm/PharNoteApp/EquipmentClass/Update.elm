@@ -567,15 +567,37 @@ populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex m
                 , formAction = action
                 , selectedEquipmentClassId = Nothing
                 , selectedEquipmentClassIndex = Nothing
+                , selectedPrecisionId = Nothing
+                , selectedPrecisionIndex = Nothing
             }
 
         Just class ->
-            { model
-                | scratchEquipmentClass = EquipmentClass.EquipmentClassWithPrecision class.id class.name class.description class.precisions
-                , formAction = action
-                , selectedEquipmentClassId = Just class.id
-                , selectedEquipmentClassIndex = maybeEquipmentClassIndex
-            }
+            let
+                fp =
+                    Array.get 0 class.precisions
+
+                ( firstPrecisionId, firstPrecisionIndex ) =
+                    case fp of
+                        Just precision ->
+                            ( precision.id, 0 )
+
+                        _ ->
+                            ( -1, -1 )
+
+                x =
+                    Debug.log "--precision id" firstPrecisionId
+
+                y =
+                    Debug.log "--precision index" firstPrecisionIndex
+            in
+                { model
+                    | scratchEquipmentClass = EquipmentClass.EquipmentClassWithPrecision class.id class.name class.description class.precisions
+                    , formAction = action
+                    , selectedEquipmentClassId = Just class.id
+                    , selectedEquipmentClassIndex = maybeEquipmentClassIndex
+                    , selectedPrecisionId = Just firstPrecisionId
+                    , selectedPrecisionIndex = Just firstPrecisionIndex
+                }
 
 
 populateScratchPrecisionData : Maybe EquipmentClass.Precision -> Maybe Int -> EquipmentClass.Model -> EquipmentClass.PrecisionAction -> EquipmentClass.Model
