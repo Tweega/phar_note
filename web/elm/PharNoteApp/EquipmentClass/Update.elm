@@ -431,6 +431,97 @@ update msg model =
             in
                 model ! [ Rest.put classWithPrecisions ]
 
+        PrecisionPut ->
+            --we want to update the class scratch
+            --get the scratch class object--get the precisions of that--update the necessary one
+            let
+                maybeNewClass =
+                    model.selectedPrecisionIndex
+                        |> Maybe.andThen
+                            (\precisionIndex ->
+                                Array.get precisionIndex model.scratchEquipmentClass.precisions
+                                    |> Maybe.andThen
+                                        (\oldPrecision ->
+                                            let
+                                                newPrecision =
+                                                    { oldPrecision | precision = model.scratchPrecision.precision }
+
+                                                newPrecisions =
+                                                    Array.set precisionIndex newPrecision model.scratchEquipmentClass.precisions
+
+                                                sc =
+                                                    model.scratchEquipmentClass
+                                            in
+                                                Just { sc | precisions = newPrecisions }
+                                        )
+                            )
+
+                newModel =
+                    case maybeNewClass of
+                        Nothing ->
+                            model
+
+                        Just class ->
+                            { model | scratchEquipmentClass = class }
+            in
+                newModel ! []
+
+        PrecisionPutx ->
+            --not actually putting at the moment - just updating the equipment class. Put handled by EquipmentClassPut
+            -- we need to get the selected precisionid for the selected class and update that
+            --we are updating the model.classes, finding the right class, then the right precision
+            let
+                x =
+                    Debug.log "at least we get here?" "A"
+
+                maybeClasses =
+                    model.selectedEquipmentClassIndex
+                        |> Maybe.andThen
+                            (\selectedClassIndex ->
+                                Array.get selectedClassIndex model.classes
+                                    |> Maybe.andThen
+                                        (\oldClass ->
+                                            model.selectedPrecisionIndex
+                                                |> Maybe.andThen
+                                                    (\selectedPrecisionIndex ->
+                                                        Array.get selectedPrecisionIndex oldClass.precisions
+                                                            |> Maybe.andThen
+                                                                (\oldPrecision ->
+                                                                    let
+                                                                        newPrecision =
+                                                                            { oldPrecision | precision = model.scratchPrecision.precision }
+
+                                                                        newPrecisions =
+                                                                            Array.set selectedPrecisionIndex newPrecision oldClass.precisions
+
+                                                                        newClass =
+                                                                            { oldClass | precisions = newPrecisions }
+
+                                                                        newClasses =
+                                                                            Array.set selectedClassIndex newClass model.classes
+
+                                                                        y =
+                                                                            Debug.log "at least we get here?" newPrecision
+                                                                    in
+                                                                        Just newClasses
+                                                                )
+                                                    )
+                                        )
+                            )
+
+                newModel =
+                    case maybeClasses of
+                        Nothing ->
+                            model
+
+                        Just newClasses ->
+                            { model | classes = newClasses }
+
+                z =
+                    Debug.log "do we get here?" newModel
+            in
+                newModel ! []
+
         SetClassName value ->
             let
                 class =
@@ -506,29 +597,22 @@ update msg model =
                 y =
                     Debug.log "qqqqq model.selectedPrecisionIndex" model.selectedPrecisionIndex
 
-                classIdx =
-                    model.selectedEquipmentClassIndex
-
-                eqClass =
-                    View.maybeFindEquipmentClass classIdx model.classes
-
+                -- classIdx =
+                --     model.selectedEquipmentClassIndex
+                -- eqClass =
+                --     View.maybeFindEquipmentClass classIdx model.classes
                 newModel =
-                    case eqClass of
-                        Nothing ->
-                            model
+                    let
+                        precisionIdx =
+                            model.selectedPrecisionIndex
 
-                        Just class ->
-                            let
-                                precisionIdx =
-                                    model.selectedPrecisionIndex
+                        precision =
+                            View.maybeFindPrecision precisionIdx model.scratchEquipmentClass.precisions
 
-                                precision =
-                                    View.maybeFindPrecision precisionIdx class.precisions
-
-                                modl =
-                                    populateScratchPrecisionData precision precisionIdx model EquipmentClass.PrecisionEdit
-                            in
-                                modl
+                        modl =
+                            populateScratchPrecisionData precision precisionIdx model EquipmentClass.PrecisionEdit
+                    in
+                        modl
             in
                 newModel
                     ! []

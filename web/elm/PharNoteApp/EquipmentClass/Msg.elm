@@ -31,6 +31,7 @@ type Msg
     | NewPrecision
     | EditPrecision
     | CancelNewPrecision
+    | PrecisionPut
     | SetPrecision String
     | ToggleRole Int
     | EquipmentClassPost EquipmentClass.EquipmentClassWithPrecision

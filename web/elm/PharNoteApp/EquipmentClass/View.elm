@@ -959,11 +959,18 @@ x scratchPrecision =
 activeEditButtons mdlStore =
     []
         |> addAction
-            [ 12, 2 ]
+            [ 13, 2 ]
+            mdlStore
+            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.PrecisionPut)
+            "left"
+            "save"
+            fBool
+        |> addAction
+            [ 13, 3 ]
             mdlStore
             (AppMsg.MsgForEquipmentClass EquipmentClassMsg.CancelNewPrecision)
             "left"
-            "person_add"
+            "clear"
             fBool
 
 

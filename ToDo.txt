@@ -18,3 +18,16 @@ maybePrecisionId etc -should this store the scratch user/precision etc.
 [] we need a separate cancel button for precision edit
 [] when pressing cancel for the equipment class as a whole, the precision action remains in edit mode
 [] it is not possible to select a precision after going into edit mode and cancelling
+
+
+
+[] allow saving of equip class updates
+[] allow adding of new precision
+[] change cancel icon when editing precison
+[] update cancel text button to cancel icon throughout
+    [] user
+    [] equip
+    [] equip class
+
+
+[] test database interaction throughout app - seems to have broken for some reason.
