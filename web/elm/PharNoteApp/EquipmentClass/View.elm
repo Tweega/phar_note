@@ -270,10 +270,6 @@ equipClassTable equipClass selectedEquipmentClassId order action startDisplayInd
                     [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.PrecisionKeyX x)) keyCode)
                     ]
 
-                EquipmentClass.CancelNewEquipmentClass ->
-                    [ on "keydown" (Json.map (\x -> AppMsg.MsgForEquipmentClass (EquipmentClassMsg.PrecisionKeyX x)) keyCode)
-                    ]
-
                 _ ->
                     []
 
@@ -411,9 +407,6 @@ equipClassRow action equipClassId ( idx, equipClass ) =
         row_style =
             case action of
                 EquipmentClass.None ->
-                    f True
-
-                EquipmentClass.CancelNewEquipmentClass ->
                     f True
 
                 EquipmentClass.Edit ->
@@ -956,22 +949,66 @@ x scratchPrecision =
         ]
 
 
-activeEditButtons mdlStore =
-    []
-        |> addAction
-            [ 13, 2 ]
-            mdlStore
-            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.PrecisionPut)
-            "left"
-            "save"
-            fBool
-        |> addAction
-            [ 13, 3 ]
-            mdlStore
-            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.CancelNewPrecision)
-            "left"
-            "clear"
-            fBool
+activeEditButtons : Material.Model -> EquipmentClass.PrecisionAction -> List (Html AppMsg.Msg)
+activeEditButtons mdlStore precisionAction =
+    case precisionAction of
+        EquipmentClass.PrecisionEdit ->
+            []
+                |> addAction
+                    [ 13, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.PrecisionPut)
+                    "left"
+                    "done"
+                    fBool
+                |> addAction
+                    [ 13, 3 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.CancelNewPrecision)
+                    "left"
+                    "clear"
+                    fBool
+
+        EquipmentClass.PrecisionCreate ->
+            []
+                |> addAction
+                    [ 13, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.PrecisionPost)
+                    "left"
+                    "done"
+                    fBool
+                |> addAction
+                    [ 13, 3 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.CancelNewPrecision)
+                    "left"
+                    "clear"
+                    fBool
+
+        _ ->
+            []
+                |> addAction
+                    [ 12, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewPrecision)
+                    "left"
+                    "person_add"
+                    fBool
+                |> addAction
+                    [ 12, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditPrecision)
+                    "left"
+                    "mode_edit"
+                    fBool
+                |> addAction
+                    [ 12, 2 ]
+                    mdlStore
+                    (AppMsg.MsgForEquipmentClass EquipmentClassMsg.DeletePrecision)
+                    "right"
+                    "delete"
+                    fBool
 
 
 precisionEditCard : Array EquipmentClassBase.EquipmentPrecision -> EquipmentClass.PrecisionAction -> Maybe Int -> EquipmentClass.Precision -> Material.Model -> Html AppMsg.Msg
@@ -990,36 +1027,7 @@ precisionEditCard precisionList precisionAction maybePrecisionId scratchPrecisio
                     precisionTable precisionList precisionAction maybePrecisionId mdlStore
 
         actions =
-            case precisionAction of
-                EquipmentClass.PrecisionEdit ->
-                    activeEditButtons mdlStore
-
-                EquipmentClass.PrecisionCreate ->
-                    activeEditButtons mdlStore
-
-                _ ->
-                    []
-                        |> addAction
-                            [ 12, 2 ]
-                            mdlStore
-                            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.NewPrecision)
-                            "left"
-                            "person_add"
-                            fBool
-                        |> addAction
-                            [ 12, 2 ]
-                            mdlStore
-                            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.EditPrecision)
-                            "left"
-                            "mode_edit"
-                            fBool
-                        |> addAction
-                            [ 12, 2 ]
-                            mdlStore
-                            (AppMsg.MsgForEquipmentClass EquipmentClassMsg.DeletePrecision)
-                            "right"
-                            "delete"
-                            fBool
+            activeEditButtons mdlStore precisionAction
     in
         Card.view
             [ css "width" "80%"
@@ -1132,15 +1140,6 @@ precisionRows precisions action selectedPrecisionId =
 precisionRow : EquipmentClass.PrecisionAction -> Int -> ( Int, EquipmentClassBase.EquipmentPrecision ) -> Html AppMsg.Msg
 precisionRow action precisionId ( idx, precision ) =
     let
-        x =
-            Debug.log "precision action: " action
-
-        y =
-            Debug.log "precisionId: " precisionId
-
-        z =
-            Debug.log "precision.id: " precision.id
-
         f allowSelect =
             []
                 |> (\a ->
@@ -1159,9 +1158,6 @@ precisionRow action precisionId ( idx, precision ) =
         row_style =
             case action of
                 EquipmentClass.PrecisionNone ->
-                    f True
-
-                EquipmentClass.CancelNewPrecision ->
                     f True
 
                 EquipmentClass.PrecisionEdit ->

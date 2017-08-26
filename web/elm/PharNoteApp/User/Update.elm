@@ -396,9 +396,6 @@ update msg model =
 
         PaginateUser page ->
             let
-                g =
-                    Debug.log "page" page
-
                 idx =
                     Maybe.withDefault 0 model.selectedUserIndex
 

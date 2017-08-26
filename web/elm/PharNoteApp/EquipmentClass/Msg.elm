@@ -31,6 +31,7 @@ type Msg
     | NewPrecision
     | EditPrecision
     | CancelNewPrecision
+    | PrecisionPost
     | PrecisionPut
     | SetPrecision String
     | ToggleRole Int

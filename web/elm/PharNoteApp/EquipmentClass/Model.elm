@@ -66,7 +66,6 @@ type FormAction
     | Edit
     | ConfirmDelete
     | Delete
-    | CancelNewEquipmentClass
     | None
 
 
@@ -75,7 +74,6 @@ type PrecisionAction
     | PrecisionEdit
     | PrecisionConfirmDelete
     | PrecisionDelete
-    | CancelNewPrecision
     | PrecisionNone
 
 

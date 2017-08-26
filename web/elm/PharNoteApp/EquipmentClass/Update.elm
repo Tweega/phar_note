@@ -242,17 +242,14 @@ update msg model =
 
         CancelNewEquipmentClass ->
             let
-                x =
-                    Debug.log "formAction" model.formAction
-
                 newModel =
                     case model.formAction of
                         EquipmentClass.Create ->
                             { model
-                                | formAction = EquipmentClass.CancelNewEquipmentClass
+                                | formAction = EquipmentClass.None
                                 , selectedEquipmentClassId = model.previousSelectedEquipmentClassId
                                 , selectedEquipmentClassIndex = model.previousSelectedEquipmentClassIndex
-                                , precisionAction = EquipmentClass.CancelNewPrecision
+                                , precisionAction = EquipmentClass.PrecisionNone
                                 , selectedPrecisionId = model.previousSelectedPrecisionId
 
                                 --, selectedPrecisionIndex = model.previousSelectedPrecisionIndex
@@ -260,29 +257,26 @@ update msg model =
 
                         _ ->
                             { model
-                                | formAction = EquipmentClass.CancelNewEquipmentClass
-                                , precisionAction = EquipmentClass.CancelNewPrecision
+                                | formAction = EquipmentClass.None
+                                , precisionAction = EquipmentClass.PrecisionNone
                             }
             in
                 newModel ! []
 
         CancelNewPrecision ->
             let
-                x =
-                    Debug.log "Should not be" "Coming here"
-
                 newModel =
                     case model.precisionAction of
                         EquipmentClass.PrecisionCreate ->
                             { model
-                                | precisionAction = EquipmentClass.CancelNewPrecision
+                                | precisionAction = EquipmentClass.PrecisionNone
                                 , selectedPrecisionId = model.previousSelectedPrecisionId
                                 , selectedPrecisionIndex = model.previousSelectedPrecisionIndex
                             }
 
                         _ ->
                             { model
-                                | precisionAction = EquipmentClass.CancelNewPrecision
+                                | precisionAction = EquipmentClass.PrecisionNone
                             }
             in
                 newModel ! []
@@ -419,10 +413,12 @@ update msg model =
 
         EquipmentClassPost user ->
             let
-                classWithPrecisions =
-                    EquipmentClass.scratchToEquipmentClassWithPrecisionString model.scratchEquipmentClass
+                -- classWithPrecisions =
+                --     EquipmentClass.scratchToEquipmentClassWithPrecisionString model.scratchEquipmentClass
+                x =
+                    Debug.log "classWithPrecisions" model.scratchEquipmentClass
             in
-                model ! [ Rest.post classWithPrecisions ]
+                model ! [ Rest.post model.scratchEquipmentClass ]
 
         EquipmentClassPut user ->
             let
@@ -462,63 +458,32 @@ update msg model =
                             model
 
                         Just class ->
-                            { model | scratchEquipmentClass = class }
+                            { model
+                                | scratchEquipmentClass = class
+                                , precisionAction = EquipmentClass.PrecisionNone
+                            }
             in
                 newModel ! []
 
-        PrecisionPutx ->
-            --not actually putting at the moment - just updating the equipment class. Put handled by EquipmentClassPut
-            -- we need to get the selected precisionid for the selected class and update that
-            --we are updating the model.classes, finding the right class, then the right precision
+        PrecisionPost ->
+            --we want to update the class scratch
+            --get the scratch class object--get the precisions of that--update the necessary one
+            -- onto the end of the scratch precisions, append the scratch precision
             let
-                x =
-                    Debug.log "at least we get here?" "A"
+                newPrecisions =
+                    Array.push model.scratchPrecision model.scratchEquipmentClass.precisions
 
-                maybeClasses =
-                    model.selectedEquipmentClassIndex
-                        |> Maybe.andThen
-                            (\selectedClassIndex ->
-                                Array.get selectedClassIndex model.classes
-                                    |> Maybe.andThen
-                                        (\oldClass ->
-                                            model.selectedPrecisionIndex
-                                                |> Maybe.andThen
-                                                    (\selectedPrecisionIndex ->
-                                                        Array.get selectedPrecisionIndex oldClass.precisions
-                                                            |> Maybe.andThen
-                                                                (\oldPrecision ->
-                                                                    let
-                                                                        newPrecision =
-                                                                            { oldPrecision | precision = model.scratchPrecision.precision }
+                sc =
+                    model.scratchEquipmentClass
 
-                                                                        newPrecisions =
-                                                                            Array.set selectedPrecisionIndex newPrecision oldClass.precisions
-
-                                                                        newClass =
-                                                                            { oldClass | precisions = newPrecisions }
-
-                                                                        newClasses =
-                                                                            Array.set selectedClassIndex newClass model.classes
-
-                                                                        y =
-                                                                            Debug.log "at least we get here?" newPrecision
-                                                                    in
-                                                                        Just newClasses
-                                                                )
-                                                    )
-                                        )
-                            )
+                newClass =
+                    { sc | precisions = newPrecisions }
 
                 newModel =
-                    case maybeClasses of
-                        Nothing ->
-                            model
-
-                        Just newClasses ->
-                            { model | classes = newClasses }
-
-                z =
-                    Debug.log "do we get here?" newModel
+                    { model
+                        | scratchEquipmentClass = newClass
+                        , precisionAction = EquipmentClass.PrecisionNone
+                    }
             in
                 newModel ! []
 
@@ -583,24 +548,26 @@ update msg model =
                     ! []
 
         NewPrecision ->
-            { model
-                | scratchPrecision = EquipmentClass.emptyPrecision
-            }
-                ! []
+            let
+                tempIdx =
+                    Array.length model.scratchEquipmentClass.precisions
+
+                tempId =
+                    tempIdx * -1
+            in
+                { model
+                    | precisionAction = EquipmentClass.PrecisionCreate
+                    , scratchPrecision = EquipmentClass.Precision tempId ""
+                    , selectedPrecisionId = Just tempId
+                    , selectedPrecisionIndex = Just tempIdx
+                    , previousSelectedPrecisionIndex = model.selectedPrecisionIndex
+                    , previousSelectedPrecisionId = model.selectedPrecisionId
+                }
+                    ! []
 
         EditPrecision ->
             --this is a case for using maybe.andThen
             let
-                x =
-                    Debug.log "qqqqq model.model.selectedEquipmentClassIndex" model.selectedEquipmentClassIndex
-
-                y =
-                    Debug.log "qqqqq model.selectedPrecisionIndex" model.selectedPrecisionIndex
-
-                -- classIdx =
-                --     model.selectedEquipmentClassIndex
-                -- eqClass =
-                --     View.maybeFindEquipmentClass classIdx model.classes
                 newModel =
                     let
                         precisionIdx =
@@ -667,12 +634,6 @@ populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex m
 
                         _ ->
                             ( -1, -1 )
-
-                x =
-                    Debug.log "--precision id" firstPrecisionId
-
-                y =
-                    Debug.log "--precision index" firstPrecisionIndex
             in
                 { model
                     | scratchEquipmentClass = EquipmentClass.EquipmentClassWithPrecision class.id class.name class.description class.precisions
@@ -686,27 +647,23 @@ populateScratchEquipmentClassData maybeEquipmentClass maybeEquipmentClassIndex m
 
 populateScratchPrecisionData : Maybe EquipmentClass.Precision -> Maybe Int -> EquipmentClass.Model -> EquipmentClass.PrecisionAction -> EquipmentClass.Model
 populateScratchPrecisionData maybePrecision maybePrecisionIndex model action =
-    let
-        x =
-            Debug.log "maybePrecision" maybePrecision
-    in
-        case maybePrecision of
-            Nothing ->
-                --could we realistically arrive here?
-                { model
-                    | scratchPrecision = EquipmentClass.emptyPrecision
-                    , precisionAction = action
-                    , selectedPrecisionId = Nothing
-                    , selectedPrecisionIndex = Nothing
-                }
+    case maybePrecision of
+        Nothing ->
+            --could we realistically arrive here?
+            { model
+                | scratchPrecision = EquipmentClass.emptyPrecision
+                , precisionAction = action
+                , selectedPrecisionId = Nothing
+                , selectedPrecisionIndex = Nothing
+            }
 
-            Just p ->
-                { model
-                    | scratchPrecision = EquipmentClass.Precision p.id p.precision
-                    , precisionAction = action
-                    , selectedPrecisionId = Just p.id
-                    , selectedPrecisionIndex = maybePrecisionIndex
-                }
+        Just p ->
+            { model
+                | scratchPrecision = EquipmentClass.Precision p.id p.precision
+                , precisionAction = action
+                , selectedPrecisionId = Just p.id
+                , selectedPrecisionIndex = maybePrecisionIndex
+            }
 
 
 sort_by_last_first : EquipmentClass.EquipmentClassWithPrecision -> String
@@ -765,9 +722,6 @@ filteredModel model classes =
 
                                             _ ->
                                                 -1
-
-                        x =
-                            Debug.log "xxx precision id" selectedPrecisionId
                     in
                         case firstEquipment of
                             Nothing ->

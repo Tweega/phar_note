@@ -10,6 +10,7 @@ import Http exposing (..)
 import Json.Decode
 import Json.Encode
 import Json.Decode.Pipeline
+import Array
 
 
 classListDecoder : Json.Decode.Decoder (List EquipmentClassBase.EquipmentClass)
@@ -79,12 +80,29 @@ payload2 ec =
         ]
 
 
-post : EquipmentClass.EquipmentClassWithPrecisionString -> Cmd AppMsg.Msg
+payload3 : EquipmentClass.EquipmentClassWithPrecision -> Json.Encode.Value
+payload3 ec =
+    Json.Encode.object
+        [ ( "name", Json.Encode.string ec.name )
+        , ( "description", Json.Encode.string ec.description )
+        , ( "precisions", Json.Encode.list (List.map encodePrecision (Array.toList ec.precisions)) )
+        ]
+
+
+encodePrecision : EquipmentClassBase.EquipmentPrecision -> Json.Encode.Value
+encodePrecision prec =
+    Json.Encode.object
+        [ ( "id", Json.Encode.int prec.id )
+        , ( "precision", Json.Encode.string prec.precision )
+        ]
+
+
+post : EquipmentClass.EquipmentClassWithPrecision -> Cmd AppMsg.Msg
 post equipClass =
     let
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload equipClass))
+                (Json.Encode.encode 0 (payload3 equipClass))
 
         jj =
             Debug.log "json" body

@@ -82,14 +82,14 @@ defmodule PharNote.User do
     # |> Ecto.Changeset.put_assoc(:tags, parse_tags(params))
 
     user
-      |> Repo.preload(:user_roles)
+      |> Repo.preload(:roles)
       |> cast(params, [:first_name, :last_name, :email, :photo_url])
-      |> put_assoc(:user_roles, parse_roles(params))
+      |> put_assoc(:roles, parse_roles(params))
       |> unique_constraint(:email)
   end
 
   defp parse_roles(params)  do
-    (params["user_roles"] || "")
+    (params["roles"] || "")
     |> String.split(",")
     |> Enum.map(&String.trim/1)
     |> Enum.reject(& &1 == "")
