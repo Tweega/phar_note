@@ -21,6 +21,12 @@ defmodule PharNote.EquipmentClasses do
   @doc """
   Builds a changeset based on the `struct` and `params`.
   """
+
+  # %{"name" => "john doe", "addresses" => [
+  #   %{"street" => "somewhere", "country" => "brazil", "id" => 1},
+  #   %{"street" => "elsewhere", "country" => "poland"},
+  # ]}
+
   def changeset(equipment_class, params \\ :empty) do
     equipment_class
       |> cast(params, [:name, :description])
@@ -28,10 +34,18 @@ defmodule PharNote.EquipmentClasses do
   end
 
   def changeset_new(equipment_class, params \\ :empty) do
+      #requipment_class will just be empty map so could create that here rather than passing in.
     #assuming here that new user will not have any roles, which is probably not going to be the case
+
+#     user
+# |> Repo.preload(:addresses)
+# |> Ecto.Changeset.cast(params, [])
+# |> Ecto.Changeset.cast_assoc(:addresses)
+
     equipment_class
       |> cast(params, [:name, :description])
       |> unique_constraint(:name)
+
   end
 
   def changesetx(equipment_class, params \\ %{}) do
@@ -41,9 +55,9 @@ defmodule PharNote.EquipmentClasses do
 
     equipment_class
       |> Repo.preload(:equipment_precision)
-      |> cast(params, [:name, :description])
-      |> put_assoc(:equipment_precision, parse_precisions(params))
-      |> unique_constraint(:name)
+      |> cast(params, [])
+      |> cast_assoc(:equipment_precision)
+#      |> unique_constraint(:name)
   end
 
   defp parse_precisions(params)  do
@@ -56,6 +70,23 @@ defmodule PharNote.EquipmentClasses do
 
   defp get_or_insert_tagx(precisionID) do
     Repo.get(PharNote.EquipmentPrecision, precisionID)
+  end
+
+  defp get_or_insert_precision(name) do
+   Repo.get(PharNote.EquipmentPrecision, precisionID) ||
+     Repo.insert!(PharNote.EquipmentPrecision, %PharNote.EquipmentPrecision{precision: name})
+ end
+ #
+ # defp insert_and_get_all(names) do
+ #    maps = Enum.map(names, &%{name: &1})
+ #    Repo.insert_all MyApp.Tag, maps, on_conflict: :nothing
+ #    Repo.all(from t in MyApp.Tag, where: t.name in ^names)
+ #  end
+
+  defp upsert_all(precisions) do
+    #maps = Enum.map(names, &%{name: &1})
+    Repo.insert_all PharNote.EquipmentPrecision, precisions, on_conflict: :nothing
+    #Repo.all(from t in MyApp.Tag, where: t.precision in ^precisions)
   end
 
   def class(query) do

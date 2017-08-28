@@ -85,7 +85,7 @@ payload3 ec =
     Json.Encode.object
         [ ( "name", Json.Encode.string ec.name )
         , ( "description", Json.Encode.string ec.description )
-        , ( "precisions", Json.Encode.list (List.map encodePrecision (Array.toList ec.precisions)) )
+        , ( "equipment_precision", Json.Encode.list (List.map encodePrecision (Array.toList ec.precisions)) )
         ]
 
 

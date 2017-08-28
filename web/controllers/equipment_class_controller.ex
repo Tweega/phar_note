@@ -30,7 +30,7 @@ defmodule PharNote.EquipmentClassesController do
 
   def create(conn, params) do
     #params = %{"email" => "ll", "first_name" => "luna", "last_name" => "lovegood", "photo_url" => "luna.jpg", "equipment_class_roles" => "12,13, 15"}
-
+    Logger.debug fn -> inspect(params) end
     changeset = PharNote.EquipmentClasses.changeset_new(%PharNote.EquipmentClasses{}, params)
     case Repo.insert(changeset) do
       {:ok, equipment_class} ->
