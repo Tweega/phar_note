@@ -49,8 +49,8 @@ defmodule PharNote.Router do
     get "/equipmentclass", EquipmentClassesController, :index
     get "/equipmentclass/:id", UserController, :show
     post "/equipmentclass", EquipmentClassesController, :create
-    put "/equipmentclass/:id", UserController, :update
-    delete "/equipmentclass/:id", UserController, :delete
+    put "/equipmentclass/:id", EquipmentClassesController, :update
+    delete "/equipmentclass/:id", EquipmentClassesController, :delete
 
     #EquipmentPrecision
     get "/equipmentprecision", EquipmentPrecisionController, :index

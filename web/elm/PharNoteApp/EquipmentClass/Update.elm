@@ -172,7 +172,7 @@ update msg model =
                     Nothing ->
                         model ! []
 
-                    Just user ->
+                    Just ec ->
                         --we need to identify a record to be current after successful delete
                         let
                             --this would be a case of using one of those Maybe.andThen things as if idx was Nothing we would not get here.
@@ -202,18 +202,18 @@ update msg model =
                                     Nothing ->
                                         { model
                                             | formAction = EquipmentClass.Delete
-                                            , selectedEquipmentClassId = Just user.id
+                                            , selectedEquipmentClassId = Just ec.id
                                         }
 
                                     Just nextEquipmentClass ->
                                         { model
                                             | formAction = EquipmentClass.Delete
-                                            , selectedEquipmentClassId = Just user.id
+                                            , selectedEquipmentClassId = Just ec.id
                                             , previousSelectedEquipmentClassId = Just nextEquipmentClass.id
                                             , previousSelectedEquipmentClassIndex = Just nextIndex
                                         }
                         in
-                            newModel ! [ Rest.delete user ]
+                            newModel ! [ Rest.delete ec ]
 
         EditEquipmentClass ->
             let
@@ -421,11 +421,7 @@ update msg model =
                 model ! [ Rest.post model.scratchEquipmentClass ]
 
         EquipmentClassPut user ->
-            let
-                classWithPrecisions =
-                    EquipmentClass.scratchToEquipmentClassWithPrecisionString model.scratchEquipmentClass
-            in
-                model ! [ Rest.put classWithPrecisions ]
+            model ! [ Rest.put model.scratchEquipmentClass ]
 
         PrecisionPut ->
             --we want to update the class scratch

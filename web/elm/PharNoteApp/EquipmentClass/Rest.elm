@@ -113,7 +113,7 @@ post equipClass =
         Http.send (\result -> AppMsg.MsgForEquipmentClass (ProcessEquipmentClassPost result)) (Http.post urlEquipmentClasss body classPrecisionDecoder)
 
 
-put : EquipmentClass.EquipmentClassWithPrecisionString -> Cmd AppMsg.Msg
+put : EquipmentClass.EquipmentClassWithPrecision -> Cmd AppMsg.Msg
 put equipClass =
     let
         putUrl =
@@ -124,7 +124,7 @@ put equipClass =
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload equipClass))
+                (Json.Encode.encode 0 (payload3 equipClass))
 
         putRequest =
             Http.request
@@ -155,8 +155,9 @@ delete equipClass =
 
         body =
             Http.stringBody "application/json"
-                (Json.Encode.encode 0 (payload2 equipClass))
+                (Json.Encode.encode 0 (payload3 equipClass))
 
+        --don't need to send up the whole lot; change from payload3
         putRequest =
             Http.request
                 { method = "DELETE"

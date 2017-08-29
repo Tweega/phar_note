@@ -720,7 +720,8 @@ precisionInfo ( i, precision ) =
         ]
         [ Options.div
             [ css "color" "rgba(0,0,0,0.9)"
-            , css "width" "150px"
+
+            --, css "width" "150px"
             , css "float" "left"
             ]
             [ text precision.precision ]

@@ -13,7 +13,7 @@ defmodule PharNote.EquipmentClasses do
     field :name, :string
     field :description, :string
 
-    has_many :equipment_precision, PharNote.EquipmentPrecision
+    has_many :equipment_precision, PharNote.EquipmentPrecision, [on_delete: :delete_all]
 
     timestamps()
   end
@@ -56,6 +56,18 @@ defmodule PharNote.EquipmentClasses do
     equipment_class
       |> Repo.preload(:equipment_precision)
       |> cast(params, [])
+      |> cast_assoc(:equipment_precision)
+#      |> unique_constraint(:name)
+  end
+
+  def changesety(equipment_class, params \\ %{}) do
+    # struct
+    # |> Ecto.Changeset.cast(params, [:title, :body])
+    # |> Ecto.Changeset.put_assoc(:tags, parse_tags(params))
+
+    equipment_class
+      |> Repo.preload(:equipment_precision)
+      |> cast(params, [:name, :description])
       |> cast_assoc(:equipment_precision)
 #      |> unique_constraint(:name)
   end
