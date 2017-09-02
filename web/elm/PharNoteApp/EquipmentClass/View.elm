@@ -110,8 +110,8 @@ maybeFindEquipmentClass maybeIndex equipClass =
             Nothing
 
 
-maybeFindPrecision : Maybe Int -> Array EquipmentClassBase.EquipmentPrecision -> Maybe EquipmentClassBase.EquipmentPrecision
-maybeFindPrecision maybeIndex precisions =
+maybeFindPrecision : Array EquipmentClassBase.EquipmentPrecision -> Maybe Int -> Maybe EquipmentClassBase.EquipmentPrecision
+maybeFindPrecision precisions maybeIndex =
     case maybeIndex of
         Just idx ->
             Array.get idx precisions
