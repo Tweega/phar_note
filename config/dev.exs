@@ -36,8 +36,8 @@ config :phoenix, :stacktrace_depth, 20
 # Configure your database
 config :phar_note, PharNote.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "christopher",
+  password: "Ngorogor0",
   database: "phar_note_dev",
   hostname: "localhost",
   pool_size: 10

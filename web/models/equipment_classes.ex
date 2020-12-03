@@ -84,9 +84,9 @@ defmodule PharNote.EquipmentClasses do
     Repo.get(PharNote.EquipmentPrecision, precisionID)
   end
 
-  defp get_or_insert_precision(name) do
+  defp get_or_insert_precision(precisionID) do
    Repo.get(PharNote.EquipmentPrecision, precisionID) ||
-     Repo.insert!(PharNote.EquipmentPrecision, %PharNote.EquipmentPrecision{precision: name})
+     Repo.insert!(PharNote.EquipmentPrecision, %PharNote.EquipmentPrecision{precision: precisionID})
  end
  #
  # defp insert_and_get_all(names) do
